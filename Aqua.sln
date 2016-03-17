@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2015
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aqua.CSharp.Plugins", "Aqua.CSharp.Plugins.csproj", "{1BE05A2B-0DD8-017B-AD00-153F3C5F3E2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aqua.CSharp", "Aqua.CSharp.csproj", "{200B9309-8890-A03B-66AF-DD47DA5F924D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aqua.CSharp.Editor", "Aqua.CSharp.Editor.csproj", "{AFA006F2-AF72-5560-B148-7A45E5042374}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1BE05A2B-0DD8-017B-AD00-153F3C5F3E2C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1BE05A2B-0DD8-017B-AD00-153F3C5F3E2C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1BE05A2B-0DD8-017B-AD00-153F3C5F3E2C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1BE05A2B-0DD8-017B-AD00-153F3C5F3E2C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{200B9309-8890-A03B-66AF-DD47DA5F924D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{200B9309-8890-A03B-66AF-DD47DA5F924D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{200B9309-8890-A03B-66AF-DD47DA5F924D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{200B9309-8890-A03B-66AF-DD47DA5F924D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AFA006F2-AF72-5560-B148-7A45E5042374}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AFA006F2-AF72-5560-B148-7A45E5042374}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AFA006F2-AF72-5560-B148-7A45E5042374}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AFA006F2-AF72-5560-B148-7A45E5042374}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
