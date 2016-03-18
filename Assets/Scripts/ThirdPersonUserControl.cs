@@ -42,10 +42,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             m_Character.stopRun();
 
-            if (m_Character.isRunning )
-            {
 
-                if (m_Character.m_TurnAmount < -0.9) /* || m_Character.directionSwitch(1) == true || m_Character.directionSwitch(2) == true*/
+
+                if (m_Character.m_TurnAmount < -0.8) /*|| m_Character.directionSwitch(4) == true || m_Character.directionSwitch(3) == true*/
                 {
                     m_Character.turnAround("Left");
                 }
@@ -53,7 +52,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     m_Character.movingRight = 0;
                 }
-                if (m_Character.m_TurnAmount > 0.9) /* || m_Character.directionSwitch(4) == true || m_Character.directionSwitch(3) == true*/
+                if (m_Character.m_TurnAmount > 0.8) /*|| m_Character.directionSwitch(2) == true || m_Character.directionSwitch(1) == true*/
                 {
                     m_Character.turnAround("Right");
                 }
@@ -62,7 +61,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Character.movingLeft = 0;
 
                 }
-            }
+
             
         }
 

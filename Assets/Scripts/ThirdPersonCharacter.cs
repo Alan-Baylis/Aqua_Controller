@@ -27,7 +27,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         Rigidbody m_Rigidbody;
         Animator m_Animator;
-        bool m_IsGrounded;
+        public bool m_IsGrounded;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
         public float m_TurnAmount;
@@ -47,6 +47,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isWalking;
         public bool isIdle;
         public bool isTurning;
+        public bool isJumping;
         int ways;
         float timer;
         float buttonTime = -1;
@@ -67,6 +68,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         GameObject playerNeck;
         GameObject playerHips;
         GameObject pivot;
+        GameObject head, rightFeet, leftFeet, hips;
 
         Sounds sounds;
         AudioClip sound;
@@ -90,6 +92,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             playerHips = GameObject.Find("Hips");
             pivot = GameObject.Find("Pivot");
             cameraGroup = GameObject.Find("Camera_group");
+            head = GameObject.Find("Head");
+            leftFeet = GameObject.Find("Left_toe_end");
+            rightFeet = GameObject.Find("Right_toe_end");
+            hips = GameObject.Find("Hips");
 
             fwd = transform.TransformDirection(Vector3.forward);
             down = transform.TransformDirection(Vector3.down);
@@ -121,10 +127,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void Update()
         {
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 && myForward > 0.5) { isRunning = true; } else isRunning = false;
+            if (m_ForwardAmount > 0.5 || myForward > 0.5) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
+            /*
+            if (isJumping) {
+                m_CapsuleHeight = Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+                //m_CapsuleCenter = hips.transform.position;
+            }*/
+
+
         }
 
         void LateUpdate()
@@ -183,7 +196,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // control and velocity handling is different when grounded and airborne:
             if (m_IsGrounded)
             {
+                isJumping = false;
                 HandleGroundedMovement(crouch, jump);
+
             }
             else
             {
@@ -209,6 +224,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
         }
+
+        //Function not needed now, DirectionSwitch fixed with myTurnAmount!
         /*
         public bool directionSwitch(int direction)
         {
@@ -218,13 +235,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             switch (ways)
             {
                 case 1: direction = 1;
-                    if (Input.GetKeyUp(KeyCode.W))
+                    if (Input.GetKeyUp(KeyCode.W) || Input.GetKeyDown(KeyCode.W))
                     {
                         buttonTime = Time.time;
                         buttonTime = buttonTime + interval;
                        // print(buttonTime);
                     }
-                    if (timer <= buttonTime && Input.GetKeyDown(KeyCode.S) )
+                    if (timer <= buttonTime && Input.GetKeyDown(KeyCode.S))
                     {
                         print("S is down after releasing W");
                         return true;
@@ -233,7 +250,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                   
                 case 2:
                     direction = 2;
-                    if (Input.GetKeyUp(KeyCode.A))
+                    if (Input.GetKeyUp(KeyCode.A) || Input.GetKeyDown(KeyCode.A))
                     {
                         buttonTime = Time.time;
                         buttonTime = buttonTime + interval;
@@ -247,7 +264,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     break;
                 case 3:
                     direction = 3;
-                    if (Input.GetKeyUp(KeyCode.D))
+                    if (Input.GetKeyUp(KeyCode.D) || Input.GetKeyDown(KeyCode.D))
                     {
                         buttonTime = Time.time;
                         buttonTime = buttonTime + interval;
@@ -261,7 +278,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     break;
                 case 4:
                     direction = 4;
-                    if (Input.GetKeyUp(KeyCode.S))
+                    if (Input.GetKeyUp(KeyCode.S) || Input.GetKeyDown(KeyCode.S))
                     {
                         buttonTime = Time.time;
                         buttonTime = buttonTime + interval;
@@ -277,7 +294,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             return false;
         } // Direction switch
-        */
+       */
 
         void detectWallsAndIdle(float currentSpeed, float detectWall)
         {
@@ -298,7 +315,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (isRunning)
             {
-                if (side == "Right")
+                if (side == "Right" ) 
                 {
                     m_Animator.Play("TurnAroundRight");
                 }
@@ -313,13 +330,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //To-Do: Flip animations depending on conditions
             //To-Do: Scale colider
             m_Animator.Play("FrontFlip");
+            isJumping = true;
+            //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+
+            print(m_CapsuleHeight);
             m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-            m_Capsule.height = m_Capsule.height / 2f;
-            m_Capsule.center = m_Capsule.center / 2f;
-            print(m_Capsule);
             m_IsGrounded = false;
             m_Animator.applyRootMotion = false;
             m_GroundCheckDistance = 0.1f;
+
 
         }
         public void PlaySounds(string name)
