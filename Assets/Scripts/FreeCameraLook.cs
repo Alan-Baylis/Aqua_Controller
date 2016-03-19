@@ -40,12 +40,12 @@ public class FreeCameraLook : Pivot {
         if(lockCursor && Input.GetMouseButtonUp(0))
             {
 
-            Screen.lockCursor = lockCursor;
+            //Screen.lockCursor = lockCursor;
         }
 	}
     void OnDisable() {
 
-        Screen.lockCursor = false; 
+       // Screen.lockCursor = false; 
     }
 
     protected override void Follow(float deltaTime)

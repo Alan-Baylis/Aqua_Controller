@@ -27,7 +27,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         Rigidbody m_Rigidbody;
         Animator m_Animator;
-        bool m_IsGrounded;
+        public bool m_IsGrounded;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
         public float m_TurnAmount;
@@ -47,6 +47,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isWalking;
         public bool isIdle;
         public bool isTurning;
+        public bool isJumping;
         int ways;
         float timer;
         float buttonTime = -1;
@@ -68,6 +69,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         GameObject playerHips;
         GameObject pivot;
 
+        //GameObject head, rightFeet, leftFeet, hips;
+
         Sounds sounds;
         AudioClip sound;
         Vector3 fwd, down;
@@ -82,7 +85,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Capsule = GetComponent<CapsuleCollider>();
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
-
+            /*
+            head = GameObject.Find("Head");
+            leftFeet = GameObject.Find("Left_toe_end");
+            rightFeet = GameObject.Find("Right_toe_end");
+            hips = GameObject.Find("Hips");
+            */
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
 
@@ -121,12 +129,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void Update()
         {
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 && myForward > 0.5) { isRunning = true; } else isRunning = false;
+            if (m_ForwardAmount > 0.5 || myForward > 0.5) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
         }
-
         void LateUpdate()
         {
             aimToMouse("Neck");
@@ -184,10 +191,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_IsGrounded)
             {
                 HandleGroundedMovement(crouch, jump);
+                isJumping = false;
+                ScaleCapsuleForJumping("land");
+
             }
             else
             {
                 HandleAirborneMovement();
+                ScaleCapsuleForJumping("jump");
             }
 
             ScaleCapsuleForCrouching(crouch);
@@ -313,15 +324,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //To-Do: Flip animations depending on conditions
             //To-Do: Scale colider
             m_Animator.Play("FrontFlip");
+            isJumping = true;
+            //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+            print(m_CapsuleHeight);
             m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-            m_Capsule.height = m_Capsule.height / 2f;
-            m_Capsule.center = m_Capsule.center / 2f;
             print(m_Capsule);
             m_IsGrounded = false;
             m_Animator.applyRootMotion = false;
             m_GroundCheckDistance = 0.1f;
-
         }
+
         public void PlaySounds(string name)
         {
             if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
@@ -419,6 +431,23 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
+
+        void ScaleCapsuleForJumping(string jumping)
+        {
+
+            if (jumping == "land")
+            {
+                m_Capsule.height = m_CapsuleHeight;
+                //m_Capsule.center = m_CapsuleCenter;
+            }
+            if (jumping == "jump")
+            {
+                //m_IsGrounded = false;
+                m_Capsule.height = 1f; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+                //m_CapsuleCenter = hips.transform.position;
+            }
+        }
+
         void PreventStandingInLowHeadroom()
         {
             // prevent standing up in crouch-only zones
@@ -443,7 +472,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 detectWallsAndIdle(m_ForwardAmount, detectWall);
             }
-            if (Input.GetKeyDown(KeyCode.Tab))
+            if (Input.GetKeyDown(KeyCode.Tab) && isRunning)
             {
                 doFlip();
             }
