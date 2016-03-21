@@ -29,6 +29,7 @@ public class Sounds : MonoBehaviour {
             audioSources[i].clip = Clips[i];
 
             i++;
+
         }
     }
 

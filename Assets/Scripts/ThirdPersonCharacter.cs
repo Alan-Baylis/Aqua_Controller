@@ -48,6 +48,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isIdle;
         public bool isTurning;
         public bool isJumping;
+        public bool exhausted;
+        public float stamina;
         int ways;
         float timer;
         float buttonTime = -1;
@@ -55,31 +57,34 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float myForward;
         public float detectWall = 1f;
 
+
         /*
         Vector3 headControl;
         Vector3 mouseClickPosition;       ///DONT NEED ?
         Transform neckBone;
         */
 
-
+/*
         //For head movements according camera
         float xHead, yHead, yCam, yHip;
         GameObject cameraGroup;
         GameObject playerNeck;
         GameObject playerHips;
         GameObject pivot;
+*/
 
         //GameObject head, rightFeet, leftFeet, hips;
 
-        Sounds sounds;
+
         AudioClip sound;
+        AudioSource sounds;
         Vector3 fwd, down;
-
-
+        float runTime;
 
         void Start()
         {
 
+            stamina = 5;
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
@@ -93,19 +98,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             */
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
-
+            /*
             playerNeck = GameObject.Find("Neck");
             playerHips = GameObject.Find("Hips");
             pivot = GameObject.Find("Pivot");
             cameraGroup = GameObject.Find("Camera_group");
-
+            */
             fwd = transform.TransformDirection(Vector3.forward);
             down = transform.TransformDirection(Vector3.down);
         }
 
         //Aims bone towards the mouse on screen
         void aimToMouse(string bone)
-        {
+        {/*
             xHead = pivot.transform.eulerAngles.x;
             yCam = cameraGroup.transform.eulerAngles.y;
             yHip = playerHips.transform.localEulerAngles.y;
@@ -129,7 +134,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void Update()
         {
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 || myForward > 0.5) { isRunning = true; } else isRunning = false;
+            if (m_ForwardAmount > 0.5 || myForward > 0.5 ) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
@@ -137,7 +142,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void LateUpdate()
         {
             aimToMouse("Neck");
+
+            if (isRunning)
+            {
+                runTime = Time.time;
+
+                if(runTime > stamina && !exhausted)
+                {
+                    PlaySounds("exhausted");
+                    exhausted = true;
+                }
+            }if (!isRunning) { runTime = 0; exhausted = false; }
+            print(runTime);
         }
+
         public void Move(Vector3 move, bool crouch, bool jump)
         {
             // convert the world relative moveInput vector into a local-relative
@@ -191,14 +209,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_IsGrounded)
             {
                 HandleGroundedMovement(crouch, jump);
-                isJumping = false;
-                ScaleCapsuleForJumping("land");
-
             }
             else
             {
                 HandleAirborneMovement();
-                ScaleCapsuleForJumping("jump");
             }
 
             ScaleCapsuleForCrouching(crouch);
@@ -307,7 +321,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         public void turnAround(string side)
         {
-            if (isRunning)
+            if (myForward > 0.5)
             {
                 if (side == "Right")
                 {
@@ -336,6 +350,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
+            if(name == "exhausted")
+            {
+
+                sound = GetComponent<Sounds>().Clips[45];
+                sounds.PlayOneShot(sound, 1);
+
+            }
             if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
             {
                 if (name == "jumpLand")
@@ -432,15 +453,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
 
-        void ScaleCapsuleForJumping(string jumping)
+        void ScaleCapsule(string state)
         {
-
-            if (jumping == "land")
+            if (state == "ground")
             {
                 m_Capsule.height = m_CapsuleHeight;
                 //m_Capsule.center = m_CapsuleCenter;
             }
-            if (jumping == "jump")
+            if (state == "jump")
             {
                 //m_IsGrounded = false;
                 m_Capsule.height = 1f; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
@@ -521,6 +541,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Rigidbody.AddForce(extraGravityForce);
 
             m_GroundCheckDistance = m_Rigidbody.velocity.y < 0 ? m_OrigGroundCheckDistance : 0.01f;
+            if (isJumping) {
+                print("ssdad");
+                ScaleCapsule("jump");
+            }
         }
 
 
@@ -535,6 +559,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.applyRootMotion = false;
                 m_GroundCheckDistance = 0.1f;
             }
+            isJumping = false;
+            ScaleCapsule("ground");
         }
 
         void ApplyExtraTurnRotation()
