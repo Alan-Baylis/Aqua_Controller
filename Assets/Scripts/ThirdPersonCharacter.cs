@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 namespace UnityStandardAssets.Characters.ThirdPerson
@@ -50,6 +51,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isJumping;
         public bool exhausted;
         public float stamina;
+        public float breathingTempo = 1;
         int ways;
         float timer;
         float buttonTime = -1;
@@ -77,7 +79,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
         AudioClip sound;
-        AudioSource sounds;
+        AudioSource soundSource;
         Vector3 fwd, down;
         float runTime;
 
@@ -90,6 +92,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Capsule = GetComponent<CapsuleCollider>();
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
+            sound = GetComponent<Sounds>().Clips[45];
+            StartCoroutine(Exhausted());
+
+
+
             /*
             head = GameObject.Find("Head");
             leftFeet = GameObject.Find("Left_toe_end");
@@ -142,18 +149,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void LateUpdate()
         {
             aimToMouse("Neck");
-
-            if (isRunning)
-            {
-                runTime = Time.time;
-
-                if(runTime > stamina && !exhausted)
-                {
-                    PlaySounds("exhausted");
-                    exhausted = true;
-                }
-            }if (!isRunning) { runTime = 0; exhausted = false; }
-            print(runTime);
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -348,13 +343,41 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_GroundCheckDistance = 0.1f;
         }
 
+        IEnumerator Exhausted()
+        {
+            while (true) {
+
+                yield return new WaitForSeconds(3);
+                if (isRunning)
+                {
+                    runTime = Time.time;
+                    print(Time.time);
+                    if (runTime > stamina && !exhausted)
+                    {
+                        exhausted = true;
+                        if (10 > 888)
+                        {
+                            PlaySounds("exhausted");
+
+                            //AudioSource.clip.length
+                        }
+                    }
+                }
+            }
+            if (!isRunning)
+            {
+                runTime = 0;
+                exhausted = false;
+            }
+        }
+
         public void PlaySounds(string name)
         {
             if(name == "exhausted")
             {
 
-                sound = GetComponent<Sounds>().Clips[45];
-                sounds.PlayOneShot(sound, 1);
+                soundSource = GetComponent<Sounds>().audioSources[Random.Range(45, 49)];
+                soundSource.Play();
 
             }
             if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
