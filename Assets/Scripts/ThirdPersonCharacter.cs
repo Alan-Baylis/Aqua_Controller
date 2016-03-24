@@ -49,7 +49,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isIdle;
         public bool isTurning;
         public bool isJumping;
-        public bool exhausted;
+        public bool isExhausted;
+        bool playing;
         public float stamina;
         public float breathingTempo = 1;
         int ways;
@@ -66,22 +67,24 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Transform neckBone;
         */
 
-/*
-        //For head movements according camera
-        float xHead, yHead, yCam, yHip;
-        GameObject cameraGroup;
-        GameObject playerNeck;
-        GameObject playerHips;
-        GameObject pivot;
-*/
+        /*
+                //For head movements according camera
+                float xHead, yHead, yCam, yHip;
+                GameObject cameraGroup;
+                GameObject playerNeck;
+                GameObject playerHips;
+                GameObject pivot;
+        */
 
-        //GameObject head, rightFeet, leftFeet, hips;
+        Transform rightFeet, leftFeet, hips;
+        Transform head;
 
 
-        AudioClip sound;
+        AudioClip footSound, headSound;
         AudioSource soundSource;
         Vector3 fwd, down;
         float runTime;
+        float breathInterval = 0.7f;
 
         void Start()
         {
@@ -92,17 +95,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Capsule = GetComponent<CapsuleCollider>();
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
-            sound = GetComponent<Sounds>().Clips[45];
-            StartCoroutine(Exhausted());
+            head = GameObject.Find("Head").transform;
+            playing = false;
 
-
-
-            /*
-            head = GameObject.Find("Head");
-            leftFeet = GameObject.Find("Left_toe_end");
-            rightFeet = GameObject.Find("Right_toe_end");
-            hips = GameObject.Find("Hips");
-            */
+            leftFeet = GameObject.Find("Left_toe_end").transform;
+            rightFeet = GameObject.Find("Right_toe_end").transform;
+            hips = GameObject.Find("Hips").transform;
+            
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
             /*
@@ -131,7 +130,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //smoothY = Mathf.SmoothDamp(x, Screen.width / 2, ref z, 5, 2);
 
-
+            
 
             //playerNeck.transform.rotation = Quaternion.Euler(xHead, yHead, transform.eulerAngles.z);
         }
@@ -140,8 +139,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
+            print(m_Rigidbody.velocity.magnitude);
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 || myForward > 0.5 ) { isRunning = true; } else isRunning = false;
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 5 || myForward > 0.5 && m_Rigidbody.velocity.magnitude > 5) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
@@ -149,6 +149,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void LateUpdate()
         {
             aimToMouse("Neck");
+
+            Exhausted();
+            if (isRunning && isExhausted)
+            {
+                
+            }
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -343,90 +349,98 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_GroundCheckDistance = 0.1f;
         }
 
-        IEnumerator Exhausted()
+        void Exhausted()
         {
-            while (true) {
-
-                yield return new WaitForSeconds(3);
-                if (isRunning)
-                {
-                    runTime = Time.time;
-                    print(Time.time);
-                    if (runTime > stamina && !exhausted)
-                    {
-                        exhausted = true;
-                        if (10 > 888)
-                        {
-                            PlaySounds("exhausted");
-
-                            //AudioSource.clip.length
-                        }
-                    }
-                }
-            }
-            if (!isRunning)
+            if (isRunning)
             {
-                runTime = 0;
-                exhausted = false;
+                runTime = Time.time;
+                if (runTime > stamina && !isExhausted)
+                {
+                    isExhausted = true;
+                    StartCoroutine(Exhaust());
+                }
+
+            }
+            else
+            {
+                isExhausted = false;
+            }
+        }
+        IEnumerator Exhaust()
+        {
+            while (isExhausted)
+            {
+
+                yield return new WaitForSeconds(breathInterval);
+                PlaySounds("exhausted");
+
             }
         }
 
         public void PlaySounds(string name)
         {
-            if(name == "exhausted")
-            {
-
-                soundSource = GetComponent<Sounds>().audioSources[Random.Range(45, 49)];
+            if (name == "exhausted")
+            {   /*
+                footSound = GetComponent<Sounds>().Clips[Random.Range(45, 49)];
+                AudioSource.PlayClipAtPoint(footSound, transform.position);
                 soundSource.Play();
-
+                */
+                headSound = head.GetComponent<Sounds>().Clips[Random.Range(0, 6)];
+                head.GetComponent<Sounds>().audioSources[Random.Range(0, 6)].PlayOneShot(headSound, 1);
             }
+            if (name == "exhaustStop")
+            {
+                headSound = head.GetComponent<Sounds>().Clips[6];
+                head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
+            }
+
             if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
             {
                 if (name == "jumpLand")
                 {
-                    sound = GetComponent<Sounds>().Clips[20];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[20];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
                 if (name == "steps" && isWalking)
                 {
-                    sound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                 }
                 if (name == "stepsRun" && isRunning)
                 {
-                    sound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
                 if (name == "gravslip")
                 {
-                    sound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
             }
-                //Check if ground is with gravel surface
-                if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Gravel")
+            //Check if ground is with gravel surface
+            if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Gravel")
             {
                 if (name == "jumpLand")
                 {
-                    sound = GetComponent<Sounds>().Clips[20];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[20];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
                 if (name == "steps" && isWalking)
                 {
-                    sound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                 }
                 if (name == "stepsRun" && isRunning)
                 {
-                    sound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
                 if (name == "gravslip")
                 {
-                    sound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
-                    AudioSource.PlayClipAtPoint(sound, transform.position);
+                    footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
+                    AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
             }
         }
@@ -564,7 +578,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Rigidbody.AddForce(extraGravityForce);
 
             m_GroundCheckDistance = m_Rigidbody.velocity.y < 0 ? m_OrigGroundCheckDistance : 0.01f;
-            if (isJumping) {
+            if (isJumping)
+            {
                 print("ssdad");
                 ScaleCapsule("jump");
             }
