@@ -77,14 +77,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         */
 
         Transform rightFeet, leftFeet, hips;
-        Transform head;
+        GameObject head;
 
 
         AudioClip footSound, headSound;
         AudioSource soundSource;
         Vector3 fwd, down;
         float runTime;
-        float breathInterval = 0.7f;
+        float breathInterval = 0.8f;
 
         void Start()
         {
@@ -95,13 +95,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Capsule = GetComponent<CapsuleCollider>();
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
-            head = GameObject.Find("Head").transform;
+            head = GameObject.Find("Head");
             playing = false;
 
             leftFeet = GameObject.Find("Left_toe_end").transform;
             rightFeet = GameObject.Find("Right_toe_end").transform;
             hips = GameObject.Find("Hips").transform;
-            
+
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
             /*
@@ -130,7 +130,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //smoothY = Mathf.SmoothDamp(x, Screen.width / 2, ref z, 5, 2);
 
-            
+
 
             //playerNeck.transform.rotation = Quaternion.Euler(xHead, yHead, transform.eulerAngles.z);
         }
@@ -139,9 +139,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
-            print(m_Rigidbody.velocity.magnitude);
+            //print(m_Rigidbody.velocity.magnitude);
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 5 || myForward > 0.5 && m_Rigidbody.velocity.magnitude > 5) { isRunning = true; } else isRunning = false;
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 3 || myForward > 0.5 && m_Rigidbody.velocity.magnitude > 3) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
@@ -153,7 +153,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             Exhausted();
             if (isRunning && isExhausted)
             {
-                
+
             }
         }
 
@@ -341,9 +341,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.Play("FrontFlip");
             isJumping = true;
             //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
-            print(m_CapsuleHeight);
             m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-            print(m_Capsule);
             m_IsGrounded = false;
             m_Animator.applyRootMotion = false;
             m_GroundCheckDistance = 0.1f;
@@ -354,16 +352,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning)
             {
                 runTime = Time.time;
-                if (runTime > stamina && !isExhausted)
+                if (runTime > stamina && !isExhausted && !playing)
                 {
                     isExhausted = true;
+                    playing = true;
+              
+                    //m_Animator.SetLayerWeight(1, 1);
+                    
                     StartCoroutine(Exhaust());
                 }
 
             }
-            else
+            if(!isRunning)
             {
                 isExhausted = false;
+                playing = false;
+                runTime = 0;
             }
         }
         IEnumerator Exhaust()
@@ -379,69 +383,75 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
-            if (name == "exhausted")
-            {   /*
+
+            if (10 > 1)
+            { 
+                if (name == "exhausted")
+                {   /*
                 footSound = GetComponent<Sounds>().Clips[Random.Range(45, 49)];
                 AudioSource.PlayClipAtPoint(footSound, transform.position);
                 soundSource.Play();
                 */
-                headSound = head.GetComponent<Sounds>().Clips[Random.Range(0, 6)];
-                head.GetComponent<Sounds>().audioSources[Random.Range(0, 6)].PlayOneShot(headSound, 1);
-            }
-            if (name == "exhaustStop")
-            {
-                headSound = head.GetComponent<Sounds>().Clips[6];
-                head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
-            }
+                    //headSound is an audio clip
+                    headSound = head.GetComponent<Sounds>().Clips[Random.Range(0, 6)];
+                    head.GetComponent<Sounds>().audioSources[Random.Range(0, 6)].PlayOneShot(headSound, 0.1f);
+                }
+                if (name == "exhaustStop")
+                {
+                    headSound = head.GetComponent<Sounds>().Clips[6];
+                    head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
+                }
 
-            if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
-            {
-                if (name == "jumpLand")
+                if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
                 {
-                    footSound = GetComponent<Sounds>().Clips[20];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
-                }
-                if (name == "steps" && isWalking)
-                {
-                    footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    if (name == "jumpLand")
+                    {
+                        footSound = GetComponent<Sounds>().Clips[20];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    }
+                    if (name == "steps" && isWalking)
+                    {
+                        footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
 
+                    }
+                    if (name == "stepsRun" && isRunning)
+                    {
+                        footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    }
+                    if (name == "gravslip")
+                    {
+                        footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    }
                 }
-                if (name == "stepsRun" && isRunning)
+                //Check if ground is with gravel surface
+                if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Gravel")
                 {
-                    footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
-                }
-                if (name == "gravslip")
-                {
-                    footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
-                }
-            }
-            //Check if ground is with gravel surface
-            if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Gravel")
-            {
-                if (name == "jumpLand")
-                {
-                    footSound = GetComponent<Sounds>().Clips[20];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
-                }
-                if (name == "steps" && isWalking)
-                {
-                    footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    if (name == "jumpLand")
+                    {
+                        footSound = GetComponent<Sounds>().Clips[20];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    }
+                    if (name == "steps" && isWalking)
+                    {
+                        footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
 
+                    }
+                    if (name == "stepsRun" && isRunning)
+                    {
+                        footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    }
+                    if (name == "gravslip")
+                    {
+                        footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
+                        AudioSource.PlayClipAtPoint(footSound, transform.position);
+                    }
                 }
-                if (name == "stepsRun" && isRunning)
-                {
-                    footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
-                }
-                if (name == "gravslip")
-                {
-                    footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
-                    AudioSource.PlayClipAtPoint(footSound, transform.position);
-                }
+      
             }
         }
 
@@ -580,7 +590,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_GroundCheckDistance = m_Rigidbody.velocity.y < 0 ? m_OrigGroundCheckDistance : 0.01f;
             if (isJumping)
             {
-                print("ssdad");
                 ScaleCapsule("jump");
             }
         }
