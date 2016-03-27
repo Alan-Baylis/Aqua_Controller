@@ -26,6 +26,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float m_GroundCheckDistance = 0.1f;
 
+        [SerializeField]
+        float stamina = 5f;
+
         Rigidbody m_Rigidbody;
         Animator m_Animator;
         public bool m_IsGrounded;
@@ -51,7 +54,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isJumping;
         public bool isExhausted;
         bool playing;
-        public float stamina;
+
         public float breathingTempo = 1;
         int ways;
         float timer;
@@ -89,7 +92,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void Start()
         {
 
-            stamina = 5;
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
@@ -145,6 +147,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
+
+
         }
         void LateUpdate()
         {
@@ -155,6 +159,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
 
             }
+            if (!isExhausted) { m_Animator.SetLayerWeight(0, 1); }
+            if (isExhausted) { m_Animator.SetLayerWeight(1, 1); }
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -340,9 +346,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //To-Do: Scale colider
             m_Animator.Play("FrontFlip");
             isJumping = true;
+            m_IsGrounded = false;
             //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
             m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-            m_IsGrounded = false;
             m_Animator.applyRootMotion = false;
             m_GroundCheckDistance = 0.1f;
         }
@@ -356,9 +362,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     isExhausted = true;
                     playing = true;
-              
-                    //m_Animator.SetLayerWeight(1, 1);
-                    
                     StartCoroutine(Exhaust());
                 }
 
@@ -376,15 +379,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
 
                 yield return new WaitForSeconds(breathInterval);
-                PlaySounds("exhausted");
+                PlaySounds("exhausted", 1);
 
             }
         }
 
-        public void PlaySounds(string name)
+        public void PlaySounds(string name, int animLayer)
         {
 
-            if (10 > 1)
+            if (animLayer == 1)
             { 
                 if (name == "exhausted")
                 {   /*
@@ -539,7 +542,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 detectWallsAndIdle(m_ForwardAmount, detectWall);
             }
-            if (Input.GetKeyDown(KeyCode.Tab) && isRunning)
+            if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded)
             {
                 doFlip();
             }
@@ -598,7 +601,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void HandleGroundedMovement(bool crouch, bool jump)
         {
             // check whether conditions are right to allow a jump:
-            if (jump && !crouch && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded"))
+            if (jump && !crouch && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded") && !isExhausted)
             {
                 // jump!
                 m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
