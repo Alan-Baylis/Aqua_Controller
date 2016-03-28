@@ -25,13 +25,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float m_AnimSpeedMultiplier = 1f;
         [SerializeField]
         float m_GroundCheckDistance = 0.1f;
-
-
-
         [SerializeField]
         float stamina = 5f;
-
-
 
         Rigidbody m_Rigidbody;
         Animator m_Animator;
@@ -56,10 +51,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isIdle;
         public bool isExhausted;
         public bool isJumping;
+        public float transition;
         bool playing;
 
         //spublic bool isTurning;
-
         public float breathingTempo = 1;
         int ways;
         float timer;
@@ -86,24 +81,25 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         Transform rightFeet, leftFeet, hips;
         GameObject head;
-
-
         AudioClip footSound, headSound;
         AudioSource soundSource;
         Vector3 fwd, down;
         float runTime;
+        float runStart;
         float breathInterval = 0.8f;
 
         void Start()
         {
-
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
             head = GameObject.Find("Head");
-            playing = false;
+
+            timer = Time.time;
+            m_Animator.SetLayerWeight(0, 1);
+            //transition = 0;
 
             leftFeet = GameObject.Find("Left_toe_end").transform;
             rightFeet = GameObject.Find("Right_toe_end").transform;
@@ -151,12 +147,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
-
+            print("Layer 0 is " + m_Animator.GetLayerWeight(0));
+            print("Layer 1 is " + m_Animator.GetLayerWeight(1));
+            Exhausted();
         }
         void LateUpdate()
         {
             aimToMouse("Neck");
-            Exhausted();
+
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -312,7 +310,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (Physics.Raycast(transform.position, fwd, detectWall) && m_IsGrounded)
             {
-
                 m_Animator.Play("WallStop");
                 /*
                 m_ForwardAmount = 0.1f;
@@ -324,7 +321,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         public void turnAround(string side)
         {
-            if (myForward > 0.5)
+            if (myForward > 0.5 && !isExhausted)
             {
                 if (side == "Right")
                 {
@@ -351,36 +348,107 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Exhausted()
         {
+
+            if (isRunning && !playing)
+            {
+                runStart = Time.time;
+                playing = true;
+            }
             if (isRunning)
             {
-                runTime = Time.time;
-                if (runTime > stamina && !isExhausted)
+                runTime = Time.time - runStart;
+                //print(runTime);
+                if (runTime > stamina && isRunning)
                 {
-                    isExhausted = true;
+                    //Smoother 1 is what is being smoothed 2 current value 3 destination value 4 smoothing interval
+                    //StartCoroutine(Smoother(1, 1, 1, 0.02f));
 
-                    StartCoroutine(Exhaust());
-                    m_Animator.SetLayerWeight(1, 1);
-                    //m_Animator.SetLayerWeight(0, 0);
+                    //StartCoroutine(Exhaust());
+                    //StartCoroutine(Smoother(0, m_Animator.GetLayerWeight(0), 0, -0.02f));
+                    StartCoroutine(Smoother(1, m_Animator.GetLayerWeight(1), 1, 0.02f));
+                    if (m_Animator.GetLayerWeight(1) >= 0.9)
+                    {
+                        isExhausted = true;
+                        m_Animator.SetLayerWeight(0, 0);
+                    }
+                    //StartCoroutine(Smoother(m_ForwardAmount, 0.5f, 0.1f));
+                    /*
+                    m_ForwardAmount = smoother(m_ForwardAmount, 0.5f, 0.1f);
+                    m_Animator.SetLayerWeight(1, smoother(0, 1, 0.02f));
+                    */
                 }
+
             }
-            if(!isRunning)
+            // to become not exhausted
+            if (!isRunning)
             {
-                m_Animator.SetLayerWeight(0, 1);
-                //m_Animator.SetLayerWeight(1, 0);
-                isExhausted = false;
-                playing = false;
                 runTime = 0;
+                playing = false;
+                StartCoroutine(Smoother(0, m_Animator.GetLayerWeight(0), 1, 0.02f));
+
+                //StartCoroutine(Exhaust());
+                if (m_Animator.GetLayerWeight(0) >= 0.9)
+                {
+                    isExhausted = false;
+                    //m_Animator.SetLayerWeight(1, 0);
+                    //StartCoroutine(Smoother(2, 1, 0, 0.02f));
+                }
+
+                //runStart = 0;
+
             }
         }
+
+        //Using only for breathing sound
         IEnumerator Exhaust()
         {
             while (isExhausted)
             {
                 yield return new WaitForSeconds(breathInterval);
-                PlaySounds("exhausted");
-
+                //PlaySounds("exhausted");
             }
         }
+
+        //Smoothes out numbers from start to finish wit hgiven interval. function is specific cases,
+        IEnumerator Smoother(int function, float start, float finish, float interval)
+        {
+            yield return new WaitForSeconds(interval);
+
+            //for going to tired state
+            if (function == 1)
+            {
+                if (m_Animator.GetLayerWeight(1) <= 1-interval)
+                {
+                    m_ForwardAmount += interval;
+                    m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) + interval);
+                    m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) - interval);
+                    if (m_Animator.GetLayerWeight(1) > 1) { m_Animator.SetLayerWeight(1, 1); }
+                    if (m_Animator.GetLayerWeight(1) < 0) { m_Animator.SetLayerWeight(1, 0); }
+                }
+            }
+            //for going back to fit state
+            if (function == 0)
+            {
+                if (m_Animator.GetLayerWeight(0) <= 1 - interval)
+                {
+                    m_ForwardAmount += interval;
+                    m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) + interval);
+                    m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) - interval);
+                    if (m_Animator.GetLayerWeight(0) > 1) { m_Animator.SetLayerWeight(0, 1); }
+                    if (m_Animator.GetLayerWeight(0) < 0) { m_Animator.SetLayerWeight(0, 0); }
+
+                }
+            }
+
+
+            //smoother(m_ForwardAmount, 0.5f, 0.1f);
+            //m_Animator.SetLayerWeight(1, smoother(0, 1, 0.02f));
+
+            //if (transition <= finish) {
+            //   transition += interval;
+            // }
+        }
+
 
         public void PlaySounds(string name)
         {
@@ -451,9 +519,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
             }
-           
-        }
 
+        }
+        /*
         //Check if button was pressed longer than 1 sec
         bool buttonTimer() //NOT USED
         {
@@ -472,6 +540,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             return false;
         }
+        */
 
 
         void ScaleCapsuleForCrouching(bool crouch)
