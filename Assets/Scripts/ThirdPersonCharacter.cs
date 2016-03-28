@@ -26,8 +26,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float m_GroundCheckDistance = 0.1f;
 
+
+
         [SerializeField]
         float stamina = 5f;
+
+
 
         Rigidbody m_Rigidbody;
         Animator m_Animator;
@@ -50,10 +54,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isRunning;
         public bool isWalking;
         public bool isIdle;
-        public bool isTurning;
-        public bool isJumping;
         public bool isExhausted;
+        public bool isJumping;
         bool playing;
+
+        //spublic bool isTurning;
 
         public float breathingTempo = 1;
         int ways;
@@ -141,26 +146,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
-            //print(m_Rigidbody.velocity.magnitude);
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
             if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 3 || myForward > 0.5 && m_Rigidbody.velocity.magnitude > 3) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
-            if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
-
+            //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
         }
         void LateUpdate()
         {
             aimToMouse("Neck");
-
             Exhausted();
-            if (isRunning && isExhausted)
-            {
-
-            }
-            if (!isExhausted) { m_Animator.SetLayerWeight(0, 1); }
-            if (isExhausted) { m_Animator.SetLayerWeight(1, 1); }
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -358,16 +354,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning)
             {
                 runTime = Time.time;
-                if (runTime > stamina && !isExhausted && !playing)
+                if (runTime > stamina && !isExhausted)
                 {
                     isExhausted = true;
-                    playing = true;
-                    StartCoroutine(Exhaust());
-                }
 
+                    StartCoroutine(Exhaust());
+                    m_Animator.SetLayerWeight(1, 1);
+                    //m_Animator.SetLayerWeight(0, 0);
+                }
             }
             if(!isRunning)
             {
+                m_Animator.SetLayerWeight(0, 1);
+                //m_Animator.SetLayerWeight(1, 0);
                 isExhausted = false;
                 playing = false;
                 runTime = 0;
@@ -377,18 +376,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             while (isExhausted)
             {
-
                 yield return new WaitForSeconds(breathInterval);
-                PlaySounds("exhausted", 1);
+                PlaySounds("exhausted");
 
             }
         }
 
-        public void PlaySounds(string name, int animLayer)
+        public void PlaySounds(string name)
         {
-
-            if (animLayer == 1)
-            { 
+            {
                 if (name == "exhausted")
                 {   /*
                 footSound = GetComponent<Sounds>().Clips[Random.Range(45, 49)];
@@ -412,13 +408,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         footSound = GetComponent<Sounds>().Clips[20];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
-                    if (name == "steps" && isWalking)
+                    if (name == "steps" && isWalking && !isRunning)
                     {
                         footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                     }
-                    if (name == "stepsRun" && isRunning)
+                    if (name == "stepsRun" && isRunning && !isWalking)
                     {
                         footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
@@ -437,13 +433,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         footSound = GetComponent<Sounds>().Clips[20];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
-                    if (name == "steps" && isWalking)
+                    if (name == "steps" && !isRunning && isWalking)
                     {
                         footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                     }
-                    if (name == "stepsRun" && isRunning)
+                    if (name == "stepsRun" && isRunning && !isWalking)
                     {
                         footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
@@ -454,8 +450,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
                 }
-      
             }
+           
         }
 
         //Check if button was pressed longer than 1 sec
@@ -550,6 +546,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
             m_Animator.SetBool("Crouch", m_Crouching);
             m_Animator.SetBool("OnGround", m_IsGrounded);
+
+            m_Animator.SetBool("isExhausted", isExhausted);
 
 
             if (!m_IsGrounded)
