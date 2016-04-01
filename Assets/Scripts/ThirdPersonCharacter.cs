@@ -27,6 +27,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float m_GroundCheckDistance = 0.1f;
         [SerializeField]
         float stamina = 5f;
+        [SerializeField]
+        float recovery = 5f;
 
         Rigidbody m_Rigidbody;
         Animator m_Animator;
@@ -52,7 +54,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isExhausted;
         public bool isJumping;
         public float transition;
-        bool playing;
+        bool playing, playingExhausted;
 
         //spublic bool isTurning;
         public float breathingTempo = 1;
@@ -78,7 +80,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         AudioSource soundSource;
         Vector3 fwd, down;
         float runTime;
+        float exhaustTime;
         float runStart;
+        float exhaustStart;
         float breathInterval = 0.8f;
 
         void Start()
@@ -136,7 +140,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void Update()
         {
             if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 3 || myForward > 0.5 ) { isRunning = true; } else isRunning = false;
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 3 || myForward > 0.5) { isRunning = true; } else isRunning = false;
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
@@ -341,6 +345,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Exhausted()
         {
+
             if (isRunning && !playing)
             {
                 runStart = Time.time;
@@ -349,12 +354,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning)
             {
                 runTime = Time.time - runStart;
-                //print(runTime);
                 if (runTime > stamina && isRunning)
                 {
-                        StartCoroutine(Smoother(1, m_Animator.GetLayerWeight(1), 1, 0.01f));
-                    
-                    if (m_Animator.GetLayerWeight(1) >= 0.9)
+                    StartCoroutine(Smoother(1, m_Animator.GetLayerWeight(1), 1, 0.02f));
+                    //exhaustTime = 0;
+                    if (m_Animator.GetLayerWeight(1) >= 0.95)
                     {
                         isExhausted = true;
                     }
@@ -362,18 +366,29 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             }
             // to become not exhausted
-            if (!isRunning)
+            if (isExhausted)
             {
-
-                runTime = 0;
-                playing = false;
-
-                StartCoroutine(Smoother(0, m_Animator.GetLayerWeight(0), 1, 0.01f));
-    
-                //StartCoroutine(Exhaust());
-                if (m_Animator.GetLayerWeight(0) >= 0.9)
+                if (isExhausted && !playingExhausted)
                 {
-                    isExhausted = false;
+                    exhaustStart = Time.time;
+                    playingExhausted = true;
+                }
+                exhaustTime = Time.time - exhaustStart;
+                if (exhaustTime > recovery /*&& isExhausted*/)
+                {
+                    runTime = 0;
+                    playing = false;
+
+                    //m_Animator.SetLayerWeight(0, 1);
+                    StartCoroutine(Smoother(0, m_Animator.GetLayerWeight(0), 1, 0.02f));
+
+                    //StartCoroutine(Exhaust());
+                    if (m_Animator.GetLayerWeight(0) >= 0.95)
+                    {
+                        exhaustTime = 0;
+                        playingExhausted = false;
+                        isExhausted = false;
+                    }
                 }
             }
         }
@@ -393,21 +408,26 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             yield return new WaitForSeconds(interval);
             //for going back to fit state
-            if (function == 0){
-                if (m_Animator.GetLayerWeight(0) <=1 && m_Animator.GetLayerWeight(1) >= 0)
+            if (function == 0)
+            {
+                if (m_Animator.GetLayerWeight(0) <= 1 && m_Animator.GetLayerWeight(1) >= 0)
                 {
-                    m_ForwardAmount += interval;
+                    
                     m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) + interval);
+                    //m_ForwardAmount += interval;
                     m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) - interval);
                 }
             }
             //for going to tired state
-            if (function == 1){
+            if (function == 1)
+            {
                 if (m_Animator.GetLayerWeight(1) <= 1 && m_Animator.GetLayerWeight(0) >= 0)
                 {
-                    m_ForwardAmount += interval;
+                    //m_ForwardAmount -= interval;
                     m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) + interval);
                     m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) - interval);
+                    
+
                 }
             }
         }
