@@ -383,7 +383,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     StartCoroutine(Smoother(0, m_Animator.GetLayerWeight(0), 1, 0.02f));
 
                     //StartCoroutine(Exhaust());
-                    if (m_Animator.GetLayerWeight(0) >= 0.95)
+                    if (m_Animator.GetLayerWeight(0) > 0.1)
                     {
                         exhaustTime = 0;
                         playingExhausted = false;
@@ -412,10 +412,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 if (m_Animator.GetLayerWeight(0) <= 1 && m_Animator.GetLayerWeight(1) >= 0)
                 {
-                    
+                    m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) - interval);
                     m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) + interval);
                     //m_ForwardAmount += interval;
-                    m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) - interval);
+
                 }
             }
             //for going to tired state
@@ -589,7 +589,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 detectWallsAndIdle(m_ForwardAmount, detectWall);
             }
-            if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded)
+            if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
             {
                 doFlip();
             }
