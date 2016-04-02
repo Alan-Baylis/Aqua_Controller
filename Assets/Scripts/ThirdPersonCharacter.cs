@@ -54,12 +54,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isExhausted;
         public bool isJumping;
         public float transition;
-        bool playing, playingExhausted;
+        bool playing, playingExhausted, playingFlip;
+        bool flipReady;
 
         //spublic bool isTurning;
         public float breathingTempo = 1;
         int ways;
-        float timer;
+        float timer, jumpPrepare;
         float buttonTime = -1;
         float interval = 0.1f;
         public float myForward;
@@ -96,7 +97,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             timer = Time.time;
             m_Animator.SetLayerWeight(0, 1);
-
+            playingFlip = true;
 
             leftFeet = GameObject.Find("Left_toe_end").transform;
             rightFeet = GameObject.Find("Right_toe_end").transform;
@@ -146,6 +147,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             Exhausted();
+            doFlip();
+            timer = Time.time;
         }
         void LateUpdate()
         {
@@ -304,9 +307,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle(float currentSpeed, float detectWall)
         {
-
             if (Physics.Raycast(transform.position, fwd, detectWall) && m_IsGrounded)
             {
+                m_Animator.applyRootMotion = false;
                 m_Animator.Play("WallStop");
                 /*
                 m_ForwardAmount = 0.1f;
@@ -333,14 +336,30 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void doFlip()
         {
             //To-Do: Flip animations depending on conditions
-            //To-Do: Scale colider
-            m_Animator.Play("FrontFlip");
-            isJumping = true;
-            m_IsGrounded = false;
-            //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
-            m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-            m_Animator.applyRootMotion = false;
-            m_GroundCheckDistance = 0.1f;
+            if (flipReady && playingFlip)
+            {
+                jumpPrepare = Time.time;
+                playingFlip = false;
+                
+            }
+            if (flipReady)
+            {
+
+                m_Animator.Play("FrontFlip");
+
+                if (jumpPrepare + 0.3 < timer)
+                {
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
+                    flipReady = false;
+                    isJumping = true;
+                    m_IsGrounded = false;
+                    playingFlip = true;
+                    m_Animator.applyRootMotion = false;
+                    m_GroundCheckDistance = 0.1f;
+                    //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+
+                }
+            }
         }
 
         void Exhausted()
@@ -426,7 +445,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     //m_ForwardAmount -= interval;
                     m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) + interval);
                     m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) - interval);
-                    
+
 
                 }
             }
@@ -591,7 +610,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
             {
-                doFlip();
+                //doFlip();
+                flipReady = true;
             }
             m_Animator.SetFloat("Forward", m_ForwardAmount, 0.1f, Time.deltaTime);
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
