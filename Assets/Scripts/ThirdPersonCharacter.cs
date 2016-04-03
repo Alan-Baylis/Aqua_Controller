@@ -47,6 +47,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         //My movements
         RaycastHit hit;
+        RaycastHit hitRightLeg, hitLeftLeg;
         float mouseWheel = 0.2f;
         public float movingRight;
         public float movingLeft;
@@ -60,6 +61,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float transition;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
+
+
+        //Foot positioning
+        public bool ikActive;
+        Transform pointer;
+        Vector3 slopeRight, slopeLeft;
+        Quaternion rightFootRot, leftFootRot;
+
 
         //spublic bool isTurning;
         public float breathingTempo = 1;
@@ -78,8 +87,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 GameObject playerHips;
                 GameObject pivot;
         */
-
-        Transform rightFeet, leftFeet, hips;
+        float rightFootNewPos, leftFootNewPos;
+        Transform rightFoot, leftFoot, hips;
         GameObject head;
         AudioClip footSound, headSound;
         AudioSource soundSource;
@@ -88,6 +97,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Start()
         {
+            ikActive = true;
+            pointer = GameObject.Find("Pointer").transform;
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
@@ -98,8 +109,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetLayerWeight(0, 1);
             playingFlip = true;
 
-            leftFeet = GameObject.Find("Left_toe_end").transform;
-            rightFeet = GameObject.Find("Right_toe_end").transform;
+            leftFoot = GameObject.Find("Left_foot").transform;
+            rightFoot = GameObject.Find("Right_foot").transform;
             hips = GameObject.Find("Hips").transform;
 
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
@@ -110,7 +121,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             pivot = GameObject.Find("Pivot");
             cameraGroup = GameObject.Find("Camera_group");
             */
-            fwd = transform.TransformDirection(new Vector3(transform.position.x, transform.position.y+10, transform.position.z));
+            fwd = transform.TransformDirection(new Vector3(transform.position.x, transform.position.y + 10, transform.position.z));
             down = transform.TransformDirection(Vector3.down);
         }
 
@@ -144,7 +155,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing
-            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5) {
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5)
+            {
                 if (!runPlaying)
                 {
                     runBegin = Time.time;
@@ -172,7 +184,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     runStopPlaying = false;
                 }
             }
-            
+
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
 
@@ -342,12 +354,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle(float currentSpeed, float detectWall)
         {
-            Debug.DrawLine(new Vector3(transform.position.x, transform.position.y+1, transform.position.z),
+            Debug.DrawLine(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z),
 
-                new Vector3(transform.position.x, transform.position.y + 1, transform.position.z+10), Color.red);
+                new Vector3(transform.position.x, transform.position.y + 1, transform.position.z + 10), Color.red);
 
 
-            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y+1, transform.position.z), fwd, detectWall) && m_IsGrounded)
+            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded)
             {
                 m_Animator.applyRootMotion = false;
                 m_Animator.Play("WallStop");
@@ -380,14 +392,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 jumpPrepare = Time.time;
                 playingFlip = false;
-                
+
             }
             if (flipReady)
             {
                 m_Animator.Play("FrontFlip");
                 isJumping = true;
                 if (jumpPrepare + 0.3 < timer)
-                {     
+                {
                     m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                     flipReady = false;
                     m_IsGrounded = false;
@@ -621,6 +633,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
+
         void PreventStandingInLowHeadroom()
         {
             // prevent standing up in crouch-only zones
@@ -643,8 +656,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Detecing walls to play stop animation
             /*if (m_ForwardAmount < 1 && m_ForwardAmount > 0.7f)
             {*/
-                detectWallsAndIdle(m_ForwardAmount, detectWall);
-          //  }
+            detectWallsAndIdle(m_ForwardAmount, detectWall);
+            //  }
             if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
             {
                 //doFlip();
@@ -665,7 +678,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (!m_IsGrounded && isJumping)
             {
                 m_Animator.SetFloat("Jump", m_Rigidbody.velocity.y);
-                
+
             }
 
 
@@ -706,7 +719,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isJumping)
             {
                 ScaleCapsule("jump");
-                print("scaling");
             }
         }
 
@@ -753,10 +765,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void CheckGroundStatus()
         {
             RaycastHit hitInfo;
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             // helper to visualise the ground check ray in the scene view
             Debug.DrawLine(transform.position + (Vector3.up * 0.1f), transform.position + (Vector3.up * 0.1f) + (Vector3.down * m_GroundCheckDistance));
-            #endif
+#endif
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
             if (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, m_GroundCheckDistance))
@@ -765,13 +777,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
                 m_Animator.applyRootMotion = true;
-    
+
             }
             else
             {
-                print("In!");
                 m_IsGrounded = false;
-
                 m_GroundNormal = Vector3.up;
                 m_Animator.applyRootMotion = false;
                 //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
@@ -782,11 +792,74 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         fallStart = Time.time;
                         playingFall = true;
                     }
-                    if (fallStart+1 < timer) {
+                    if (fallStart + 1 < timer)
+                    {
 
                         isFalling = true;
                         playingFall = false;
                     }
+                }
+            }
+        }
+
+
+        void OnAnimatorIK()
+        {
+            if (m_Animator)
+            {
+
+                //if the IK is active, set the position and rotation directly to the goal. 
+                if (ikActive)
+                {
+                    // Set the look target position, if one has been assigned
+                    if (pointer != null)
+                    {
+                        m_Animator.SetLookAtWeight(0.5f);
+                        m_Animator.SetLookAtPosition(pointer.position);
+                    }
+
+                    // Set the right hand target position and rotation, if one has been assigned
+                    if (rightFoot != null)
+                    {
+                        m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1);
+                        m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
+                        m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 1);
+                        m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
+                        if (Physics.Raycast(rightFoot.transform.position, Vector3.up, out hitRightLeg, 30))
+                        {
+                            slopeRight = Vector3.Cross(hitRightLeg.normal, rightFoot.transform.right);
+                            rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitRightLeg.normal, slopeRight), -hitRightLeg.normal);
+                            rightFootNewPos = hitRightLeg.distance;
+                           // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
+                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, new Vector3(rightFoot.transform.position.x, rightFoot.transform.position.y + rightFootNewPos+ 0.15f, rightFoot.transform.position.z));
+                            m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
+                            print(rightFoot.transform.rotation.y);
+                        }
+                        if (Physics.Raycast(leftFoot.transform.position, Vector3.up, out hitLeftLeg, 30))
+                        {
+                            slopeLeft = Vector3.Cross(hitLeftLeg.normal, leftFoot.transform.right);
+                            leftFootRot = Quaternion.LookRotation(Vector3.Exclude(hitLeftLeg.normal, slopeLeft), -hitLeftLeg.normal);
+                            leftFootNewPos = hitRightLeg.distance;
+                            // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
+                            m_Animator.SetIKPosition(AvatarIKGoal.LeftFoot, new Vector3(leftFoot.transform.position.x, leftFoot.transform.position.y + leftFootNewPos + 0.15f, leftFoot.transform.position.z));
+                            m_Animator.SetIKRotation(AvatarIKGoal.LeftFoot, leftFootRot);
+                            print(leftFoot.transform.rotation.y);
+                        }
+
+
+                        
+                    }
+
+                }
+
+                //if the IK is not active, set the position and rotation of the hand and head back to the original position
+                else
+                {
+                    m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 0);
+                    m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 0);
+                    m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 0);
+                    m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 0);
+                    m_Animator.SetLookAtWeight(0);
                 }
             }
         }
