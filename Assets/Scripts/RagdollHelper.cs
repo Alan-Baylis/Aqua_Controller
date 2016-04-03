@@ -127,10 +127,10 @@ public class RagdollHelper : MonoBehaviour {
         //Set all RigidBodies to kinematic so that they can be controlled with Mecanim
         //and there will be no glitches when transitioning to a ragdoll
         setKinematic(true);
+        
 
-		
-		//Find all the transforms in the character, assuming that this script is attached to the root
-		Component[] components=GetComponentsInChildren(typeof(Transform));
+        //Find all the transforms in the character, assuming that this script is attached to the root
+        Component[] components=GetComponentsInChildren(typeof(Transform));
 		
 		//For each of the transforms, create a BodyPart instance and store the transform 
 		foreach (Component c in components)
@@ -142,6 +142,8 @@ public class RagdollHelper : MonoBehaviour {
 		
 		//Store the Animator component
 		anim=GetComponent<Animator>();
+
+        anim.applyRootMotion = true;
 
     }
 	
@@ -214,7 +216,9 @@ public class RagdollHelper : MonoBehaviour {
 			if (ragdollBlendAmount==0)
 			{
 				state=RagdollState.animated;
-				return;
+
+                anim.applyRootMotion = true;
+                return;
 			}
 		}
 	}

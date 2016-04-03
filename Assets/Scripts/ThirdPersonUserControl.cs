@@ -38,13 +38,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (!m_Jump)
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
+               // m_Character.isJumping = true;
             }
 
             m_Character.stopRun();
 
-            if (m_Character.isRunning && !m_Character.isExhausted)
-            {
-                if (m_Character.m_TurnAmount < -0.9) /* || m_Character.directionSwitch(1) == true || m_Character.directionSwitch(2) == true*/
+            if (m_Character.m_TurnAmount < -0.9) { /* || m_Character.directionSwitch(1) == true || m_Character.directionSwitch(2) == true*/
 
                     m_Character.turnAround("Left");
             }

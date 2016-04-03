@@ -30,9 +30,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float recovery = 5f;
 
+
+        bool m_Crouching;
+
         Rigidbody m_Rigidbody;
         Animator m_Animator;
-        public bool m_IsGrounded;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
         public float m_TurnAmount;
@@ -41,7 +43,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float m_CapsuleHeight;
         Vector3 m_CapsuleCenter;
         CapsuleCollider m_Capsule;
-        bool m_Crouching;
+
 
         //My movements
         RaycastHit hit;
@@ -51,16 +53,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isRunning;
         public bool isWalking;
         public bool isIdle;
+        public bool m_IsGrounded;
         public bool isExhausted;
         public bool isJumping;
+        public bool isFalling;
         public float transition;
-        bool playing, playingExhausted, playingFlip;
+        bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
 
         //spublic bool isTurning;
         public float breathingTempo = 1;
         int ways;
-        float timer, jumpPrepare;
+        float timer, jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart;
         float buttonTime = -1;
         float interval = 0.1f;
         public float myForward;
@@ -80,10 +84,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         AudioClip footSound, headSound;
         AudioSource soundSource;
         Vector3 fwd, down;
-        float runTime;
-        float exhaustTime;
-        float runStart;
-        float exhaustStart;
         float breathInterval = 0.8f;
 
         void Start()
@@ -95,7 +95,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_CapsuleCenter = m_Capsule.center;
             head = GameObject.Find("Head");
 
-            timer = Time.time;
             m_Animator.SetLayerWeight(0, 1);
             playingFlip = true;
 
@@ -111,7 +110,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             pivot = GameObject.Find("Pivot");
             cameraGroup = GameObject.Find("Camera_group");
             */
-            fwd = transform.TransformDirection(Vector3.forward);
+            fwd = transform.TransformDirection(new Vector3(transform.position.x, transform.position.y+10, transform.position.z));
             down = transform.TransformDirection(Vector3.down);
         }
 
@@ -140,15 +139,47 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
-            if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
-            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 3 || myForward > 0.5) { isRunning = true; } else isRunning = false;
+            timer = Time.time;
+            //if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
+            //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
+
+            //Runing
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5) {
+                if (!runPlaying)
+                {
+                    runBegin = Time.time;
+                    runPlaying = true;
+                }
+                if (runBegin + 2 < timer)
+                {
+                    isRunning = true;
+                    runPlaying = false;
+                }
+
+            }
+            //Not Runing
+            else
+            {
+                if (!runStopPlaying)
+                {
+                    runStop = Time.time;
+                    runStopPlaying = true;
+                }
+                if (runStop + 2 < timer)
+                {
+                    print(timer);
+                    isRunning = false;
+                    runStopPlaying = false;
+                }
+            }
+            
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
-            //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
+
 
             Exhausted();
             doFlip();
-            timer = Time.time;
+
         }
         void LateUpdate()
         {
@@ -203,7 +234,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_ForwardAmount = move.z * mouseWheel;
 
 
-            ApplyExtraTurnRotation();
+            if (m_IsGrounded)
+            {
+                ApplyExtraTurnRotation();
+            }
+
 
 
             // control and velocity handling is different when grounded and airborne:
@@ -307,7 +342,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle(float currentSpeed, float detectWall)
         {
-            if (Physics.Raycast(transform.position, fwd, detectWall) && m_IsGrounded)
+            Debug.DrawLine(new Vector3(transform.position.x, transform.position.y+1, transform.position.z),
+
+                new Vector3(transform.position.x, transform.position.y + 1, transform.position.z+10), Color.red);
+
+
+            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y+1, transform.position.z), fwd, detectWall) && m_IsGrounded)
             {
                 m_Animator.applyRootMotion = false;
                 m_Animator.Play("WallStop");
@@ -321,7 +361,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         public void turnAround(string side)
         {
-            if (myForward > 0.5 && !isExhausted)
+            if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning)
             {
                 if (side == "Right")
                 {
@@ -344,14 +384,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (flipReady)
             {
-
                 m_Animator.Play("FrontFlip");
-
+                isJumping = true;
                 if (jumpPrepare + 0.3 < timer)
-                {
+                {     
                     m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                     flipReady = false;
-                    isJumping = true;
                     m_IsGrounded = false;
                     playingFlip = true;
                     m_Animator.applyRootMotion = false;
@@ -364,7 +402,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Exhausted()
         {
-
             if (isRunning && !playing)
             {
                 runStart = Time.time;
@@ -372,7 +409,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (isRunning)
             {
-                runTime = Time.time - runStart;
+                runTime = timer - runStart;
                 if (runTime > stamina && isRunning)
                 {
                     StartCoroutine(Smoother(1, m_Animator.GetLayerWeight(1), 1, 0.02f));
@@ -392,7 +429,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     exhaustStart = Time.time;
                     playingExhausted = true;
                 }
-                exhaustTime = Time.time - exhaustStart;
+                exhaustTime = timer - exhaustStart;
                 if (exhaustTime > recovery /*&& isExhausted*/)
                 {
                     runTime = 0;
@@ -579,7 +616,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (state == "jump")
             {
                 //m_IsGrounded = false;
-                m_Capsule.height = 1f; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+                m_Capsule.height = 0.5f; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 //m_CapsuleCenter = hips.transform.position;
             }
         }
@@ -604,10 +641,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // update the animator parameters
 
             //Detecing walls to play stop animation
-            if (m_ForwardAmount < 1 && m_ForwardAmount > 0.7f)
-            {
+            /*if (m_ForwardAmount < 1 && m_ForwardAmount > 0.7f)
+            {*/
                 detectWallsAndIdle(m_ForwardAmount, detectWall);
-            }
+          //  }
             if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
             {
                 //doFlip();
@@ -619,11 +656,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("OnGround", m_IsGrounded);
 
             m_Animator.SetBool("isExhausted", isExhausted);
+            m_Animator.SetBool("isJumping", isJumping);
+            m_Animator.SetBool("isFalling", isFalling);
+            m_Animator.SetBool("isRunning", isRunning);
+            m_Animator.SetBool("isIdle", isIdle);
 
 
-            if (!m_IsGrounded)
+            if (!m_IsGrounded && isJumping)
             {
                 m_Animator.SetFloat("Jump", m_Rigidbody.velocity.y);
+                
             }
 
 
@@ -655,6 +697,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void HandleAirborneMovement()
         {
+
             // apply extra gravity from multiplier:
             Vector3 extraGravityForce = (Physics.gravity * m_GravityMultiplier) - Physics.gravity;
             m_Rigidbody.AddForce(extraGravityForce);
@@ -663,22 +706,24 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isJumping)
             {
                 ScaleCapsule("jump");
+                print("scaling");
             }
         }
 
 
         void HandleGroundedMovement(bool crouch, bool jump)
         {
+            isJumping = false;
             // check whether conditions are right to allow a jump:
             if (jump && !crouch && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded") && !isExhausted)
             {
                 // jump!
                 m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                 m_IsGrounded = false;
+                isJumping = true;
                 m_Animator.applyRootMotion = false;
                 m_GroundCheckDistance = 0.1f;
             }
-            isJumping = false;
             ScaleCapsule("ground");
         }
 
@@ -708,23 +753,41 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void CheckGroundStatus()
         {
             RaycastHit hitInfo;
-#if UNITY_EDITOR
+            #if UNITY_EDITOR
             // helper to visualise the ground check ray in the scene view
             Debug.DrawLine(transform.position + (Vector3.up * 0.1f), transform.position + (Vector3.up * 0.1f) + (Vector3.down * m_GroundCheckDistance));
-#endif
+            #endif
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
             if (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, m_GroundCheckDistance))
             {
+                isFalling = false;
                 m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
                 m_Animator.applyRootMotion = true;
+    
             }
             else
             {
+                print("In!");
                 m_IsGrounded = false;
+
                 m_GroundNormal = Vector3.up;
                 m_Animator.applyRootMotion = false;
+                //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
+                if (!m_IsGrounded)
+                {
+                    if (!m_IsGrounded && !playingFall)
+                    {
+                        fallStart = Time.time;
+                        playingFall = true;
+                    }
+                    if (fallStart+1 < timer) {
+
+                        isFalling = true;
+                        playingFall = false;
+                    }
+                }
             }
         }
     }
