@@ -59,7 +59,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isJumping;
         public bool isFalling;
         public float transition;
-        bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
+        bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying, climbPlaying, climbReady;
         bool flipReady;
 
 
@@ -73,7 +73,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //spublic bool isTurning;
         public float breathingTempo = 1;
         int ways;
-        float timer, jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart;
+        float timer, jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
         float buttonTime = -1;
         float interval = 0.1f;
         public float myForward;
@@ -736,7 +736,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.applyRootMotion = false;
                 m_GroundCheckDistance = 0.1f;
             }
-            ScaleCapsule("ground");
+            // ScaleCapsule("ground");
         }
 
         void ApplyExtraTurnRotation()
@@ -795,7 +795,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (fallStart + 1 < timer)
                     {
 
-                        isFalling = true;
+                        // isFalling = true;                                  //ENABLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
                         playingFall = false;
                     }
                 }
@@ -830,11 +830,26 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                             slopeRight = Vector3.Cross(hitRightLeg.normal, rightFoot.transform.right);
                             rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitRightLeg.normal, slopeRight), -hitRightLeg.normal);
                             rightFootNewPos = hitRightLeg.distance;
-                           // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
-                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, new Vector3(rightFoot.transform.position.x, rightFoot.transform.position.y + rightFootNewPos+ 0.15f, rightFoot.transform.position.z));
+                            // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
+                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, new Vector3(rightFoot.transform.position.x, rightFoot.transform.position.y + rightFootNewPos + 0.15f, rightFoot.transform.position.z));
                             m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
                             print(rightFoot.transform.rotation.y);
+
+                            transform.Translate(new Vector3(0, rightFoot.transform.position.y, 0));
+
+                            //m_Rigidbody.AddRelativeForce(new Vector3(0, 25, 0));
+                            m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
+                            climbReady = true;
+                            
+
+                            //m_Capsule.center = new Vector3(0, Mathf.Lerp(0.76f, 1, 1)); ;
                         }
+
+
+
+
+
+
                         if (Physics.Raycast(leftFoot.transform.position, Vector3.up, out hitLeftLeg, 30))
                         {
                             slopeLeft = Vector3.Cross(hitLeftLeg.normal, leftFoot.transform.right);
@@ -843,11 +858,31 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                             // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                             m_Animator.SetIKPosition(AvatarIKGoal.LeftFoot, new Vector3(leftFoot.transform.position.x, leftFoot.transform.position.y + leftFootNewPos + 0.15f, leftFoot.transform.position.z));
                             m_Animator.SetIKRotation(AvatarIKGoal.LeftFoot, leftFootRot);
-                            print(leftFoot.transform.rotation.y);
+
+                            transform.Translate(new Vector3(0, leftFoot.transform.position.y, 0));
+                            //m_Rigidbody.AddRelativeForce(new Vector3(0, 25, 0));
+                            m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
+                            climbReady = true;
+                        }
+
+                         else
+                        {
+                            if (!climbPlaying && climbReady)
+                            {
+                                climbPlaying = true;
+                                climbStart = Time.time;
+                            }
+                            if (climbStart + 0.5f < timer && climbPlaying)
+                            {
+                                print("Climbed");
+                                m_CapsuleCenter = new Vector3(0, 0.76f, 0);
+                                climbPlaying = false;
+                                climbReady = false;
+                            }
                         }
 
 
-                        
+
                     }
 
                 }
