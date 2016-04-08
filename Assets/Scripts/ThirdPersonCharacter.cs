@@ -68,6 +68,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Transform pointer;
         Vector3 slopeRight, slopeLeft;
         Quaternion rightFootRot, leftFootRot;
+        float footSmoothing;
 
 
         //spublic bool isTurning;
@@ -88,6 +89,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 GameObject pivot;
         */
         float rightFootNewPos, leftFootNewPos;
+        Vector3 rightFootNewPosition, leftFootNewPosition;
         Transform rightFoot, leftFoot, hips;
         GameObject head;
         AudioClip footSound, headSound;
@@ -179,7 +181,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 if (runStop + 2 < timer)
                 {
-                    print(timer);
+                    //print(timer);
                     isRunning = false;
                     runStopPlaying = false;
                 }
@@ -821,52 +823,74 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     // Set the right hand target position and rotation, if one has been assigned
                     if (rightFoot != null)
                     {
-                        m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, 1);
+                        m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(0, 1, footSmoothing));
+                        m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(0, 1, footSmoothing));
                         m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
-                        m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, 1);
-                        m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
-                        if (Physics.Raycast(rightFoot.transform.position, Vector3.up, out hitRightLeg, 30))
-                        {
-                            slopeRight = Vector3.Cross(hitRightLeg.normal, rightFoot.transform.right);
-                            rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitRightLeg.normal, slopeRight), -hitRightLeg.normal);
-                            rightFootNewPos = hitRightLeg.distance;
-                            // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
-                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, new Vector3(rightFoot.transform.position.x, rightFoot.transform.position.y + rightFootNewPos + 0.15f, rightFoot.transform.position.z));
-                            m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
-                            print(rightFoot.transform.rotation.y);
+                        m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);  ///transform.forward + new Vector3(0.1f, 0.5f, 0.5f)
 
-                            transform.Translate(new Vector3(0, rightFoot.transform.position.y, 0));
+                        Debug.DrawRay(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.4f)) , down , Color.red);
+                        Debug.DrawRay(hips.TransformPoint( new Vector3(0.1f, -0.3f, 0)), down, Color.green);
+
+
+
+                        if ((Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.4f)), down, out hitRightLeg, 0.8f ) 
+                            || Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0)), down, out hitRightLeg, 0.8f)  ))
+                        {
+
+
+                            //slopeRight = Vector3.Cross(hitRightLeg.normal, rightFoot.transform.right);
+                            //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitRightLeg.normal, slopeRight), -hitRightLeg.normal);
+                            rightFootNewPosition = new Vector3(rightFoot.transform.position.x, 0.8f - hitRightLeg.distance +0.14f, rightFoot.transform.position.z);//new Vector3(rightFoot.transform.position.x, rightFoot.transform.position.y + rightFootNewPos + 0.15f, rightFoot.transform.position.z);
+                            //print("Distance " + rightFootNewPos);
+                            //print("Right foot Y " +rightFoot.transform.position.y);
+                            //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
+                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);//new Vector3(rightFoot.transform.position.x, Mathf.Lerp(rightFoot.transform.position.y, (0.8f - hitRightLeg.distance + 0.14f), Time.time), rightFoot.transform.position.z));
+                                                                                                   // m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
+                                                                                                   // print(rightFoot.transform.rotation.y);
+
+                            //transform.Translate(new Vector3(0, rightFoot.transform.position.y, 0));
 
                             //m_Rigidbody.AddRelativeForce(new Vector3(0, 25, 0));
-                            m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
+                            //m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
+
+                            if (footSmoothing >= 0.9){footSmoothing = 1;}
+                            else footSmoothing += 0.01f;
+
+                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+
                             climbReady = true;
+
+                           // print(Mathf.Lerp(0, 1, 0.1f));
                             
 
                             //m_Capsule.center = new Vector3(0, Mathf.Lerp(0.76f, 1, 1)); ;
                         }
 
-
-
-
-
-
-                        if (Physics.Raycast(leftFoot.transform.position, Vector3.up, out hitLeftLeg, 30))
+                        /*
+                        if (Physics.Raycast(leftFoot.transform.position, Vector3.up, out hit, 30))
                         {
                             slopeLeft = Vector3.Cross(hitLeftLeg.normal, leftFoot.transform.right);
                             leftFootRot = Quaternion.LookRotation(Vector3.Exclude(hitLeftLeg.normal, slopeLeft), -hitLeftLeg.normal);
                             leftFootNewPos = hitRightLeg.distance;
-                            // print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
+                            //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                             m_Animator.SetIKPosition(AvatarIKGoal.LeftFoot, new Vector3(leftFoot.transform.position.x, leftFoot.transform.position.y + leftFootNewPos + 0.15f, leftFoot.transform.position.z));
                             m_Animator.SetIKRotation(AvatarIKGoal.LeftFoot, leftFootRot);
 
-                            transform.Translate(new Vector3(0, leftFoot.transform.position.y, 0));
+                            //transform.Translate(new Vector3(0, leftFoot.transform.position.y, 0));
                             //m_Rigidbody.AddRelativeForce(new Vector3(0, 25, 0));
-                            m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
+                            //m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
                             climbReady = true;
-                        }
+                        }*/
 
                          else
                         {
+                            if (footSmoothing <= 0) { footSmoothing = 0; }
+                            else footSmoothing -= 0.01f;
+                            print(footSmoothing);
+                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+
+                            //m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(1, 0, Time.time));
+                            //m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(1, 0, Time.time));
                             if (!climbPlaying && climbReady)
                             {
                                 climbPlaying = true;
@@ -874,7 +898,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                             }
                             if (climbStart + 0.5f < timer && climbPlaying)
                             {
-                                print("Climbed");
+                               // print("Climbed");
                                 m_CapsuleCenter = new Vector3(0, 0.76f, 0);
                                 climbPlaying = false;
                                 climbReady = false;
