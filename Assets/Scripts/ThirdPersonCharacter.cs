@@ -173,14 +173,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             }
             //Not Runing
-            else
+            if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5))
             {
-                if (!runStopPlaying)
+
+                if (!runStopPlaying && isRunning)
                 {
                     runStop = Time.time;
                     runStopPlaying = true;
                 }
-                if (runStop + 2 < timer)
+                if (runStop + 4 < timer)
                 {
                     //print(timer);
                     isRunning = false;
@@ -739,7 +740,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.applyRootMotion = false;
                 m_GroundCheckDistance = 0.1f;
             }
-            // ScaleCapsule("ground");
+            ScaleCapsule("ground");
         }
 
         void ApplyExtraTurnRotation()
@@ -831,7 +832,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         Debug.DrawRay(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0)), down, Color.green);
 
                         if ((Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.4f)), down, out hitRightLeg, 0.6f) && isWalking
-                            || Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0)), down, out hitRightLeg, 0.6f) && isIdle ))
+                            || Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0)), down, out hitRightLeg, 0.6f) && isIdle))
                         {
 
                             rightFootNewPos = 0.8f - hitRightLeg.distance + 0.14f;
@@ -841,30 +842,34 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                             //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
 
-                                rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootNewPos, rightFoot.transform.position.z);
-                                //transform.Translate(new Vector3(0, rightFoot.transform.position.y, 0));
-                                //m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
-                                if (footSmoothing >= 0.9) { footSmoothing = 1; }
-                                else footSmoothing += 0.01f;
-                                m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
-                                m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(0, 1, footSmoothing));
-                                m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(0, 1, footSmoothing));
-                                //m_Rigidbody.AddRelativeForce(new Vector3(0, 6, 0));
-                                //m_Capsule.center = new Vector3(0, Mathf.Lerp(0.76f, 1, 1)); ;
-                                climbReady = true;
-                        }
-                        if (!(Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0)), down, out hitRightLeg, 0.6f)))
-                        {
-                            print("Ray cast doesn");
-                            
-                            print("rightFootNewPos " + rightFootNewPos);
-                            rightFootNewPos  = Mathf.Lerp(rightFootNewPos, rightFoot.transform.position.y, 0.1f);
                             rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootNewPos, rightFoot.transform.position.z);
+                            //transform.Translate(new Vector3(0, rightFoot.transform.position.y, 0));
+                            //m_CapsuleCenter = new Vector3(0, 1f, 0.1f);
+                            if (footSmoothing >= 0.9) { footSmoothing = 1; }
+                            else footSmoothing += 0.01f;
+                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+                            m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(0, 1, footSmoothing));
+                            m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(0, 1, footSmoothing));
+                            //m_Rigidbody.AddRelativeForce(new Vector3(0, 6, 0));
+                            //m_Capsule.center = new Vector3(0, Mathf.Lerp(0.76f, 1, 1)); ;
+                            climbReady = true;
+                        }
+                        if (!(Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0)), down, out hitRightLeg, 0.6f)) && isIdle)
+                        {
+                            print(rightFootNewPos);
+                            //print(Mathf.Lerp(rightFootNewPos, rightFoot.transform.position.y, footSmoothing));
+
+                            rightFootNewPos = Mathf.Lerp(rightFootNewPos, rightFoot.transform.position.y, 0.1f);
+                            rightFootNewPosition = new Vector3(rightFoot.transform.position.x, 
+                                Mathf.Lerp(rightFootNewPos, rightFoot.transform.position.y, footSmoothing), rightFoot.transform.position.z);
+
+                            //m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+                            rightFoot.transform.position = rightFootNewPosition;
                             m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
                             m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(1, 0, footSmoothing));
                             m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(1, 0, footSmoothing));
                             if (footSmoothing <= 0) { footSmoothing = 0; }
-                            else footSmoothing -= 0.1f;
+                            else footSmoothing -= 0.01f;
                         }
 
                         /*
