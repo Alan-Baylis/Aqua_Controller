@@ -32,7 +32,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
         bool m_Crouching;
-
         Rigidbody m_Rigidbody;
         Animator m_Animator;
         float m_OrigGroundCheckDistance;
@@ -74,7 +73,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         RaycastHit noHitRightLeg;
         bool climbDone, climbReady, climbPlaying;
         float legRay;
-        float footNewPos, leftFootNewPos, rightFootHigh, rightFootLow;
+        float footNewPos, leftFootNewPos, rightFootHigh, rightFootLow, climbDist;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
         Transform rightFoot, leftFoot, hips, _foot;
@@ -842,20 +841,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
                         //Check which leg is in front, then raycast from it.
-                        if (leftFoot.localPosition.z > rightFoot.localPosition.z)
-                        {
-                            legRay = 0.1f;
-                            //footName = "RighFoot";
-                            _foot = rightFoot;
-
-                        }
-                        else
-                        {
-                            legRay = -0.1f;
-                            //footName = "LeftFoot";
-                            _foot = leftFoot;
-
-                        }
 
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
@@ -863,7 +848,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                         if ((Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.4f)), down, out hitleg, 0.7f) && isWalking)
                              || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.7f) && isIdle)
-                             || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.6f)), down, out hitleg, 0.6f) && isRunning))
+                             || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.6f)), down, out hitleg, 0.5f) && isRunning))
                         {
                             rightFootHigh = 0.94f - hitleg.distance;
                             rightFootLow = rightFootHigh;
@@ -871,37 +856,47 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                             //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                             //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                             rightFootNewPosition  = new Vector3(rightFoot.transform.position.x, rightFootHigh, rightFoot.transform.position.z);
-                            if (footSmoothing <= 0.99) { footSmoothing += 0.04f; }
-                            if (footSmoothing > 0.98) { climbReady = true; }
+                            if (footSmoothing <= 0.99) { footSmoothing += 0.02f; }
+                            if (footSmoothing > 0.95) { climbReady = true; }
 
-                            /*
                             //Climb up
                             if (climbReady && !isIdle)
                             {
-                                if (climbSmoothing <= 1) { climbSmoothing += 0.01f; }
-                                m_CapsuleCenter = new Vector3(0, 1.5f, 0.4f);
-                                transform.transform.position = new Vector3(transform.position.x, transform.position.y + (rightFootNewPos * climbSmoothing)+ 0.1f, transform.position.z);
+                                if (!climbPlaying && !climbDone)
+                                {
+                                    climbDist = rightFootHigh;
+                                    climbPlaying = true;
+                                }
+                                print("climbDist " + climbDist);
+
+                                if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
+                                m_Rigidbody.useGravity = false;
+                                climbDone = false;
+                                //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
+                                m_Rigidbody.AddRelativeForce(0,10,1);
+                                 m_CapsuleCenter = new Vector3(0, 1, -0.5f);
                             }
-                            */
                             upOrDown = 1;
                         }
                         
                         if (!(Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
                         {
-
+                            print("indexer");
                             if (footSmoothing >= 0.01) { footSmoothing -= 0.01f; }
                             else footSmoothing = 0;
-                            if (footSmoothing < 0.1) { climbDone = true; }
-                            /*
+                            climbDone = true;
+                            
                             //Climb up stop
-                            if (climbDone && climbReady)
+                            if (climbReady && climbDone)
                             {
                                 m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
-                                climbReady = false;
                                 climbSmoothing = 0;
+                                m_Rigidbody.useGravity = true;
+                                climbReady = false;
                                 climbPlaying = false;
+
                             }
-                            */
+                            
                             //Debug.Log(rightFootLow + " rightFootLow");
                             //Debug.Log(footSmoothing + " footSmoothing");
                             rightFootLow = Mathf.Lerp(rightFootLow, rightFoot.transform.position.y, 0.01f);
