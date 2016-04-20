@@ -99,6 +99,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         */
 
         GameObject head;
+        Transform spine;
         AudioClip footSound, headSound;
         AudioSource soundSource;
         Vector3 fwd, down;
@@ -114,6 +115,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
             head = GameObject.Find("Head");
+            spine = GameObject.Find("Spine").transform;
 
             m_Animator.SetLayerWeight(0, 1);
             playingFlip = true;
@@ -199,15 +201,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
-
-
             Exhausted();
             doFlip();
 
         }
         void LateUpdate()
         {
-            aimToMouse("Neck");
+            
+            //aimToMouse("Neck");
+            if (!isIdle && climbPlaying)
+            {
+                smoothRotateBone(spine);
+            }
             //print("Layer 0 is " + m_Animator.GetLayerWeight(0));
             //print("Layer 1 is " + m_Animator.GetLayerWeight(1));
         }
@@ -280,6 +285,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             // send input and other state parameters to the animator
             UpdateAnimator(move);
+
+        }
+        void smoothRotateBone(Transform bone)
+        {
+
+            if (bone == spine)
+            {
+                spine.localRotation = Quaternion.Euler(Mathf.LerpAngle(spine.localRotation.x+0.1f, 10, 0.1f), spine.transform.localRotation.y, spine.transform.localRotation.z);
+                print(Mathf.LerpAngle(spine.rotation.x+0.1f, 10, 0.1f));
+            }
         }
 
         public void stopRun()
@@ -859,6 +874,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                             if (footSmoothing <= 0.99) { footSmoothing += 0.02f; }
                             if (footSmoothing > 0.95) { climbReady = true; }
 
+   
                             //Climb up
                             if (climbReady && !isIdle)
                             {
@@ -867,21 +883,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                                     climbDist = rightFootHigh;
                                     climbPlaying = true;
                                 }
-                                print("climbDist " + climbDist);
+                                //print("climbDist " + climbDist);
 
                                 if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
                                 m_Rigidbody.useGravity = false;
                                 climbDone = false;
                                 //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
                                 m_Rigidbody.AddRelativeForce(0,10,1);
-                                 m_CapsuleCenter = new Vector3(0, 1, -0.5f);
+                                m_CapsuleCenter = new Vector3(0, 1, -0.5f);
                             }
                             upOrDown = 1;
                         }
                         
                         if (!(Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
                         {
-                            print("indexer");
                             if (footSmoothing >= 0.01) { footSmoothing -= 0.01f; }
                             else footSmoothing = 0;
                             climbDone = true;
@@ -892,8 +907,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                                 m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                                 climbSmoothing = 0;
                                 m_Rigidbody.useGravity = true;
-                                climbReady = false;
                                 climbPlaying = false;
+                                climbReady = false;
+                                
 
                             }
                             
