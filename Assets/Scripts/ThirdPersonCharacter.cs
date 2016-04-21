@@ -73,7 +73,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         RaycastHit noHitRightLeg;
         bool climbDone, climbReady, climbPlaying;
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
-        float footNewPos, leftFootNewPos, footHigh, footLow, climbDist;
+        float footNewPos, leftFootNewPos, footHigh, footLow;
+        //float climbDist;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
         Transform rightFoot, leftFoot, hips, foot;
@@ -207,7 +208,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void LateUpdate()
         {
-            
+
             //aimToMouse("Neck");
             if (!isIdle && climbPlaying)
             {
@@ -292,8 +293,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (bone == spine)
             {
-                spine.localRotation = Quaternion.Euler(Mathf.LerpAngle(spine.localRotation.x+0.1f, 10, 0.1f), spine.transform.localRotation.y, spine.transform.localRotation.z);
-                print(Mathf.LerpAngle(spine.rotation.x+0.1f, 10, 0.1f));
+                spine.localRotation = Quaternion.Euler(Mathf.LerpAngle(spine.localRotation.x + 0.1f, 10, 0.1f), spine.transform.localRotation.y, spine.transform.localRotation.z);
+                //print(Mathf.LerpAngle(spine.rotation.x + 0.1f, 10, 0.1f));
             }
         }
 
@@ -832,18 +833,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void legIK(Transform _foot, AvatarIKGoal leg)
         {
-            if (_foot == rightFoot) { legRay = 0.1f; } else legRay = -0.1f;
+            if (_foot == rightFoot) { legRay = 0.1f; }
+            if (_foot == leftFoot)  { legRay = -0.1f; }
             if (isRunning) { rayLength = 0.5f; rayPoss = 0.6f; }
             if (isWalking) { rayLength = 0.6f; rayPoss = 0.3f; }
             if (isIdle) { rayLength = 0.7f; rayPoss = 0.1f; }
 
             Debug.DrawRay(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, Color.green);
-            //Debug.DrawRay(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, Color.green);
 
             if (Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out hitleg, rayLength))
-            /*
-           || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.7f) && isIdle)
-           || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.6f)), down, out hitleg, 0.5f) && isRunning))*/
             {
                 footHigh = 0.94f - hitleg.distance;
                 footLow = footHigh;
@@ -855,25 +853,26 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (footSmoothing > 0.95) { climbReady = true; }
 
                 //Climb up
-                if (climbReady && !isIdle)
-                {
-                    if (!climbPlaying && !climbDone)
+
+                    if (climbReady && !isIdle)
                     {
-                        climbDist = footHigh;
-                        climbPlaying = true;
+                        if (!climbPlaying && !climbDone)
+                        {
+                            //climbDist = footHigh;
+                            climbPlaying = true;
+                        }
+                        if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
+                        m_Rigidbody.useGravity = false;
+                        climbDone = false;
+                        //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
+                        m_Rigidbody.AddRelativeForce(0, 10, 1);
+                        m_CapsuleCenter = new Vector3(0, 1, -0.5f);
                     }
-                    //print("climbDist " + climbDist);
-                    if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
-                    m_Rigidbody.useGravity = false;
-                    climbDone = false;
-                    //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
-                    m_Rigidbody.AddRelativeForce(0, 10, 1);
-                    m_CapsuleCenter = new Vector3(0, 1, -0.5f);
-                }
+                
                 upOrDown = 1;
             }
 
-            if (!(Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
+            if (!(Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
             {
                 if (footSmoothing >= 0.01) { footSmoothing -= 0.01f; }
                 else footSmoothing = 0;
@@ -885,11 +884,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                     climbSmoothing = 0;
                     m_Rigidbody.useGravity = true;
-                    climbReady = false;
                     climbPlaying = false;
+                    climbReady = false;
                 }
-                //Debug.Log(rightFootLow + " rightFootLow");
-                //Debug.Log(footSmoothing + " footSmoothing");
+
                 footLow = Mathf.Lerp(footLow, _foot.transform.position.y, 0.01f);
                 footNewPosition = new Vector3(_foot.transform.position.x, footLow, _foot.transform.position.z);
                 upOrDown = 0;
@@ -897,10 +895,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetIKPositionWeight(leg, Mathf.Lerp(footSmoothing, upOrDown, 0.01f));
             m_Animator.SetIKRotationWeight(leg, Mathf.Lerp(footSmoothing, upOrDown, 0.01f));
             m_Animator.SetIKPosition(leg, footNewPosition);
+
             //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
         }
-
-
 
         void OnAnimatorIK()
         {
@@ -919,95 +916,25 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     // Set the right hand target position and rotation, if one has been assigned
                     if (rightFoot != null)
                     {
-                        m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
-                        m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
+                        //m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
+                        //m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
                         //Check which leg is in front, then raycast from it.
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
 
-                        legIK(rightFoot, AvatarIKGoal.RightFoot);
-                        legIK(leftFoot, AvatarIKGoal.LeftFoot);
 
-<<<<<<< HEAD
-                        if ((Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.4f)), down, out hitleg, 0.7f) && isWalking)
-                             || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.7f) && isIdle)
-                             || (Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.6f)), down, out hitleg, 0.5f) && isRunning))
+                        if ((m_Animator.GetIKPositionWeight(AvatarIKGoal.LeftFoot) < 0.05f ) && rightFoot.position.z > leftFoot.position.z)
                         {
-                            rightFootHigh = 0.94f - hitleg.distance;
-                            rightFootLow = rightFootHigh;
-                            //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
-                            //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
-                            //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
-                            rightFootNewPosition  = new Vector3(rightFoot.transform.position.x, rightFootHigh, rightFoot.transform.position.z);
-                            if (footSmoothing <= 0.99) { footSmoothing += 0.02f; }
-                            if (footSmoothing > 0.95) { climbReady = true; }
-
-   
-                            //Climb up
-                            if (climbReady && !isIdle)
-                            {
-                                if (!climbPlaying && !climbDone)
-                                {
-                                    climbDist = rightFootHigh;
-                                    climbPlaying = true;
-                                }
-                                //print("climbDist " + climbDist);
-
-                                if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
-                                m_Rigidbody.useGravity = false;
-                                climbDone = false;
-                                //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
-                                m_Rigidbody.AddRelativeForce(0,10,1);
-                                m_CapsuleCenter = new Vector3(0, 1, -0.5f);
-                            }
-                            upOrDown = 1;
+                            legIK(rightFoot, AvatarIKGoal.RightFoot);
                         }
-                        
-                        if (!(Physics.Raycast(hips.TransformPoint(new Vector3(0.1f, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
+                        if ((m_Animator.GetIKPositionWeight(AvatarIKGoal.RightFoot) < 0.05f )&& rightFoot.position.z < leftFoot.position.z)
                         {
-                            if (footSmoothing >= 0.01) { footSmoothing -= 0.01f; }
-                            else footSmoothing = 0;
-                            climbDone = true;
-                            
-                            //Climb up stop
-                            if (climbReady && climbDone)
-                            {
-                                m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
-                                climbSmoothing = 0;
-                                m_Rigidbody.useGravity = true;
-                                climbPlaying = false;
-                                climbReady = false;
-                                
-
-                            }
-                            
-                            //Debug.Log(rightFootLow + " rightFootLow");
-                            //Debug.Log(footSmoothing + " footSmoothing");
-                            rightFootLow = Mathf.Lerp(rightFootLow, rightFoot.transform.position.y, 0.01f);
-
-                            rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootLow, rightFoot.transform.position.z);
-                            /*
-                            m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothing, 0, 0.01f));
-                            m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothing, 0, 0.01f));
-                            m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
-                            */
-                            upOrDown = 0;
-                        }
-                        m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothing, upOrDown, 0.01f));
-                        m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothing, upOrDown, 0.01f));
-                        m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
-
-                        //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
-
-
-
-=======
-                        //legik(leftFoot);
->>>>>>> origin/master
-                        //climbPlaying = false;
-                        //climbReady = false;
+                            legIK(leftFoot, AvatarIKGoal.LeftFoot);
+                        } 
                     }
-
+                    //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
+                    //climbPlaying = false;
+                    //climbReady = false;
                 }
             }
         }
