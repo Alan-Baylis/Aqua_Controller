@@ -67,13 +67,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Transform pointer;
         Vector3 slopeRight, slopeLeft;
         Quaternion rightFootRot, leftFootRot;
-        float footSmoothing, climbSmoothing;
+        float footSmoothing, climbSmoothing, footSmoothingRight, footSmoothingLeft;
         float rightLegHitPoint, leftLegHitPoint;
         RaycastHit hitleg;
         RaycastHit noHitRightLeg;
         bool climbDone, climbReady, climbPlaying;
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
-        float footNewPos, leftFootNewPos, footHigh, footLow;
+        float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow;
         //float climbDist;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
@@ -831,10 +831,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
 
-        void legIK(Transform _foot, AvatarIKGoal leg)
+        void legIK(int _foot)
         {
-            if (_foot == rightFoot) { legRay = 0.1f; }
-            if (_foot == leftFoot)  { legRay = -0.1f; }
+            if (_foot == 1) { legRay = 0.1f; }
+            if (_foot == 2)  { legRay = -0.1f; }
             if (isRunning) { rayLength = 0.5f; rayPoss = 0.6f; }
             if (isWalking) { rayLength = 0.6f; rayPoss = 0.3f; }
             if (isIdle) { rayLength = 0.7f; rayPoss = 0.1f; }
@@ -843,17 +843,28 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out hitleg, rayLength))
             {
-                footHigh = 0.94f - hitleg.distance;
-                footLow = footHigh;
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
                 //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
-                footNewPosition = new Vector3(_foot.transform.position.x, footHigh, _foot.transform.position.z);
-                if (footSmoothing <= 0.99) { footSmoothing += 0.02f; }
-                if (footSmoothing > 0.95) { climbReady = true; }
+                if (_foot == 1)
+                {
+                    rightFootHigh = 0.94f - hitleg.distance;
+                    rightFootLow = rightFootHigh;
+                    rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootHigh, rightFoot.transform.position.z);
+                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
+                    if (footSmoothingRight > 0.95) { climbReady = true; }
+                }
+                if(_foot == 2) {
+
+                    leftFootHigh = 0.94f - hitleg.distance;
+                    leftFootLow = leftFootHigh;
+                    leftFootNewPosition = new Vector3(leftFoot.transform.position.x, leftFootHigh, leftFoot.transform.position.z);
+                    if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
+                    if (footSmoothingLeft > 0.95) { climbReady = true; }
+                }
+
 
                 //Climb up
-
                     if (climbReady && !isIdle)
                     {
                         if (!climbPlaying && !climbDone)
@@ -874,8 +885,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (!(Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
             {
-                if (footSmoothing >= 0.01) { footSmoothing -= 0.01f; }
-                else footSmoothing = 0;
+                if (_foot == 1)
+                {
+                    if (footSmoothingRight >= 0.01) { footSmoothingRight -= 0.01f; }
+                    else footSmoothingRight = 0;
+                }
+                if (_foot == 2)
+                {
+                    if (footSmoothingLeft >= 0.01) { footSmoothingLeft -= 0.01f; }
+                    else footSmoothingLeft = 0;
+                }
                 climbDone = true;
 
                 //Climb up stop
@@ -888,13 +907,33 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     climbReady = false;
                 }
 
-                footLow = Mathf.Lerp(footLow, _foot.transform.position.y, 0.01f);
-                footNewPosition = new Vector3(_foot.transform.position.x, footLow, _foot.transform.position.z);
+
+                if (_foot == 1)
+                {
+                    rightFootLow = Mathf.Lerp(rightFootLow, rightFoot.transform.position.y, 0.01f);
+                    rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootLow, rightFoot.transform.position.z);
+                }
+                if (_foot == 2)
+                {
+                    leftFootLow = Mathf.Lerp(leftFootLow, leftFoot.transform.position.y, 0.01f);
+                    leftFootNewPosition = new Vector3(leftFoot.transform.position.x, leftFootLow, leftFoot.transform.position.z);
+                }
                 upOrDown = 0;
             }
-            m_Animator.SetIKPositionWeight(leg, Mathf.Lerp(footSmoothing, upOrDown, 0.01f));
-            m_Animator.SetIKRotationWeight(leg, Mathf.Lerp(footSmoothing, upOrDown, 0.01f));
-            m_Animator.SetIKPosition(leg, footNewPosition);
+
+
+            if (_foot == 1)
+            {
+                m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, upOrDown, 0.01f));
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, upOrDown, 0.01f));
+            }
+            if (_foot == 2)
+            {
+                m_Animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftFootNewPosition);
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, Mathf.Lerp(footSmoothingLeft, upOrDown, 0.01f));
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, Mathf.Lerp(footSmoothingLeft, upOrDown, 0.01f));
+            }
 
             //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
         }
@@ -922,15 +961,25 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
 
+                        legIK(2);
+                        legIK(1);
 
-                        if ((m_Animator.GetIKPositionWeight(AvatarIKGoal.LeftFoot) < 0.05f ) && rightFoot.position.z > leftFoot.position.z)
+                        /*
+                        if (isIdle)
                         {
-                            legIK(rightFoot, AvatarIKGoal.RightFoot);
+                            legIK(leftFoot, AvatarIKGoal.LeftFoot, leftFootNewPosition);
+                            legIK(rightFoot, AvatarIKGoal.RightFoot, rightFootNewPosition);
                         }
-                        if ((m_Animator.GetIKPositionWeight(AvatarIKGoal.RightFoot) < 0.05f )&& rightFoot.position.z < leftFoot.position.z)
+                        
+                        if (rightFoot.position.z > leftFoot.position.z && !isIdle)
                         {
-                            legIK(leftFoot, AvatarIKGoal.LeftFoot);
+                            legIK(rightFoot, AvatarIKGoal.RightFoot, rightFootNewPosition);
+                        }
+                        if (rightFoot.position.z < leftFoot.position.z && !isIdle)
+                        {
+                            //legIK(leftFoot, AvatarIKGoal.LeftFoot);
                         } 
+                        */
                     }
                     //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
                     //climbPlaying = false;
