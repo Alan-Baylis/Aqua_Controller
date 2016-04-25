@@ -30,7 +30,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float recovery = 5f;
 
-
         bool m_Crouching;
         Rigidbody m_Rigidbody;
         Animator m_Animator;
@@ -42,11 +41,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float m_CapsuleHeight;
         Vector3 m_CapsuleCenter;
         CapsuleCollider m_Capsule;
+        RaycastHit hitInfo; // Was inside CheckGroundStatus() but why ???
 
 
         //My movements
-        RaycastHit hit;
-
         float mouseWheel = 0.2f;
         public float movingRight;
         public float movingLeft;
@@ -61,16 +59,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
 
-
         //Foot positioning
+        RaycastHit hitLeg, noLegHit;
         public bool ikActive;
         Transform pointer;
         Vector3 slopeRight, slopeLeft;
         Quaternion rightFootRot, leftFootRot;
         float footSmoothing, climbSmoothing, footSmoothingRight, footSmoothingLeft;
         float rightLegHitPoint, leftLegHitPoint;
-        RaycastHit hitleg;
-        RaycastHit noHitRightLeg;
+        float climbSpeed;
         bool climbDone, climbReady, climbPlaying;
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
         float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow;
@@ -183,7 +180,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
 
             }
-            //Not Runing
+            //Not Running
             if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5))
             {
 
@@ -290,11 +287,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void smoothRotateBone(Transform bone)
         {
-
             if (bone == spine)
             {
-                spine.localRotation = Quaternion.Euler(Mathf.LerpAngle(spine.localRotation.x + 0.1f, 10, 0.1f), spine.transform.localRotation.y, spine.transform.localRotation.z);
-                //print(Mathf.LerpAngle(spine.rotation.x + 0.1f, 10, 0.1f));
+                spine.localRotation = Quaternion.Euler(Mathf.LerpAngle(spine.localRotation.x, 10, 0.1f), spine.localRotation.y, spine.localRotation.z);
+                //print(Mathf.LerpAngle(spine.rotation.x, 10, 0.1f));
             }
         }
 
@@ -530,6 +526,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
+            RaycastHit hitSteps;
             {
                 if (name == "exhausted")
                 {   /*
@@ -547,7 +544,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
                 }
 
-                if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Concrete")
+                if (Physics.Raycast(transform.position, down, out hitSteps, m_GroundCheckDistance) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
                     if (name == "jumpLand")
                     {
@@ -572,7 +569,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-                if (Physics.Raycast(transform.position, down, out hit, m_GroundCheckDistance) && hit.transform.gameObject.tag == "Gravel")
+                if (Physics.Raycast(transform.position, down, out hitSteps, m_GroundCheckDistance) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {
@@ -792,7 +789,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void CheckGroundStatus()
         {
-            RaycastHit hitInfo;
+
 #if UNITY_EDITOR
             // helper to visualise the ground check ray in the scene view
             Debug.DrawLine(transform.position + (Vector3.up * 0.1f), transform.position + (Vector3.up * 0.1f) + (Vector3.down * m_GroundCheckDistance));
@@ -837,54 +834,68 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (_foot == 2)  { legRay = -0.1f; }
             if (isRunning) { rayLength = 0.5f; rayPoss = 0.6f; }
             if (isWalking) { rayLength = 0.6f; rayPoss = 0.3f; }
-            if (isIdle) { rayLength = 0.7f; rayPoss = 0.1f; }
+            if (isIdle) { rayLength = 0.8f; rayPoss = 0.1f; }
 
             Debug.DrawRay(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, Color.green);
 
-            if (Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out hitleg, rayLength))
+            //print("hitInfo" + (hitInfo.distance));
+            //print("Hit Disc " + hitleg.distance);
+            //print(hips.transform.position.y);
+            //print("Capsule.center " + m_Capsule.transform.position.y);
+
+            if (Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out hitLeg, rayLength))
             {
+                Debug.DrawRay(new Vector3(0, 0, 0), new Vector3(0, hitLeg.distance, 0), Color.blue);
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
                 //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                 if (_foot == 1)
                 {
-                    rightFootHigh = 0.94f - hitleg.distance;
+                    rightFootHigh = 0.94f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
                     rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootHigh, rightFoot.transform.position.z);
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
                     if (footSmoothingRight > 0.95) { climbReady = true; }
+                    else climbReady = false; 
                 }
                 if(_foot == 2) {
 
-                    leftFootHigh = 0.94f - hitleg.distance;
+                    leftFootHigh = 0.94f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
                     leftFootNewPosition = new Vector3(leftFoot.transform.position.x, leftFootHigh, leftFoot.transform.position.z);
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
                     if (footSmoothingLeft > 0.95) { climbReady = true; }
+                    else climbReady = false;
                 }
 
-
                 //Climb up
-                    if (climbReady && !isIdle)
+                if (climbReady && !isIdle)
+                {
+                    if (!climbPlaying && !climbDone)
                     {
-                        if (!climbPlaying && !climbDone)
-                        {
-                            //climbDist = footHigh;
-                            climbPlaying = true;
-                        }
-                        if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
-                        m_Rigidbody.useGravity = false;
-                        climbDone = false;
-                        //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
-                        m_Rigidbody.AddRelativeForce(0, 10, 1);
-                        m_CapsuleCenter = new Vector3(0, 1, -0.5f);
+                        //climbDist = footHigh;
+                        climbSpeed = m_ForwardAmount;
+                        climbPlaying = true;
                     }
+                    m_ForwardAmount /= 2; 
+                    if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
+                    m_Rigidbody.useGravity = false;
+                    climbDone = false;
+                    //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
+
+                    //Add enough force to climb up
+                    m_Rigidbody.AddRelativeForce(0, 10, 1);
+                    //m_CapsuleCenter = new Vector3(0, 1, -0.5f);
+                    m_CapsuleHeight = 0.4f;
+                }
                 
                 upOrDown = 1;
             }
 
-            if (!(Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, 0.1f)), down, out hitleg, 0.6f)))
+            if (!(Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out noLegHit, 0.6f)))
             {
+                //
+
                 if (_foot == 1)
                 {
                     if (footSmoothingRight >= 0.01) { footSmoothingRight -= 0.01f; }
@@ -898,11 +909,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 climbDone = true;
 
                 //Climb up stop
-                if (climbReady && climbDone)
+                if (climbDone)
                 {
-                    m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
+                    m_CapsuleHeight = 1.52f;
+                    //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                     climbSmoothing = 0;
                     m_Rigidbody.useGravity = true;
+
                     climbPlaying = false;
                     climbReady = false;
                 }
@@ -953,16 +966,26 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
 
                     // Set the right hand target position and rotation, if one has been assigned
-                    if (rightFoot != null)
+                    if (rightFoot != null && leftFoot != null)
                     {
                         //m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
                         //m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
                         //Check which leg is in front, then raycast from it.
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
-
-                        legIK(2);
-                        legIK(1);
+                        if (rightFoot.transform.position.z > leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z > leftFoot.transform.position.z && isRunning) 
+                        {
+                            legIK(1);
+                        }
+                        if (rightFoot.transform.position.z < leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z < leftFoot.transform.position.z && isRunning) 
+                        {
+                            legIK(2);
+                        }
+                        if (isIdle)
+                        {
+                            legIK(2);
+                            legIK(1);
+                        }
 
                         /*
                         if (isIdle)
