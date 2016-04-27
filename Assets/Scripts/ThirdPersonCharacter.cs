@@ -29,14 +29,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float stamina = 5f;
         [SerializeField]
         float recovery = 5f;
+        public bool m_Crouching;
 
-        bool m_Crouching;
         Rigidbody m_Rigidbody;
         Animator m_Animator;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
         public float m_TurnAmount;
         public float m_ForwardAmount;
+
         Vector3 m_GroundNormal;
         float m_CapsuleHeight;
         Vector3 m_CapsuleCenter;
@@ -70,12 +71,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float climbSpeed;
         bool climbDone, climbReady, climbPlaying;
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
-        float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow;
+        float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow, hipToFootDisc, toeEnd;
         //float climbDist;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
         Transform rightFoot, leftFoot, hips, foot;
         int upOrDown;
+        float charScale;
+
 
 
         //spublic bool isTurning;
@@ -121,6 +124,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             leftFoot = GameObject.Find("Left_foot").transform;
             rightFoot = GameObject.Find("Right_foot").transform;
             hips = GameObject.Find("Hips").transform;
+            toeEnd = GameObject.Find("Right_toe_end").transform.position.y;
+
+            hipToFootDisc = hips.position.y - toeEnd;
+            print(hipToFootDisc + " hipToFootDisc");
+
+            charScale = 100 / (transform.localScale.x * 100 / 1.635238f);
+
 
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
@@ -278,8 +288,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 HandleAirborneMovement();
             }
 
-            ScaleCapsuleForCrouching(crouch);
-            PreventStandingInLowHeadroom();
+            //ScaleCapsuleForCrouching(crouch);
+            //PreventStandingInLowHeadroom();
 
             // send input and other state parameters to the animator
             UpdateAnimator(move);
@@ -620,6 +630,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void ScaleCapsuleForCrouching(bool crouch)
         {
+            
             if (m_IsGrounded && crouch)
             {
                 if (m_Crouching) return;
@@ -640,6 +651,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Capsule.center = m_CapsuleCenter;
                 m_Crouching = false;
             }
+            
         }
 
 
@@ -832,26 +844,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (_foot == 1) { legRay = 0.1f; }
             if (_foot == 2)  { legRay = -0.1f; }
-            if (isRunning) { rayLength = 0.5f; rayPoss = 0.6f; }
-            if (isWalking) { rayLength = 0.6f; rayPoss = 0.3f; }
-            if (isIdle) { rayLength = 0.8f; rayPoss = 0.1f; }
+            if (isRunning) { rayLength = 0.4f; rayPoss = 0.6f; }
+            if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.3f; }
+            if (isIdle) { rayLength = hipToFootDisc/2.2f ; rayPoss = 0.1f; }
 
-            Debug.DrawRay(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, Color.green);
+            Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc/2, 0), Color.blue);
+            Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc/ 2, 0), Color.red);
 
-            //print("hitInfo" + (hitInfo.distance));
-            //print("Hit Disc " + hitleg.distance);
-            //print(hips.transform.position.y);
-            //print("Capsule.center " + m_Capsule.transform.position.y);
-
-            if (Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out hitLeg, rayLength))
+            if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength))
             {
-                Debug.DrawRay(new Vector3(0, 0, 0), new Vector3(0, hitLeg.distance, 0), Color.blue);
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
                 //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                 if (_foot == 1)
                 {
-                    rightFootHigh = 0.94f - hitLeg.distance;
+                    rightFootHigh = hipToFootDisc/1.45f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
                     rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootHigh, rightFoot.transform.position.z);
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
@@ -860,7 +867,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 if(_foot == 2) {
 
-                    leftFootHigh = 0.94f - hitLeg.distance;
+                    leftFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
                     leftFootNewPosition = new Vector3(leftFoot.transform.position.x, leftFootHigh, leftFoot.transform.position.z);
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
@@ -882,17 +889,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Rigidbody.useGravity = false;
                     climbDone = false;
                     //transform.transform.position = new Vector3(transform.position.x, transform.position.y + climbDist * climbSmoothing, transform.position.z);
-
-                    //Add enough force to climb up
                     m_Rigidbody.AddRelativeForce(0, 10, 1);
+                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.4f, 0.1f);
+                    //Add enough force to climb up
+
                     //m_CapsuleCenter = new Vector3(0, 1, -0.5f);
-                    m_CapsuleHeight = 0.4f;
+
                 }
                 
                 upOrDown = 1;
             }
 
-            if (!(Physics.Raycast(hips.TransformPoint(new Vector3(legRay, -0.3f, rayPoss)), down, out noLegHit, 0.6f)))
+            if (!(Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength)))
             {
                 //
 
@@ -911,7 +919,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //Climb up stop
                 if (climbDone)
                 {
-                    m_CapsuleHeight = 1.52f;
+                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 1.52f, 0.1f);
                     //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                     climbSmoothing = 0;
                     m_Rigidbody.useGravity = true;
@@ -973,6 +981,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //Check which leg is in front, then raycast from it.
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
+
                         if (rightFoot.transform.position.z > leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z > leftFoot.transform.position.z && isRunning) 
                         {
                             legIK(1);
@@ -981,6 +990,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         {
                             legIK(2);
                         }
+                        
                         if (isIdle)
                         {
                             legIK(2);
