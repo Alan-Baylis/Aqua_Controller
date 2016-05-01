@@ -56,11 +56,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isExhausted;
         public bool isJumping;
         public bool isFalling;
+        public bool runSlide;
         public float transition;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
 
         //Foot positioning
+        bool footIkOn;
         RaycastHit hitLeg, noLegHit;
         public bool ikActive;
         Transform pointer;
@@ -72,7 +74,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool climbDone, climbReady, climbPlaying;
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
         float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow, hipToFootDisc, toeEnd;
-        //float climbDist;
+        float climbDist;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
         Transform rightFoot, leftFoot, hips, foot;
@@ -108,7 +110,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Start()
         {
-            ikActive = true;
+            footIkOn = true;
             pointer = GameObject.Find("Pointer").transform;
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
@@ -276,8 +278,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 ApplyExtraTurnRotation();
             }
 
-
-
             // control and velocity handling is different when grounded and airborne:
             if (m_IsGrounded)
             {
@@ -291,6 +291,33 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //ScaleCapsuleForCrouching(crouch);
             //PreventStandingInLowHeadroom();
 
+            if (isRunning && Input.GetKeyDown(KeyCode.C))
+            {
+                runSlide = true;
+                m_Animator.Play("RunSlide");
+                PlaySounds("gravslip");
+                //m_Animator.applyRootMotion = false;
+                //m_Rigidbody.angularDrag = 0;
+                //m_Rigidbody.useGravity = false;
+                //m_Rigidbody.mass = 0;
+                //m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_Rigidbody.velocity.y, m_Rigidbody.velocity.z * 2f);
+            }
+            //else runSlide = false;
+
+            if (runSlide)
+            {
+                footIkOn = false;
+                ScaleCapsule("slide");
+            }
+            else
+            {
+                footIkOn = true;
+            }
+
+
+
+
+
             // send input and other state parameters to the animator
             UpdateAnimator(move);
 
@@ -301,6 +328,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 spine.localRotation = Quaternion.Euler(Mathf.LerpAngle(spine.localRotation.x, 10, 0.1f), spine.localRotation.y, spine.localRotation.z);
                 //print(Mathf.LerpAngle(spine.rotation.x, 10, 0.1f));
+            }
+        }
+        void OnCollisionEnter(Collision collision)
+        {
+            if(collision.gameObject.name == "Lift")
+            {
+                print("Collision with " + collision.gameObject.name);
+                m_Rigidbody.AddForce(0,1000,0);
+            }
+            foreach (ContactPoint contact in collision.contacts)
+            {
+                Debug.DrawRay(contact.point, contact.normal, Color.white);
             }
         }
 
@@ -434,12 +473,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 isJumping = true;
                 if (jumpPrepare + 0.3 < timer)
                 {
-                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower * 1.2f, m_Rigidbody.velocity.z);
+                    //m_Rigidbody.AddRelativeForce(0, 0, 5);
                     flipReady = false;
                     m_IsGrounded = false;
                     playingFlip = true;
                     m_Animator.applyRootMotion = false;
                     m_GroundCheckDistance = 0.1f;
+                    ScaleCapsule("frontFlip");
                     //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
 
                 }
@@ -502,6 +543,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 yield return new WaitForSeconds(breathInterval);
                 //PlaySounds("exhausted");
+            }
+        }
+        public void setBool(string setBoolean)
+        {
+            if (setBoolean == "runSlide")
+            {
+                runSlide = false;
             }
         }
 
@@ -630,7 +678,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void ScaleCapsuleForCrouching(bool crouch)
         {
-            
+
             if (m_IsGrounded && crouch)
             {
                 if (m_Crouching) return;
@@ -651,7 +699,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Capsule.center = m_CapsuleCenter;
                 m_Crouching = false;
             }
-            
+
         }
 
 
@@ -660,13 +708,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (state == "ground")
             {
                 m_Capsule.height = m_CapsuleHeight;
-                //m_Capsule.center = m_CapsuleCenter;
+                m_Capsule.center = m_CapsuleCenter;
             }
             if (state == "jump")
             {
                 //m_IsGrounded = false;
                 m_Capsule.height = 0.5f; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 //m_CapsuleCenter = hips.transform.position;
+            }
+            if (state == "slide")
+            {
+                m_Capsule.height = m_CapsuleHeight / 4;
+                m_Capsule.center = m_CapsuleCenter / 4;
+            }
+            if (state == "frontFlip")
+            {
+                m_Capsule.height = 0.3f;
             }
         }
 
@@ -710,6 +767,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("isFalling", isFalling);
             m_Animator.SetBool("isRunning", isRunning);
             m_Animator.SetBool("isIdle", isIdle);
+            m_Animator.SetBool("runSlide", runSlide);
 
 
             if (!m_IsGrounded && isJumping)
@@ -832,7 +890,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (fallStart + 1 < timer)
                     {
 
-                        // isFalling = true;                                  //ENABLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
+                        isFalling = true;                                  //ENABLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
                         playingFall = false;
                     }
                 }
@@ -843,13 +901,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void legIK(int _foot)
         {
             if (_foot == 1) { legRay = 0.1f; }
-            if (_foot == 2)  { legRay = -0.1f; }
+            if (_foot == 2) { legRay = -0.1f; }
             if (isRunning) { rayLength = 0.4f; rayPoss = 0.6f; }
             if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.3f; }
-            if (isIdle) { rayLength = hipToFootDisc/2.2f ; rayPoss = 0.1f; }
+            if (isIdle) { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.1f; }
 
-            Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc/2, 0), Color.blue);
-            Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc/ 2, 0), Color.red);
+            Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.blue);
+            Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.red);
 
             if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength))
             {
@@ -858,18 +916,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                 if (_foot == 1)
                 {
-                    rightFootHigh = hipToFootDisc/1.45f - hitLeg.distance;
+                    rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
-                    rightFootNewPosition = new Vector3(rightFoot.transform.position.x, rightFootHigh, rightFoot.transform.position.z);
+                    rightFootNewPosition = new Vector3(hitLeg.point.x, hipToFootDisc / 10 + hitLeg.point.y, hitLeg.point.z);
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
                     if (footSmoothingRight > 0.95) { climbReady = true; }
-                    else climbReady = false; 
+                    else climbReady = false;
                 }
-                if(_foot == 2) {
+                if (_foot == 2)
+                {
 
                     leftFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
-                    leftFootNewPosition = new Vector3(leftFoot.transform.position.x, leftFootHigh, leftFoot.transform.position.z);
+                    leftFootNewPosition = new Vector3(hitLeg.point.x, hipToFootDisc / 10 + hitLeg.point.y, hitLeg.point.z);
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
                     if (footSmoothingLeft > 0.95) { climbReady = true; }
                     else climbReady = false;
@@ -878,13 +937,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //Climb up
                 if (climbReady && !isIdle)
                 {
+                    m_ForwardAmount = 0.1f;
                     if (!climbPlaying && !climbDone)
                     {
-                        //climbDist = footHigh;
+                        //climbDist = rightFootHigh;
                         climbSpeed = m_ForwardAmount;
                         climbPlaying = true;
                     }
-                    m_ForwardAmount /= 2; 
+                    m_ForwardAmount /= 2;
                     if (climbSmoothing <= 1) { climbSmoothing += 0.02f; }
                     m_Rigidbody.useGravity = false;
                     climbDone = false;
@@ -896,7 +956,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     //m_CapsuleCenter = new Vector3(0, 1, -0.5f);
 
                 }
-                
+
                 upOrDown = 1;
             }
 
@@ -919,7 +979,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //Climb up stop
                 if (climbDone)
                 {
-                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 1.52f, 0.1f);
+                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 1.52f, 0.2f);
                     //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                     climbSmoothing = 0;
                     m_Rigidbody.useGravity = true;
@@ -964,7 +1024,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_Animator)
             {
                 //if the IK is active, set the position and rotation directly to the goal. 
-                if (ikActive)
+                if (footIkOn)
                 {
                     // Set the look target position, if one has been assigned
                     if (pointer != null)
@@ -982,19 +1042,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
 
-                        if (rightFoot.transform.position.z > leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z > leftFoot.transform.position.z && isRunning) 
+                        if (rightFoot.transform.position.z > leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z > leftFoot.transform.position.z && isRunning)
                         {
                             legIK(1);
                         }
-                        if (rightFoot.transform.position.z < leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z < leftFoot.transform.position.z && isRunning) 
+                        if (rightFoot.transform.position.z < leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z < leftFoot.transform.position.z && isRunning)
                         {
                             legIK(2);
                         }
-                        
+
                         if (isIdle)
                         {
-                            legIK(2);
                             legIK(1);
+                            legIK(2);
                         }
 
                         /*
