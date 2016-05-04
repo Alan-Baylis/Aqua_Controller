@@ -55,7 +55,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool m_IsGrounded;
         public bool isExhausted;
         public bool isJumping;
-        public bool isFalling;
+        public bool isFalling, landLight, landForwardHeavy;
         public bool runSlide;
         public float transition;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
@@ -718,8 +718,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (state == "slide")
             {
-                m_Capsule.height = m_CapsuleHeight / 4;
-                m_Capsule.center = m_CapsuleCenter / 4;
+                m_Capsule.height = m_CapsuleHeight / 4f;
+                m_Capsule.center = m_CapsuleCenter / 5.4f;
             }
             if (state == "frontFlip")
             {
@@ -764,10 +764,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             m_Animator.SetBool("isExhausted", isExhausted);
             m_Animator.SetBool("isJumping", isJumping);
-            m_Animator.SetBool("isFalling", isFalling);
             m_Animator.SetBool("isRunning", isRunning);
             m_Animator.SetBool("isIdle", isIdle);
             m_Animator.SetBool("runSlide", runSlide);
+            m_Animator.SetBool("isFalling", isFalling);
+            m_Animator.SetBool("landLight", landLight);
+            m_Animator.SetBool("landForwardHeavy", landForwardHeavy);
+
 
 
             if (!m_IsGrounded && isJumping)
@@ -869,6 +872,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, m_GroundCheckDistance))
             {
                 isFalling = false;
+                //landLight = false;
+                //landForwardHeavy = false;
                 m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
                 m_Animator.applyRootMotion = true;
@@ -889,10 +894,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                     if (fallStart + 1 < timer)
                     {
-
-                        isFalling = true;                                  //ENABLEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
-                        playingFall = false;
+                        landLight = true;
+                        isFalling = true;
                     }
+                        if (fallStart + 2 < timer)
+                        {
+                            landLight = false;
+                            landForwardHeavy = true;
+                            playingFall = false;
+
+                        }
+
+
+                    
+
                 }
             }
         }
