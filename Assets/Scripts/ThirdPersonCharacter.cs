@@ -60,9 +60,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float transition;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
+        bool landed;
 
         //Foot positioning
-        bool footIkOn;
+        public bool footIkOn;
         RaycastHit hitLeg, noLegHit;
         public bool ikActive;
         Transform pointer;
@@ -75,6 +76,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
         float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow, hipToFootDisc, toeEnd;
         float climbDist;
+        float landedStart;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
         Transform rightFoot, leftFoot, hips, foot;
@@ -304,10 +306,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             //else runSlide = false;
 
-            if (runSlide)
+
+            if (isFalling || crouch || runSlide)
             {
                 footIkOn = false;
-                ScaleCapsule("slide");
+                if (runSlide)
+                {
+                    ScaleCapsule("slide");
+                }
             }
             else
             {
@@ -332,10 +338,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void OnCollisionEnter(Collision collision)
         {
-            if(collision.gameObject.name == "Lift")
+            if (collision.gameObject.name == "Lift")
             {
                 print("Collision with " + collision.gameObject.name);
-                m_Rigidbody.AddForce(0,1000,0);
+                m_Rigidbody.AddForce(0, 1000, 0);
             }
             foreach (ContactPoint contact in collision.contacts)
             {
@@ -350,8 +356,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (Input.GetKeyUp(KeyCode.W) && m_ForwardAmount > 0.5 || Input.GetKeyUp(KeyCode.D) && m_ForwardAmount > 0.5
                     || Input.GetKeyUp(KeyCode.A) && m_ForwardAmount > 0.5 || Input.GetKeyUp(KeyCode.S) && m_ForwardAmount > 0.5)
                 {
-                    m_Animator.Play("RunStop");
-                    m_Animator.SetFloat("Forward", 0);
+                    if (m_IsGrounded)
+                    {
+                        m_Animator.Play("RunStop");
+                        m_Animator.SetFloat("Forward", 0);
+                    }
                 }
             }
         }
@@ -482,7 +491,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_GroundCheckDistance = 0.1f;
                     ScaleCapsule("frontFlip");
                     //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
-
                 }
             }
         }
@@ -725,6 +733,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Capsule.height = 0.3f;
             }
+            if (state == "falling")
+            {
+                m_Capsule.height = m_CapsuleHeight;
+                m_Capsule.center = m_CapsuleCenter;
+            }
         }
 
 
@@ -803,6 +816,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 // don't use that while airborne
                 m_Animator.speed = 1;
             }
+
+            m_Animator.applyRootMotion = true;
         }
 
 
@@ -825,14 +840,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             isJumping = false;
             // check whether conditions are right to allow a jump:
-            if (jump && !crouch && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded") && !isExhausted)
+            if (jump && !crouch && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded") && !isExhausted && !isFalling)
             {
                 // jump!
                 m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                 m_IsGrounded = false;
                 isJumping = true;
-                m_Animator.applyRootMotion = false;
+                //m_Animator.applyRootMotion = false;
                 m_GroundCheckDistance = 0.1f;
+            }
+            else
+            {
+                isJumping = false;
             }
             ScaleCapsule("ground");
         }
@@ -871,44 +890,54 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // it is also good to note that the transform position in the sample assets is at the base of the character
             if (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, m_GroundCheckDistance))
             {
+
+                if (!landed)
+                {
+                    landedStart = Time.time;
+                    landed = true;
+                }
+
                 isFalling = false;
-                //landLight = false;
-                //landForwardHeavy = false;
                 m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
-                m_Animator.applyRootMotion = true;
 
+                m_Animator.applyRootMotion = true;
+                playingFall = false;
             }
             else
             {
                 m_IsGrounded = false;
+                landed = false;
                 m_GroundNormal = Vector3.up;
-                m_Animator.applyRootMotion = false;
+                //m_Animator.applyRootMotion = false;
                 //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
                 if (!m_IsGrounded)
                 {
-                    if (!m_IsGrounded && !playingFall)
+                    ScaleCapsule("falling");
+                    if (!playingFall)
                     {
                         fallStart = Time.time;
                         playingFall = true;
                     }
-                    if (fallStart + 1 < timer)
+                    if (fallStart + 1 > timer)
                     {
                         landLight = true;
                         isFalling = true;
                     }
-                        if (fallStart + 2 < timer)
-                        {
-                            landLight = false;
-                            landForwardHeavy = true;
-                            playingFall = false;
-
-                        }
-
-
-                    
-
+                    if (fallStart + 3 > timer)
+                    {
+                        landLight = false;
+                        landForwardHeavy = true;
+                    }
                 }
+            }
+
+            if (landed && timer > landedStart + 3)
+            {
+                print("Landed  expired");
+                landForwardHeavy = false;
+                landLight = false;
+                landed = false;
             }
         }
 
