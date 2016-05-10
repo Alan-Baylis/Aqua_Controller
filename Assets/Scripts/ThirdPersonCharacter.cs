@@ -60,7 +60,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float transition;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
-        bool landed;
+        bool landed, landing;
 
         //Foot positioning
         public bool footIkOn;
@@ -216,6 +216,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             Exhausted();
             doFlip();
 
+            if (landForwardHeavy || landLight)
+            {
+                landing = true;
+                m_Animator.applyRootMotion = false;
+                isRunning = false;
+            }
+
         }
         void LateUpdate()
         {
@@ -275,7 +282,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_ForwardAmount = move.z * mouseWheel;
 
 
-            if (m_IsGrounded)
+            if (m_IsGrounded && !landing)
             {
                 ApplyExtraTurnRotation();
             }
@@ -307,7 +314,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //else runSlide = false;
 
 
-            if (isFalling || crouch || runSlide)
+            if (isFalling || crouch || runSlide || landForwardHeavy || landLight)
             {
                 footIkOn = false;
                 if (runSlide)
@@ -735,7 +742,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (state == "falling")
             {
-                m_Capsule.height = m_CapsuleHeight;
+                m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
                 m_Capsule.center = m_CapsuleCenter;
             }
         }
@@ -909,22 +916,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_IsGrounded = false;
                 landed = false;
                 m_GroundNormal = Vector3.up;
+                ScaleCapsule("falling");
                 //m_Animator.applyRootMotion = false;
-                //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
-                if (!m_IsGrounded)
+                if (!isJumping)
                 {
-                    ScaleCapsule("falling");
+                    //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
                     if (!playingFall)
                     {
                         fallStart = Time.time;
                         playingFall = true;
                     }
-                    if (fallStart + 1 > timer)
+                    if (fallStart + 0.3 < timer)
                     {
                         landLight = true;
                         isFalling = true;
                     }
-                    if (fallStart + 3 > timer)
+                    if (fallStart + 0.5 < timer)
                     {
                         landLight = false;
                         landForwardHeavy = true;
@@ -932,12 +939,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
 
-            if (landed && timer > landedStart + 3)
+            if (landed && timer > landedStart + 2)
             {
                 print("Landed  expired");
                 landForwardHeavy = false;
                 landLight = false;
                 landed = false;
+                landing = false;
             }
         }
 
