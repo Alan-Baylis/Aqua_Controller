@@ -63,6 +63,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool landed, landing;
 
         //Foot positioning
+        RaycastHit hitSteps;
+
         public bool footIkOn;
         RaycastHit hitLeg, noLegHit;
         public bool ikActive;
@@ -112,7 +114,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Start()
         {
-            footIkOn = true;
             pointer = GameObject.Find("Pointer").transform;
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
@@ -599,7 +600,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
-            RaycastHit hitSteps;
+
             {
                 if (name == "exhausted")
                 {   /*
@@ -941,7 +942,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (landed && timer > landedStart + 2)
             {
-                print("Landed  expired");
                 landForwardHeavy = false;
                 landLight = false;
                 landed = false;

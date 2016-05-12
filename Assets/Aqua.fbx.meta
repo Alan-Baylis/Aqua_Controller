@@ -354,20 +354,20 @@ ModelImporter:
       be discarded.\n\t'Right_arm' has translation animation that will be discarded.\n\t'Right_pinky'
       has translation animation that will be discarded.\n"
     animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftUpperArm
-      average position error 46.2 mm and maximum position error 152.5 mm at time 498:12
-      (90.6%) Frame 11964\n\tLeftLowerArm average position error 46.2 mm and maximum
-      position error 152.5 mm at time 498:12 (90.6%) Frame 11964\n\tLeftHand average
-      position error 46.2 mm and maximum position error 152.5 mm at time 498:12 (90.6%)
-      Frame 11964\n\tRightUpperArm average position error 46.1 mm and maximum position
-      error 150.8 mm at time 500: 1 (90.9%) Frame 12001\n\tRightLowerArm average position
-      error 46.1 mm and maximum position error 150.8 mm at time 500: 1 (90.9%) Frame
-      12001\n\tRightHand average position error 46.1 mm and maximum position error
-      150.8 mm at time 500: 1 (90.9%) Frame 12001\n\tHead average position error 16.5
-      mm and maximum position error 132.4 mm at time 497:12 (90.5%) Frame 11940\n\tLeftFoot
+      average position error 47.2 mm and maximum position error 152.5 mm at time 498:12
+      (90.0%) Frame 11964\n\tLeftLowerArm average position error 47.2 mm and maximum
+      position error 152.5 mm at time 498:12 (90.0%) Frame 11964\n\tLeftHand average
+      position error 47.2 mm and maximum position error 152.5 mm at time 498:12 (90.0%)
+      Frame 11964\n\tRightUpperArm average position error 46.6 mm and maximum position
+      error 150.8 mm at time 500: 1 (90.2%) Frame 12001\n\tRightLowerArm average position
+      error 46.6 mm and maximum position error 150.8 mm at time 500: 1 (90.2%) Frame
+      12001\n\tRightHand average position error 46.6 mm and maximum position error
+      150.8 mm at time 500: 1 (90.2%) Frame 12001\n\tHead average position error 16.9
+      mm and maximum position error 132.4 mm at time 497:12 (89.8%) Frame 11940\n\tLeftFoot
       average orientation error 0.2 deg and maximum orientation error 173.8 deg at
-      time 387:10 (70.4%) Frame 9298\n\tRightFoot average orientation error 0.3 deg
-      and maximum orientation error 175.6 deg at time 387:16 (70.5%) Frame 9304\n"
-    animationDoRetargetingWarnings: 1
+      time 387:10 (69.9%) Frame 9298\n\tRightFoot average orientation error 0.3 deg
+      and maximum orientation error 175.6 deg at time 387:16 (70.0%) Frame 9304\n"
+    animationDoRetargetingWarnings: 0
     animationCompression: 0
     animationRotationError: 0.5
     animationPositionError: 0.5
@@ -5310,9 +5310,9 @@ ModelImporter:
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
       keepOriginalOrientation: 0
-      keepOriginalPositionY: 0
+      keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
-      heightFromFeet: 1
+      heightFromFeet: 0
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
@@ -5465,7 +5465,7 @@ ModelImporter:
       name: LandForwardHeavy
       takeName: Take 001
       firstFrame: 12459
-      lastFrame: 13200
+      lastFrame: 13300
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -5475,9 +5475,9 @@ ModelImporter:
       loopTime: 0
       loopBlend: 0
       loopBlendOrientation: 0
-      loopBlendPositionY: 1
+      loopBlendPositionY: 0
       loopBlendPositionXZ: 0
-      keepOriginalOrientation: 0
+      keepOriginalOrientation: 1
       keepOriginalPositionY: 1
       keepOriginalPositionXZ: 0
       heightFromFeet: 0
