@@ -61,6 +61,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
         bool landed, landing;
+        Animation runningSlide;
 
         //Foot positioning
         RaycastHit hitSteps;
@@ -283,7 +284,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_ForwardAmount = move.z * mouseWheel;
 
 
-            if (m_IsGrounded && !landing)
+            if (m_IsGrounded && !landing && !runSlide)
             {
                 ApplyExtraTurnRotation();
             }
@@ -311,6 +312,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //m_Rigidbody.useGravity = false;
                 //m_Rigidbody.mass = 0;
                 //m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_Rigidbody.velocity.y, m_Rigidbody.velocity.z * 2f);
+            }
+            if(runSlide && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("runSlide"))
+            {
+                runSlide = false;
             }
             //else runSlide = false;
 
@@ -364,7 +369,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (Input.GetKeyUp(KeyCode.W) && m_ForwardAmount > 0.5 || Input.GetKeyUp(KeyCode.D) && m_ForwardAmount > 0.5
                     || Input.GetKeyUp(KeyCode.A) && m_ForwardAmount > 0.5 || Input.GetKeyUp(KeyCode.S) && m_ForwardAmount > 0.5)
                 {
-                    if (m_IsGrounded)
+                    if (m_IsGrounded && !runSlide)
                     {
                         m_Animator.Play("RunStop");
                         m_Animator.SetFloat("Forward", 0);
@@ -723,6 +728,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (state == "ground")
             {
+                //m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
                 m_Capsule.height = m_CapsuleHeight;
                 m_Capsule.center = m_CapsuleCenter;
             }
