@@ -115,6 +115,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Start()
         {
+
+            //Dissable Mouse                
+            Cursor.visible = false;
+            Screen.lockCursor = true;
+
             pointer = GameObject.Find("Pointer").transform;
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
@@ -177,6 +182,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Cursor.visible = true;
+                Screen.lockCursor = false;
+            }
+
             timer = Time.time;
             //if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
@@ -323,6 +334,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isFalling || crouch || runSlide || landForwardHeavy || landLight)
             {
                 footIkOn = false;
+
                 if (runSlide)
                 {
                     ScaleCapsule("slide");
@@ -354,7 +366,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (collision.gameObject.name == "Lift")
             {
                 print("Collision with " + collision.gameObject.name);
-                m_Rigidbody.AddForce(0, 1000, 0);
+                m_Rigidbody.AddRelativeForce(0, 1000, 10);
             }
             foreach (ContactPoint contact in collision.contacts)
             {
@@ -749,8 +761,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (state == "falling")
             {
-                m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
+                m_Capsule.height = m_CapsuleHeight; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
                 m_Capsule.center = m_CapsuleCenter;
+            }
+            if(state == "heavyLanding")
+            {
+                m_Capsule.height = m_CapsuleHeight/5; 
+                m_Capsule.center = m_CapsuleCenter/5;
             }
         }
 
@@ -909,6 +926,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     landedStart = Time.time;
                     landed = true;
+                    ScaleCapsule("heavyLanding");
                 }
 
                 isFalling = false;
@@ -946,7 +964,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
 
-            if (landed && timer > landedStart + 2)
+            if (landed && timer > landedStart + 1)
             {
                 landForwardHeavy = false;
                 landLight = false;
