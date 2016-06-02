@@ -61,6 +61,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
         bool landed, landing;
+        public bool turnningAround;
         Animation runningSlide;
 
         //Foot positioning
@@ -295,7 +296,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_ForwardAmount = move.z * mouseWheel;
 
 
-            if (m_IsGrounded && !landing && !runSlide)
+            if (m_IsGrounded && !landing )//&& !runSlide)
             {
                 ApplyExtraTurnRotation();
             }
@@ -482,6 +483,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning)
             {
+                turnningAround = true;
                 if (side == "Right")
                 {
                     m_Animator.Play("TurnAroundRight");
