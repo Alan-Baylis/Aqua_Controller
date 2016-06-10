@@ -12,8 +12,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private Vector3 m_CamForward;             // The current forward direction of the camera
         private Vector3 m_Move;
         private bool m_Jump;                      // the world-relative desired move direction, calculated from the camForward and user input.
+        private bool buttonAPressed;
+        float RuneSideJumpStart;
 
-        
+
         private void Start()
         {
             // get the transform of the main camera
@@ -54,7 +56,37 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Character.turnAround("Right");
             }
+
+            
+                if (m_Character.isRunning && Input.GetKey(KeyCode.A) || m_Character.isRunning && Input.GetKey(KeyCode.D) )
+                {
+                    if (!buttonAPressed)
+                    {
+                        buttonAPressed = true;
+                        RuneSideJumpStart = Time.time;
+                    }
+                    if (Input.GetKey(KeyCode.A) && RuneSideJumpStart + 0.3f > Time.time)
+                    {
+                        m_Character.RunJumpLeft = true;
+                        buttonAPressed = false;
+                    }
+                    if (Input.GetKey(KeyCode.D) && RuneSideJumpStart + 0.3f > Time.time)
+                    {
+                        m_Character.RunJumpRight = true;
+                        buttonAPressed = false;
+                    }
+                }
+                else
+                {
+                    m_Character.RunJumpRight = false;
+                    m_Character.RunJumpLeft = false;
+                    buttonAPressed = false;
+                }
         }
+
+           
+
+        
 
 
 

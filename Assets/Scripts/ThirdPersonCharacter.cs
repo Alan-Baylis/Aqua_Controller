@@ -47,8 +47,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         //My movements
         float mouseWheel = 0.2f;
-        public float movingRight;
-        public float movingLeft;
+        //public float movingRight;
+        //public float movingLeft;
         public bool isRunning;
         public bool isWalking;
         public bool isIdle;
@@ -63,13 +63,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool landed, landing;
         public bool turnningAround;
         Animation runningSlide;
+        public bool RunJumpLeft, RunJumpRight;
 
         //Foot positioning
         RaycastHit hitSteps;
 
         public bool footIkOn;
         RaycastHit hitLeg, noLegHit;
-        public bool ikActive;
+        //public bool ikActive;
         Transform pointer;
         Vector3 slopeRight, slopeLeft;
         Quaternion rightFootRot, leftFootRot;
@@ -332,6 +333,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //else runSlide = false;
 
 
+            // Turn on LegIk only on suitable conditions
             if (isFalling || crouch || runSlide || landForwardHeavy || landLight)
             {
                 footIkOn = false;
@@ -816,7 +818,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("isFalling", isFalling);
             m_Animator.SetBool("landLight", landLight);
             m_Animator.SetBool("landForwardHeavy", landForwardHeavy);
-
+            m_Animator.SetBool("RunJumpRight", RunJumpRight);
+            m_Animator.SetBool("RunJumpLeft", RunJumpLeft);
+            
 
 
             if (!m_IsGrounded && isJumping)
@@ -966,7 +970,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
 
-            if (landed && timer > landedStart + 1)
+            //Landing is over when player is stood up
+            if (landed && timer > landedStart + 1.5)
             {
                 landForwardHeavy = false;
                 landLight = false;
