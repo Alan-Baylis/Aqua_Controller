@@ -76,12 +76,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         buttonAPressed = false;
                     }
                 }
-                else
-                {
-                    m_Character.RunJumpRight = false;
-                    m_Character.RunJumpLeft = false;
+
+            if (buttonAPressed && RuneSideJumpStart + 10 > Time.time)
+            {
+                    //m_Character.RunJumpRight = false;
+                    //m_Character.RunJumpLeft = false;
                     buttonAPressed = false;
-                }
+            } 
+                
         }
 
            

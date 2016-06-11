@@ -32,7 +32,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool m_Crouching;
 
         Rigidbody m_Rigidbody;
-        Animator m_Animator;
+        public Animator m_Animator;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
         public float m_TurnAmount;
@@ -297,7 +297,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_ForwardAmount = move.z * mouseWheel;
 
 
-            if (m_IsGrounded && !landing )//&& !runSlide)
+            if (m_IsGrounded && !landing)//&& !runSlide)
             {
                 ApplyExtraTurnRotation();
             }
@@ -326,7 +326,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //m_Rigidbody.mass = 0;
                 //m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_Rigidbody.velocity.y, m_Rigidbody.velocity.z * 2f);
             }
-            if(runSlide && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("runSlide"))
+            if (runSlide && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("runSlide"))
             {
                 runSlide = false;
             }
@@ -334,7 +334,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
             // Turn on LegIk only on suitable conditions
-            if (isFalling || crouch || runSlide || landForwardHeavy || landLight)
+            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight)
             {
                 footIkOn = false;
 
@@ -347,6 +347,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 footIkOn = true;
             }
+
+            if (RunJumpLeft || RunJumpRight) {
+                if (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunJumpLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunJumpRight"))
+                {
+                    RunJumpRight = false;
+                    RunJumpLeft = false;
+                }
+            }
+
+
+
 
 
 
