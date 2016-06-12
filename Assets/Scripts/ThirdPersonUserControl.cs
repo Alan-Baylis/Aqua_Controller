@@ -4,7 +4,7 @@ using UnityStandardAssets.CrossPlatformInput;
 
 namespace UnityStandardAssets.Characters.ThirdPerson
 {
-    [RequireComponent(typeof (ThirdPersonCharacter))]
+    [RequireComponent(typeof(ThirdPersonCharacter))]
     public class ThirdPersonUserControl : MonoBehaviour
     {
         private ThirdPersonCharacter m_Character; // A reference to the ThirdPersonCharacter on the object
@@ -12,8 +12,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private Vector3 m_CamForward;             // The current forward direction of the camera
         private Vector3 m_Move;
         private bool m_Jump;                      // the world-relative desired move direction, calculated from the camForward and user input.
-        private bool buttonAPressed;
-        float RuneSideJumpStart;
+        private bool jumpToSidePressed;
+        float jumpToSideStart;
+        public bool RunJumpLeft, RunJumpRight;
+
+        Animator m_Animator;
 
 
         private void Start()
@@ -32,6 +35,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             // get the third person character ( this should never be null due to require component )
             m_Character = GetComponent<ThirdPersonCharacter>();
+
+            m_Animator = m_Character.m_Animator;
+
         }
 
 
@@ -43,13 +49,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //m_Character.isJumping = true;  // Why this is off?
             }
 
-            if (m_Character.isRunning){
+            if (m_Character.isRunning)
+            {
                 m_Character.stopRun();
             }
 
-            if (m_Character.m_TurnAmount < -0.9) { /* || m_Character.directionSwitch(1) == true || m_Character.directionSwitch(2) == true*/
+            if (m_Character.m_TurnAmount < -0.9)
+            { /* || m_Character.directionSwitch(1) == true || m_Character.directionSwitch(2) == true*/
 
-                    m_Character.turnAround("Left");
+                m_Character.turnAround("Left");
             }
             if (m_Character.m_TurnAmount > 0.9) /* || m_Character.directionSwitch(4) == true || m_Character.directionSwitch(3) == true*/
 
@@ -57,38 +65,46 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Character.turnAround("Right");
             }
 
-            
-                if (m_Character.isRunning && Input.GetKey(KeyCode.A) || m_Character.isRunning && Input.GetKey(KeyCode.D) )
-                {
-                    if (!buttonAPressed)
-                    {
-                        buttonAPressed = true;
-                        RuneSideJumpStart = Time.time;
-                    }
-                    if (Input.GetKey(KeyCode.A) && RuneSideJumpStart + 0.3f > Time.time)
-                    {
-                        m_Character.RunJumpLeft = true;
-                        buttonAPressed = false;
-                    }
-                    if (Input.GetKey(KeyCode.D) && RuneSideJumpStart + 0.3f > Time.time)
-                    {
-                        m_Character.RunJumpRight = true;
-                        buttonAPressed = false;
-                    }
-                }
 
-            if (buttonAPressed && RuneSideJumpStart + 10 > Time.time)
+            if (!jumpToSidePressed && m_Character.isRunning && (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D)))
             {
-                    //m_Character.RunJumpRight = false;
-                    //m_Character.RunJumpLeft = false;
-                    buttonAPressed = false;
-            } 
-                
+                jumpToSideStart = Time.time;
+                jumpToSidePressed = true;
+            }
+            if (jumpToSidePressed && jumpToSideStart + 0.2f < Time.time)
+            {
+                jumpToSidePressed = false;
+            }
+
+            if (Input.GetKeyDown(KeyCode.A) && jumpToSidePressed && jumpToSideStart + 0.2f > Time.time)
+            {
+                m_Character.RunJumpLeft = true;
+            }
+            if (Input.GetKeyDown(KeyCode.D) && jumpToSidePressed && jumpToSideStart + 0.2f > Time.time)
+            {
+                m_Character.RunJumpRight = true;
+            }
+
+            //Declare animation lengths only once in the Setup
+
+            /* if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.m_Animator.GetCurrentAnimatorStateInfo(0).length
+                 - m_Character.m_Animator.GetCurrentAnimatorStateInfo(0).length / 3 < m_Character.timer)*/
+
+
+            if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.GetAnimationLength("RunJumpLeft")/12- m_Character.GetAnimationLength("RunJumpLeft")/3/12
+            < m_Character.timer)
+            {
+                m_Character.RunJumpRight = false;
+                m_Character.RunJumpLeft = false;
+                jumpToSidePressed = false;
+            }
+
         }
 
-           
 
-        
+
+
+
 
 
 
@@ -105,17 +121,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 // calculate camera relative direction to move:
                 m_CamForward = Vector3.Scale(m_Cam.forward, new Vector3(1, 0, 1)).normalized;
-                m_Move = v*m_CamForward + h*m_Cam.right;
+                m_Move = v * m_CamForward + h * m_Cam.right;
             }
             else
             {
                 // we use world-relative directions in the case of no main camera
-                m_Move = v*Vector3.forward + h*Vector3.right;
+                m_Move = v * Vector3.forward + h * Vector3.right;
             }
-            #if !MOBILE_INPUT
-			// walk speed multiplier
-	        if (Input.GetKey(KeyCode.LeftShift)) m_Move *= 0.5f;
-            #endif
+#if !MOBILE_INPUT
+            // walk speed multiplier
+            if (Input.GetKey(KeyCode.LeftShift)) m_Move *= 0.5f;
+#endif
 
             // pass all parameters to the character control script
             m_Character.Move(m_Move, crouch, m_Jump);

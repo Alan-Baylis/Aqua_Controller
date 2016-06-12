@@ -30,6 +30,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float recovery = 5f;
         public bool m_Crouching;
+        AnimationClip [] animations;
 
         Rigidbody m_Rigidbody;
         public Animator m_Animator;
@@ -62,7 +63,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool flipReady;
         bool landed, landing;
         public bool turnningAround;
-        Animation runningSlide;
+        //Animation runningSlide;
         public bool RunJumpLeft, RunJumpRight;
 
         //Foot positioning
@@ -87,13 +88,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Transform rightFoot, leftFoot, hips, foot;
         int upOrDown;
         float charScale;
+        float animClipSpeed;
 
 
 
         //spublic bool isTurning;
         public float breathingTempo = 1;
         int ways;
-        float timer, jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
+        float  jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
+        public float timer;
         float buttonTime = -1;
         float interval = 0.1f;
         public float myForward;
@@ -115,9 +118,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Vector3 fwd, down;
         float breathInterval = 0.8f;
 
+        //Animation lengths and indexes
+        RuntimeAnimatorController animatorController;
+        int animIndex;
+
+
+
+
         void Start()
         {
-
             //Dissable Mouse                
             Cursor.visible = false;
             Screen.lockCursor = true;
@@ -147,38 +156,46 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
-            /*
-            playerNeck = GameObject.Find("Neck");
-            playerHips = GameObject.Find("Hips");
-            pivot = GameObject.Find("Pivot");
-            cameraGroup = GameObject.Find("Camera_group");
-            */
+
             fwd = transform.TransformDirection(new Vector3(transform.position.x, transform.position.y + 10, transform.position.z));
             down = transform.TransformDirection(Vector3.down);
 
             climbSmoothing = 0.01f;
+
+            //To copy all animations from animation controller to animations array
+            animatorController = m_Animator.runtimeAnimatorController;
+            animations = new AnimationClip[animatorController.animationClips.Length];
+            animatorController.animationClips.CopyTo(animations, 0);
+            //Print all animation names and index
+            for(int i = 0; i < animatorController.animationClips.Length; i++)
+            {
+                //print(i+ " is animation "+ GetAnimationClips(i).name);
+            }
+            print( " is animation "+ GetAnimationClips(25).name);
+
+
         }
 
-        //Aims bone towards the mouse on screen
-        void aimToMouse(string bone)
-        {/*
-            xHead = pivot.transform.eulerAngles.x;
-            yCam = cameraGroup.transform.eulerAngles.y;
-            yHip = playerHips.transform.localEulerAngles.y;
-            yHead = -1 * (yHip - yCam);
-            /*
-            if(yHead > 0.3) { yHead = 0.3f; }
-            if (yHead < -0.3) { yHead = -0.3f; }
-            */
+        public float GetAnimationLength(string name)
+        {
+            for (int i = 0; i < animatorController.animationClips.Length; i++)
+            {
+                if (name == GetAnimationClips(i).name)
+                {
+                    animIndex = i;
+                }
+            }
 
-            // print(playerNeck.transform.localEulerAngles.y);
+            float length = (GetAnimationClips(animIndex).length);
 
-            //smoothY = Mathf.SmoothDamp(x, Screen.width / 2, ref z, 5, 2);
-
-
-
-            //playerNeck.transform.rotation = Quaternion.Euler(xHead, yHead, transform.eulerAngles.z);
+            return length;
         }
+
+        private AnimationClip GetAnimationClips(int animIndex)
+        {
+            return animations[animIndex];
+        }
+
 
 
 
@@ -348,25 +365,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 footIkOn = true;
             }
 
-            if (RunJumpLeft || RunJumpRight) {
-                if (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunJumpLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunJumpRight"))
-                {
-                    RunJumpRight = false;
-                    RunJumpLeft = false;
-                }
-            }
-
-
-
-
-
-
-
 
             // send input and other state parameters to the animator
             UpdateAnimator(move);
 
         }
+
+
         void smoothRotateBone(Transform bone)
         {
             if (bone == spine)
@@ -831,6 +836,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("landForwardHeavy", landForwardHeavy);
             m_Animator.SetBool("RunJumpRight", RunJumpRight);
             m_Animator.SetBool("RunJumpLeft", RunJumpLeft);
+            m_Animator.SetFloat("animClipSpeed", animClipSpeed);
+
+        
             
 
 
