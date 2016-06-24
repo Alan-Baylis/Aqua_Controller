@@ -66,6 +66,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
 
+            // To jump right or left while running
             if (!jumpToSidePressed && m_Character.isRunning && (Input.GetKeyUp(KeyCode.A) || Input.GetKeyUp(KeyCode.D)))
             {
                 jumpToSideStart = Time.time;

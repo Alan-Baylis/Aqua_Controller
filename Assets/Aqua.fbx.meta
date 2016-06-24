@@ -353,18 +353,18 @@ ModelImporter:
       animation that will be discarded.\n\t'Right_pinky' has translation animation
       that will be discarded.\n"
     animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftUpperArm
-      average position error 37.7 mm and maximum position error 94.8 mm at time 309:
-      8 (54.2%) Frame 7424\n\tLeftLowerArm average position error 37.7 mm and maximum
-      position error 94.8 mm at time 309: 8 (54.2%) Frame 7424\n\tLeftHand average
-      position error 37.7 mm and maximum position error 94.8 mm at time 309: 8 (54.2%)
-      Frame 7424\n\tRightUpperArm average position error 38.9 mm and maximum position
-      error 77.5 mm at time 310:12 (54.4%) Frame 7452\n\tRightLowerArm average position
-      error 38.9 mm and maximum position error 77.5 mm at time 310:12 (54.4%) Frame
-      7452\n\tRightHand average position error 38.9 mm and maximum position error
-      77.5 mm at time 310:12 (54.4%) Frame 7452\n\tLeftFoot average orientation error
-      0.2 deg and maximum orientation error 173.8 deg at time 387:10 (67.9%) Frame
+      average position error 37.8 mm and maximum position error 94.8 mm at time 309:
+      8 (53.0%) Frame 7424\n\tLeftLowerArm average position error 37.8 mm and maximum
+      position error 94.8 mm at time 309: 8 (53.0%) Frame 7424\n\tLeftHand average
+      position error 37.8 mm and maximum position error 94.8 mm at time 309: 8 (53.0%)
+      Frame 7424\n\tRightUpperArm average position error 39.0 mm and maximum position
+      error 77.5 mm at time 310:12 (53.2%) Frame 7452\n\tRightLowerArm average position
+      error 39.0 mm and maximum position error 77.5 mm at time 310:12 (53.2%) Frame
+      7452\n\tRightHand average position error 39.0 mm and maximum position error
+      77.5 mm at time 310:12 (53.2%) Frame 7452\n\tLeftFoot average orientation error
+      0.2 deg and maximum orientation error 173.8 deg at time 387:10 (66.4%) Frame
       9298\n\tRightFoot average orientation error 0.3 deg and maximum orientation
-      error 175.6 deg at time 387:16 (67.9%) Frame 9304\n"
+      error 175.6 deg at time 387:16 (66.5%) Frame 9304\n"
     animationDoRetargetingWarnings: 1
     animationCompression: 0
     animationRotationError: 0.5
@@ -5631,14 +5631,14 @@ ModelImporter:
       name: RunJumpLeft
       takeName: Take 001
       firstFrame: 13400
-      lastFrame: 13700
+      lastFrame: 13967
       wrapMode: 0
       orientationOffsetY: -0.75
       level: 0
       cycleOffset: 0
       loop: 0
       hasAdditiveReferencePose: 0
-      loopTime: 1
+      loopTime: 0
       loopBlend: 1
       loopBlendOrientation: 1
       loopBlendPositionY: 1
@@ -5799,7 +5799,7 @@ ModelImporter:
       name: RunJumpRight
       takeName: Take 001
       firstFrame: 13400
-      lastFrame: 13700
+      lastFrame: 13967
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
