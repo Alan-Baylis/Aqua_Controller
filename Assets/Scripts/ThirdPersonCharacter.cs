@@ -68,7 +68,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         //Foot positioning
         RaycastHit hitSteps;
-
         public bool footIkOn;
         RaycastHit hitLeg, noLegHit;
         //public bool ikActive;
@@ -89,6 +88,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         int upOrDown;
         float charScale;
         float animClipSpeed;
+        public bool leftLegClimb, rightLegClimb;
+        public bool leftFootIkActive, rightFootIkActive;
+        float rightFootTempX, leftFootTempX, rightFootTempY, leftFootTempY, rightFootTempZ, leftFootTempZ;
 
 
 
@@ -990,7 +992,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //Landing is over when player is stood up
-            if (landed && timer > landedStart + 1.5)
+            if (landed && timer > landedStart + 1)
             {
                 landForwardHeavy = false;
                 landLight = false;
@@ -1016,24 +1018,51 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
                 //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
-                if (_foot == 1)
-                {
-                    rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
-                    rightFootLow = rightFootHigh;
-                    rightFootNewPosition = new Vector3(hitLeg.point.x, hipToFootDisc / 10 + hitLeg.point.y, hitLeg.point.z);
-                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
-                    if (footSmoothingRight > 0.95) { climbReady = true; }
-                    else climbReady = false;
-                }
-                if (_foot == 2)
+                if (_foot == 1 && !leftFootIkActive)
                 {
 
+                    //New, Trying to lock foot that is atctive at the position
+                    rightFootIkActive = true;
+                    if (!climbPlaying && !climbReady)
+                    {
+                        rightFootTempX = hitLeg.point.x;
+                        rightFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
+                        rightFootTempZ = hitLeg.point.z;
+                    }
+
+
+                    rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
+                    rightFootLow = rightFootHigh;
+                    rightFootNewPosition = new Vector3(rightFootTempX, rightFootTempY, rightFootTempZ);
+                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
+                    if (footSmoothingRight > 0.95) { climbReady = true;  }
+                    else
+                    {
+                        climbReady = false;
+                    }
+                }
+                if (_foot == 2 && !rightFootIkActive)
+                {
+
+                    //New, Trying to lock foot that is atctive at the position
+                    leftFootIkActive = true;
+                    if (!climbPlaying && !climbReady)
+                    {
+                        leftFootTempX = hitLeg.point.x;
+                        leftFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
+                        leftFootTempZ = hitLeg.point.z;
+                    }
+
+                    leftFootIkActive = true;
                     leftFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
-                    leftFootNewPosition = new Vector3(hitLeg.point.x, hipToFootDisc / 10 + hitLeg.point.y, hitLeg.point.z);
+                    leftFootNewPosition = new Vector3(leftFootTempX, leftFootTempY, leftFootTempZ);
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
-                    if (footSmoothingLeft > 0.95) { climbReady = true; }
-                    else climbReady = false;
+                    if (footSmoothingLeft > 0.95) { climbReady = true;  }
+                    else
+                    {
+                        climbReady = false;
+                    }
                 }
 
                 //Climb up
@@ -1064,17 +1093,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (!(Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength)))
             {
-                //
+                leftFootIkActive = false;
+                rightFootIkActive = false;
 
                 if (_foot == 1)
                 {
                     if (footSmoothingRight >= 0.01) { footSmoothingRight -= 0.01f; }
                     else footSmoothingRight = 0;
+                    leftLegClimb = false;
                 }
                 if (_foot == 2)
                 {
                     if (footSmoothingLeft >= 0.01) { footSmoothingLeft -= 0.01f; }
                     else footSmoothingLeft = 0;
+                    rightLegClimb = false;
                 }
                 climbDone = true;
 
@@ -1144,20 +1176,32 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
                         //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
 
-                        if (rightFoot.transform.position.z > leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z > leftFoot.transform.position.z && isRunning)
+                        // Different states as running walking idle, requires diffferent footIk settings
+                        //
+
+                        legIK(1);
+                        legIK(2);
+                        /*
+
+                        if ((rightFoot.transform.position.z > leftFoot.transform.position.z && !isIdle ) && !leftLegClimb)
                         {
                             legIK(1);
                         }
-                        if (rightFoot.transform.position.z < leftFoot.transform.position.z && isWalking || rightFoot.transform.position.z < leftFoot.transform.position.z && isRunning)
-                        {
+                        if ((rightFoot.transform.position.z < leftFoot.transform.position.z && !isIdle /*|| rightFoot.transform.position.z < leftFoot.transform.position.z && isRunning*//*) && !rightLegClimb)
+                      /*  {
                             legIK(2);
                         }
+                        */
 
+
+                        /*
                         if (isIdle)
                         {
                             legIK(1);
                             legIK(2);
                         }
+                        /*/
+
 
                         /*
                         if (isIdle)
