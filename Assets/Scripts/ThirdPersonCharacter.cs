@@ -242,7 +242,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (landForwardHeavy || landLight)
             {
                 landing = true;
-                m_Animator.applyRootMotion = false;
+                //m_Animator.applyRootMotion = false;
                 isRunning = false;
             }
         }
@@ -301,7 +301,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 mouseWheel += Input.GetAxis("Mouse ScrollWheel");
             }
-            m_ForwardAmount = move.z * mouseWheel;
+
+            //m_ForwardAmount = move.z * mouseWheel;
+            setForwardAmount(move.z * mouseWheel);
 
 
             if (m_IsGrounded && !landing && !runSlide)//&& !runSlide)
@@ -418,7 +420,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (m_IsGrounded && !runSlide)
                     {
                         m_Animator.Play("RunStop");
-                        m_Animator.SetFloat("Forward", 0);
+                        setForwardAmount(0);
                     }
                 }
             }
@@ -431,7 +433,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 nextToWall = true;
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
-                m_ForwardAmount = 0f;
+                setForwardAmount(0);
             }
             if(!(Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle))
             {
@@ -545,7 +547,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     flipReady = false;
                     m_IsGrounded = false;
                     playingFlip = true;
-                    m_Animator.applyRootMotion = false;
+                    //m_Animator.applyRootMotion = false;
                     m_GroundCheckDistance = 0.1f;
                     ScaleCapsule("frontFlip");
                     //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
@@ -828,13 +830,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 flipReady = true;
             }
-            if (!stepUpReady && !nextToWall)
+            
+            if (!stepUpReady)
             {
                 m_Animator.SetFloat("Forward", m_ForwardAmount, 0.1f, Time.deltaTime);
-            }
-            else
-            {
-                m_Animator.SetFloat("Forward", 0.5f);
             }
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
             m_Animator.SetBool("Crouch", m_Crouching);
@@ -886,7 +885,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.speed = 1;
             }
 
-            m_Animator.applyRootMotion = true;
+            //m_Animator.applyRootMotion = true;
         }
 
 
@@ -948,9 +947,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
         // Setter getter for m_forwardAmount
-        void setForwardAmount(float movingSpeed)
+        void setForwardAmount(float preferedMovingSpeed)
         {
-            m_ForwardAmount = movingSpeed;
+            m_ForwardAmount = Mathf.Lerp(getForwardAmount(), preferedMovingSpeed, 0.06f);
+            //m_ForwardAmount = movingSpeed;
         }
         float getForwardAmount()
         {
@@ -989,7 +989,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 landed = false;
                 m_GroundNormal = Vector3.up;
                 ScaleCapsule("falling");
-                //m_Animator.applyRootMotion = false;
                 if (!isJumping && !stepUpPlaying)
                 {
                     //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
@@ -1049,6 +1048,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         rightFootTempX = hitLeg.point.x;
                         rightFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
                         rightFootTempZ = hitLeg.point.z;
+
                     }
                     rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
@@ -1056,7 +1056,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.1f; }
                     if (footSmoothingRight > 0.95) {
                         stepUpReady = true;
-                        m_ForwardAmount = 0;
+                        setForwardAmount(0.5f);
                     }
                     else
                     {
@@ -1081,7 +1081,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.1f; }
                     if (footSmoothingLeft > 0.95) {
                         stepUpReady = true;
-                        m_ForwardAmount = 0;
+                        setForwardAmount(0.5f);
                     }
                     else
                     {
