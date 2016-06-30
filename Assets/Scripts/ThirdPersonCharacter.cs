@@ -63,6 +63,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool standUp;
         public bool turnningAround;
         public bool RunJumpLeft, RunJumpRight;
+        Vector3 moveDirection;
 
         //Foot positioning
         RaycastHit hitSteps;
@@ -148,7 +149,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             hips = GameObject.Find("Hips").transform;
             toeEnd = GameObject.Find("Right_toe_end").transform.position.y;
             hipToFootDisc = hips.position.y - toeEnd;
-            print(hipToFootDisc + " hipToFootDisc");
+            //print(hipToFootDisc + " hipToFootDisc");
             charScale = 100 / (transform.localScale.x * 100 / 1.635238f);
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             m_OrigGroundCheckDistance = m_GroundCheckDistance;
@@ -160,9 +161,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             animations = new AnimationClip[animatorController.animationClips.Length];
             animatorController.animationClips.CopyTo(animations, 0);
 
+            //print animation names
+            //printAnimationNameIndex();
         }
 
-        //Tp get Animation Lenghts
+        //To get Animation Lenghts
         public float GetAnimationLength(string name)
         {
             for (int i = 0; i < animatorController.animationClips.Length; i++)
@@ -171,21 +174,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     animIndex = i;
                 }
-                else
+                if(i >= animatorController.animationClips.Length)
                 {
                     print("No animation found for GetAnimationLength");
                     return 0;
                 }
             }
-            float length = (GetAnimationClips(animIndex).length);
-            return length;
+            float animLength = (GetAnimationClips(animIndex).length);
+            return animLength;
         }
         private AnimationClip GetAnimationClips(int animIndex)
         {
             return animations[animIndex];
         }
-
-
 
 
         void Update()
@@ -248,6 +249,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void LateUpdate()
         {
+            
+            stopAnimatingBone("rightLeg");
 
             //aimToMouse("Neck");
             if (!isIdle && stepUpPlaying)
@@ -271,7 +274,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_TurnAmount = Mathf.Atan2(move.x, move.z);
 
             mouseWheel += Input.GetAxis("Mouse ScrollWheel");
-
             if (mouseWheel > 1)
             {
                 mouseWheel = 1;
@@ -306,7 +308,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             setForwardAmount(move.z * mouseWheel);
 
 
-            if (m_IsGrounded && !landing && !runSlide)//&& !runSlide)
+            if (m_IsGrounded && !landing && !runSlide)
             {
                 ApplyExtraTurnRotation();
             }
@@ -324,7 +326,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //ScaleCapsuleForCrouching(crouch);
             //PreventStandingInLowHeadroom();
 
-            if (isRunning && Input.GetKeyDown(KeyCode.C))
+            if (isRunning && Input.GetKey(KeyCode.C))
             {
                 runSlide = true;
                 m_Animator.Play("RunSlide");
@@ -338,12 +340,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (runSlide)
             {
-                m_Rigidbody.useGravity = false;
-                m_Rigidbody.AddRelativeForce(0, 0, m_Rigidbody.velocity.z * 20);
+                //m_Rigidbody.useGravity = false;
+                //m_Capsule.material.dynamicFriction = 0;
+                //m_Capsule.material.staticFriction = 0;
+                //m_Capsule.material.bounciness = 999f;
+                //m_Animator.applyRootMotion = false;
+                //m_Rigidbody.isKinematic = true;
+                //m_Rigidbody.AddRelativeForce(0, 0, m_Rigidbody.velocity.z * 2);
 
-                m_Capsule.material.dynamicFriction = 0;
-
-                m_Animator.applyRootMotion = false;
                 if (Input.GetKeyDown(KeyCode.A))
                 {
                     runSlideSide = 0;
@@ -386,7 +390,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             UpdateAnimator(move);
                 
         }
-
+        //Print all animation names and index
+        void printAnimationNameIndex()
+        {
+            for (int i = 0; i < animatorController.animationClips.Length; i++)
+            {
+                print(i+ " is animation "+ GetAnimationClips(i).name);
+            }
+            //print(" is animation " + GetAnimationClips(25).name);
+        }
 
         void smoothRotateBone(Transform bone)
         {
@@ -514,7 +526,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void turnAround(string side)
         {
-            if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning)
+            if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning && !runSlide)
             {
                 turnningAround = true;
                 if (side == "Right")
@@ -788,7 +800,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (state == "slide")
             {
                 m_Capsule.height = m_CapsuleHeight / 4f;
-                m_Capsule.center = m_CapsuleCenter / 5.4f;
+                m_Capsule.center = m_CapsuleCenter / 5f;
+                m_Animator.applyRootMotion = false;
             }
             if (state == "frontFlip")
             {
@@ -830,11 +843,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 flipReady = true;
             }
-            
-            if (!stepUpReady)
+
+            if (!stepUpReady && !nextToWall)
             {
                 m_Animator.SetFloat("Forward", m_ForwardAmount, 0.1f, Time.deltaTime);
             }
+            //else setForwardAmount(0);
+
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
             m_Animator.SetBool("Crouch", m_Crouching);
             m_Animator.SetBool("OnGround", m_IsGrounded);
@@ -1026,8 +1041,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (_foot == 0) { return; }
             if (_foot == 1) { legRay = 0.1f; }
             if (_foot == 2) { legRay = -0.1f; }
-            if (isRunning) { rayLength = 0.4f; rayPoss = 0.6f; }
-            if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.3f; }
+            if (isRunning && !isExhausted) { rayLength = 0.4f; rayPoss = 0.6f; }
+            if(isRunning && isExhausted) { rayLength = 0.38f; }
+            if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.2f; }
             if (isIdle) { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.1f; }
 
             Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.blue);
@@ -1041,7 +1057,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (_foot == 1 && !leftFootIkActive)
                 {
                     rightFootIkActive = true;
-                    //Lockign position of active foot if climbing
+
+                    //Lockign position of left foot if climbing
                     stepUpLeg = 1;
                     if (!stepUpPlaying && !stepUpReady)
                     {
@@ -1049,25 +1066,33 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         rightFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
                         rightFootTempZ = hitLeg.point.z;
 
+                        //lock the other foot
+
                     }
+
                     rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
                     rightFootNewPosition = new Vector3(rightFootTempX, rightFootTempY, rightFootTempZ);
-                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.1f; }
-                    if (footSmoothingRight > 0.95) {
+                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
+                    if (footSmoothingRight > 0.95 && getForwardAmount() > 0.2f) {
                         stepUpReady = true;
-                        setForwardAmount(0.5f);
+                        if (!isIdle)
+                        {
+                            setForwardAmount(0.5f);
+                        }
                     }
                     else
                     {
                         stepUpReady = false;
+                        //setForwardAmount(0f);
                     }
                 }
 
                 if (_foot == 2 && !rightFootIkActive)
                 {
                     leftFootIkActive = true;
-                    //Lockign position of active foot if climbing
+                    
+
                     stepUpLeg = 0;
                     if (!stepUpPlaying && !stepUpReady)
                     {
@@ -1078,10 +1103,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     leftFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
                     leftFootNewPosition = new Vector3(leftFootTempX, leftFootTempY, leftFootTempZ);
-                    if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.1f; }
-                    if (footSmoothingLeft > 0.95) {
+                    if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
+                    if (footSmoothingLeft > 0.95 && getForwardAmount() > 0.2f) {
                         stepUpReady = true;
-                        setForwardAmount(0.5f);
+                        if (!isIdle)
+                        {
+                            setForwardAmount(0.5f);
+                        }
                     }
                     else
                     {
@@ -1090,7 +1118,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
 
                 //Step Up Start
-                if (stepUpReady && !isIdle)
+                if (stepUpReady && !isIdle && getForwardAmount() > 0.2f)
                 {
                     if (!stepUpPlaying && !stepUpDone)
                     {
@@ -1100,7 +1128,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     m_Rigidbody.useGravity = false;
                     stepUpDone = false;
-                    m_Rigidbody.AddRelativeForce(0, 0.8f, 0.1f);
+                    m_Rigidbody.AddRelativeForce(0, 0.8f, 0f);
                     m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.4f, 0.1f);
                 }
                 /*
@@ -1119,8 +1147,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 stepUporDown = 1;
             }
 
-            print(leftFootTempY + " Left foot Y");
-            print(rightFootTempY + " Right foot Y");
+            //print(leftFootTempY + " Left foot Y");
+            //print(rightFootTempY + " Right foot Y");
 
             if (!(Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength)))
             {
@@ -1181,6 +1209,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
+        }
+        //called from late update, used to stop following leg on climb up from anmating
+        void stopAnimatingBone(string bone)
+        {
+            if (bone== "rightLeg")
+            {
+                if(!rightFootIkActive && stepUpReady)
+                {
+
+                }
+            }
+            if (bone == "leftLeg")
+            {
+
+            }
+
         }
 
         void OnAnimatorIK()
