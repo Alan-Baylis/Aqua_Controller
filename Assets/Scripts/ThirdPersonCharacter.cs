@@ -64,6 +64,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool turnningAround;
         public bool RunJumpLeft, RunJumpRight;
         Vector3 moveDirection;
+        float groundedTimer;
 
         //Foot positioning
         RaycastHit hitSteps;
@@ -103,7 +104,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float interval = 0.1f;
         public float myForward;
         public float detectWall = 1f;
-        public bool nextToWall;
+        public bool facingWall;
         float runSlideForward, runSlideSide;
 
         /*
@@ -305,7 +306,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //m_ForwardAmount = move.z * mouseWheel;
-            setForwardAmount(move.z * mouseWheel);
+
+               setForwardAmount(move.z * mouseWheel);
+
 
 
             if (m_IsGrounded && !landing && !runSlide)
@@ -329,17 +332,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning && Input.GetKey(KeyCode.C))
             {
                 runSlide = true;
-                m_Animator.Play("RunSlide");
-                PlaySounds("gravslip");
-                standUp = false;
-                //m_Animator.applyRootMotion = false;
-                //m_Rigidbody.angularDrag = 0;
-                //m_Rigidbody.useGravity = false;
-                //m_Rigidbody.mass = 0;
-                //m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_Rigidbody.velocity.y, m_Rigidbody.velocity.z * 2f);
             }
             if (runSlide)
             {
+                m_Animator.Play("RunSlide");
+                PlaySounds("gravslip");
+                standUp = false;
                 //m_Rigidbody.useGravity = false;
                 //m_Capsule.material.dynamicFriction = 0;
                 //m_Capsule.material.staticFriction = 0;
@@ -359,19 +357,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (Input.GetKeyDown(KeyCode.W))
                 {
                     standUp = true;
+
+                }
+                // TODO: 
+                if (runSlide && standUp && !m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlidefinish"))
+                {
+                    runSlide = false;
                 }
             }
             
-            if (runSlide && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideFinish"))
-            {
-                runSlide = false;
-            }
+
             
             //else runSlide = false;
 
 
             // Turn on LegIk only on suitable conditions
-            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight)
+            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping)
             {
                 footIkOn = false;
 
@@ -442,15 +443,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {   
             if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle)
             {
-                nextToWall = true;
+                facingWall = true;
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
                 setForwardAmount(0);
-            }
-            if(!(Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle))
+                print("Next to a wall !");
+            } else facingWall = false;
+
+            /*
+            if (!(Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle))
             {
-                nextToWall = false;
+                facingWall = false;
             }
+            */
         }
         /*
         public bool directionSwitch(int direction)
@@ -844,11 +849,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 flipReady = true;
             }
 
-            if (!stepUpReady && !nextToWall)
+            if (!stepUpReady && !facingWall)
             {
                 m_Animator.SetFloat("Forward", m_ForwardAmount, 0.1f, Time.deltaTime);
             }
-            //else setForwardAmount(0);
+            if (facingWall)
+            {
+                m_Animator.SetFloat("Forward", m_ForwardAmount, 0.5f, 0);
+            }
 
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
             m_Animator.SetBool("Crouch", m_Crouching);
@@ -916,26 +924,37 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 ScaleCapsule("jump");
             }
+
         }
 
 
         void HandleGroundedMovement(bool crouch, bool jump)
         {
-            isJumping = false;
             // check whether conditions are right to allow a jump:
-            if (jump && !crouch && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded") && !isExhausted && !isFalling)
+            if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling    /*m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded")*/)
             {
                 // jump!
+                jump = false;
                 m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                 m_IsGrounded = false;
                 isJumping = true;
                 //m_Animator.applyRootMotion = false;
                 m_GroundCheckDistance = 0.1f;
             }
-            else
+
+            if (isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
             {
-                isJumping = false;
+                if (!m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
+                {
+                    isJumping = false;
+                }
             }
+
+            
+       
+
+
+
             ScaleCapsule("ground");
         }
 
@@ -964,8 +983,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         // Setter getter for m_forwardAmount
         void setForwardAmount(float preferedMovingSpeed)
         {
+
             m_ForwardAmount = Mathf.Lerp(getForwardAmount(), preferedMovingSpeed, 0.06f);
-            //m_ForwardAmount = movingSpeed;
+
+
         }
         float getForwardAmount()
         {
@@ -1024,6 +1045,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
             }
+            if (m_IsGrounded)
+            {
+                groundedTimer = Time.time;
+            }
+            else
+                groundedTimer = 0;
 
             //Landing is over when player is stood up
             if (landed && timer > landedStart + 1)

@@ -979,7 +979,7 @@ ModelImporter:
     7400022: Jump Up
     7400024: Fall
     7400026: JumpLand
-    7400028: Jump Full
+    7400028: JumpFull
     7400030: WallStop
     7400032: GetUpFromBelly
     7400034: Idle
@@ -3496,7 +3496,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: Jump Full
+      name: JumpFull
       takeName: Take 001
       firstFrame: 5000
       lastFrame: 5250
