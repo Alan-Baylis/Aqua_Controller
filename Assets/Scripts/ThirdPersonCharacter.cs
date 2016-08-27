@@ -147,7 +147,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             playingFlip = true;
             leftFoot = GameObject.Find("Left_foot").transform;
             rightFoot = GameObject.Find("Right_foot").transform;
-            hips = GameObject.Find("Hips").transform;
+			hips = GameObject.Find("Hips").transform;
             toeEnd = GameObject.Find("Right_toe_end").transform.position.y;
             hipToFootDisc = hips.position.y - toeEnd;
             //print(hipToFootDisc + " hipToFootDisc");
@@ -194,6 +194,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             //TODO: Better set these two according size of the player, dynamic
             fwd = transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 999));
+			hips = GameObject.Find("Hips").transform;
             if (Input.GetMouseButtonDown(0))
             {
                 Cursor.visible = true;
@@ -669,7 +670,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
-
+			print ("call");
             {
                 if (name == "exhausted")
                 {   /*
@@ -686,9 +687,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     headSound = head.GetComponent<Sounds>().Clips[6];
                     head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
                 }
-
-                if (Physics.Raycast(transform.position, down, out hitSteps, m_GroundCheckDistance) && hitSteps.transform.gameObject.tag == "Concrete")
+				if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
+			
                     if (name == "jumpLand")
                     {
                         footSound = GetComponent<Sounds>().Clips[20];
@@ -712,7 +713,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-                if (Physics.Raycast(transform.position, down, out hitSteps, m_GroundCheckDistance) && hitSteps.transform.gameObject.tag == "Gravel")
+				if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {
@@ -930,6 +931,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void HandleGroundedMovement(bool crouch, bool jump)
         {
+			isJumping = false;
             // check whether conditions are right to allow a jump:
             if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling    /*m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded")*/)
             {
