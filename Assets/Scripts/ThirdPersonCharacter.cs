@@ -14,6 +14,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float m_StationaryTurnSpeed = 180;
         [SerializeField]
         float m_JumpPower = 12f;
+        [SerializeField]
+        float stepUpForce = 0.8f;
         [Range(1f, 4f)]
         [SerializeField]
         float m_GravityMultiplier = 2f;
@@ -1157,7 +1159,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     m_Rigidbody.useGravity = false;
                     stepUpDone = false;
-                    m_Rigidbody.AddRelativeForce(0, 0.8f, 0f);
+                    m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
                     m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.4f, 0.1f);
                 }
                 /*
@@ -1201,7 +1203,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //Step up Stop
                 if (stepUpDone)
                 {
-                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 1.52f, 0.2f);
+                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.76f, 0.2f);
                     //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                     stepUpSmoothing = 0;
                     m_Rigidbody.useGravity = true;

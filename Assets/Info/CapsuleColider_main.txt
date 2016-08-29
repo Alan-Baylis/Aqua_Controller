@@ -1,0 +1,2 @@
+Original Height: 1.52    /2   new Height 0.76
+Original Center: 0.76    /2   new Center 0.38

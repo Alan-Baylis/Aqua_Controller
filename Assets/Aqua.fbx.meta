@@ -414,6 +414,14 @@ ModelImporter:
     100812: Walk_Left_sharp
     100814: Walk_Left_sharp1
     100816: Walk_Right
+    100818: Head_colider
+    100820: pony_tail_1_dynamic
+    100822: Pony_tail_mesh
+    100824: Pony_tail_skeleton_1
+    100826: Pony_tail_skeleton_2
+    100828: Pony_tail_skeleton_3
+    100830: Pony_tail_skeleton_4
+    100832: Pony_tail_skeleton_5
     400000: //RootNode
     400002: Body
     400004: Bra
@@ -823,6 +831,14 @@ ModelImporter:
     400812: Walk_Left_sharp
     400814: Walk_Left_sharp1
     400816: Walk_Right
+    400818: Head_colider
+    400820: pony_tail_1_dynamic
+    400822: Pony_tail_mesh
+    400824: Pony_tail_skeleton_1
+    400826: Pony_tail_skeleton_2
+    400828: Pony_tail_skeleton_3
+    400830: Pony_tail_skeleton_4
+    400832: Pony_tail_skeleton_5
     2300000: Body3
     2300002: Body4
     2300004: Body_eye
@@ -865,6 +881,7 @@ ModelImporter:
     2300078: Walk_Left_sharp
     2300080: Walk_Left_sharp1
     2300082: Walk_Right
+    2300084: Head_colider
     3300000: Body3
     3300002: Body4
     3300004: Body_eye
@@ -907,6 +924,7 @@ ModelImporter:
     3300078: Walk_Left_sharp
     3300080: Walk_Left_sharp1
     3300082: Walk_Right
+    3300084: Head_colider
     4300000: Right_eye
     4300002: Left_eye
     4300004: Hair
@@ -965,6 +983,8 @@ ModelImporter:
     4300110: Body3
     4300112: pCube1
     4300114: pCube2
+    4300116: Head_colider
+    4300118: Pony_tail_mesh
     7400000: GetUpFromBack
     7400002: Walk
     7400004: Walk Left
@@ -1021,6 +1041,7 @@ ModelImporter:
     13700026: Body_old_shape
     13700028: Left_cornea
     13700030: Right_cornea
+    13700032: Pony_tail_mesh
   materials:
     importMaterials: 1
     materialName: 0
