@@ -35,6 +35,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         AnimationClip [] animations;
 
         Rigidbody m_Rigidbody;
+        Rigidbody [] ponyTail;
         public Animator m_Animator;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
@@ -166,6 +167,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //print animation names
             //printAnimationNameIndex();
+
+            //Assigning ponytail rigid bodies
+            //ponyTail = GameObject.Find("Pony_tail_skeleton_2").GetComponent<Rigidbody>();
+
+            ponyTail = GetComponentsInChildren<Rigidbody>();
+
         }
 
         //To get Animation Lenghts
@@ -264,7 +271,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //print("Layer 0 is " + m_Animator.GetLayerWeight(0));
             //print("Layer 1 is " + m_Animator.GetLayerWeight(1));
         }
+        private void FixedUpdate()
+        {
 
+            //Change gravity for the ponytail
+            foreach (Rigidbody joint in ponyTail)
+                joint.AddForce(30 * Physics.gravity);
+
+
+
+        }
         public void Move(Vector3 move, bool crouch, bool jump)
         {
             // convert the world relative moveInput vector into a local-relative
@@ -1268,8 +1284,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     // Set the look target position, if one has been assigned
                     if (pointer != null)
                     {
-                        //m_Animator.SetLookAtWeight(0.5f);
-                        //m_Animator.SetLookAtPosition(pointer.position);
+                        m_Animator.SetLookAtWeight(0.5f);
+                        m_Animator.SetLookAtPosition(pointer.position);
                     }
 
                     // Set the right hand target position and rotation, if one has been assigned
