@@ -15,9 +15,9 @@ TextureImporter:
     mipMapFadeDistanceStart: 1
     mipMapFadeDistanceEnd: 3
   bumpmap:
-    convertToNormalMap: 0
-    externalNormalMap: 0
-    heightScale: 0.25
+    convertToNormalMap: 1
+    externalNormalMap: 1
+    heightScale: 0.037
     normalMapFilter: 0
   isReadable: 0
   grayScaleToAlpha: 0
@@ -46,7 +46,7 @@ TextureImporter:
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spritePixelsToUnits: 100
   alphaIsTransparency: 0
-  textureType: 5
+  textureType: 1
   buildTargetSettings: []
   spriteSheet:
     sprites: []

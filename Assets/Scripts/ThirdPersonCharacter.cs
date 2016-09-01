@@ -171,7 +171,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Assigning ponytail rigid bodies
             //ponyTail = GameObject.Find("Pony_tail_skeleton_2").GetComponent<Rigidbody>();
 
-            ponyTail = GetComponentsInChildren<Rigidbody>();
+            ponyTail = head.GetComponentsInChildren<Rigidbody>();
 
         }
 
@@ -275,10 +275,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
 
             //Change gravity for the ponytail
-            foreach (Rigidbody joint in ponyTail)
-                joint.AddForce(30 * Physics.gravity);
-
-
+            foreach (Rigidbody joints in ponyTail)
+            {
+                joints.AddForce(30 * Physics.gravity);
+            }
 
         }
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -330,7 +330,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
 
-            if (m_IsGrounded && !landing && !runSlide)
+            if (m_IsGrounded && !landing && !runSlide && !stepUpPlaying)
             {
                 ApplyExtraTurnRotation();
             }
@@ -841,6 +841,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Capsule.height = m_CapsuleHeight/5; 
                 m_Capsule.center = m_CapsuleCenter/5;
             }
+            if(state == "stepUp")
+            {
+                m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.3f, 0.1f);
+            }
         }
 
 
@@ -1125,7 +1129,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         stepUpReady = true;
                         if (!isIdle)
                         {
-                            setForwardAmount(0.5f);
+                            setForwardAmount(0.1f);
                         }
                     }
                     else
@@ -1155,7 +1159,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         stepUpReady = true;
                         if (!isIdle)
                         {
-                            setForwardAmount(0.5f);
+                            setForwardAmount(0.1f);
                         }
                     }
                     else
@@ -1176,7 +1180,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Rigidbody.useGravity = false;
                     stepUpDone = false;
                     m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
-                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.4f, 0.1f);
+                    ScaleCapsule("stepUp");
                 }
                 /*
                 //Stop following leg from animating while climbing
