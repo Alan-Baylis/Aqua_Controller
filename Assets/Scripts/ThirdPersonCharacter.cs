@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using System;
 
 namespace UnityStandardAssets.Characters.ThirdPerson
 {
@@ -88,13 +89,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
         Transform rightFoot, leftFoot, hips, foot;
-        int stepUporDown;
+        int stepUpOrDown;
         float charScale;
         float animClipSpeed;
         public bool leftLegStepUp, rightLegStepUp;
         public bool leftFootIkActive, rightFootIkActive;
         float rightFootTempX, leftFootTempX, rightFootTempY, leftFootTempY, rightFootTempZ, leftFootTempZ;
         float stepUpLeg;
+        bool holdingStepUpLeg, holdingStepUpLegPlaying;
+        float holdingRightPosZ, holdingRightPosX;
 
 
 
@@ -138,7 +141,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Dissable Mouse                
             Cursor.visible = false;
             Screen.lockCursor = true;
-            pointer = GameObject.Find("Pointer").transform;
+            try
+            {
+                pointer = GameObject.Find("Pointer").transform;
+            }
+            catch (NullReferenceException ex)
+            {
+                Debug.Log("No pointer");
+            }
             m_Animator = GetComponent<Animator>();
             m_Rigidbody = GetComponent<Rigidbody>();
             m_Capsule = GetComponent<CapsuleCollider>();
@@ -203,7 +213,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             //TODO: Better set these two according size of the player, dynamic
             fwd = transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 999));
-			hips = GameObject.Find("Hips").transform;
+            // Do not use Find function here - too slow
+            hips = GameObject.Find("Hips").transform;
             if (Input.GetMouseButtonDown(0))
             {
                 Cursor.visible = true;
@@ -697,8 +708,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 soundSource.Play();
                 */
                     //headSound is an audio clip
-                    headSound = head.GetComponent<Sounds>().Clips[Random.Range(0, 6)];
-                    head.GetComponent<Sounds>().audioSources[Random.Range(0, 6)].PlayOneShot(headSound, 0.1f);
+                    headSound = head.GetComponent<Sounds>().Clips[UnityEngine.Random.Range(0, 6)];
+                    head.GetComponent<Sounds>().audioSources[UnityEngine.Random.Range(0, 6)].PlayOneShot(headSound, 0.1f);
                 }
                 if (name == "exhaustStop")
                 {
@@ -715,18 +726,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                     if (name == "steps" && isWalking && !isRunning)
                     {
-                        footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
+                        footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(25, 44)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                     }
                     if (name == "stepsRun" && isRunning && !isWalking)
                     {
-                        footSound = GetComponent<Sounds>().Clips[Random.Range(25, 44)];
+                        footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(25, 44)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
                     if (name == "gravslip")
                     {
-                        footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
+                        footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(21, 24)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
                 }
@@ -740,18 +751,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                     if (name == "steps" && !isRunning && isWalking)
                     {
-                        footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
+                        footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(0, 20)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                     }
                     if (name == "stepsRun" && isRunning && !isWalking)
                     {
-                        footSound = GetComponent<Sounds>().Clips[Random.Range(0, 20)];
+                        footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(0, 20)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
                     if (name == "gravslip")
                     {
-                        footSound = GetComponent<Sounds>().Clips[Random.Range(21, 24)];
+                        footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(21, 24)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
                 }
@@ -895,7 +906,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("RunJumpRight", RunJumpRight);
             m_Animator.SetBool("RunJumpLeft", RunJumpLeft);
             m_Animator.SetFloat("animClipSpeed", animClipSpeed);
-            m_Animator.SetFloat("stepUpLeg", stepUpLeg);
+            //m_Animator.SetFloat("stepUpLeg", stepUpLeg);
             m_Animator.SetBool("climbPlaying", stepUpPlaying);
             m_Animator.SetFloat("runSlideSide", runSlideSide);
             m_Animator.SetFloat("runSlideForward", runSlideForward);
@@ -1089,18 +1100,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void legIK(int _foot)
         {
-            if (_foot == 0) { return; }
             if (_foot == 1) { legRay = 0.1f; }
             if (_foot == 2) { legRay = -0.1f; }
             if (isRunning && !isExhausted) { rayLength = 0.4f; rayPoss = 0.6f; }
-            if(isRunning && isExhausted) { rayLength = 0.38f; }
-            if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.2f; }
-            if (isIdle) { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.1f; }
+            if (isRunning &&  isExhausted) { rayLength = 0.38f; }
+            if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.3f; }
+            if (isIdle)    { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.3f; } //Test org 0.1f
 
-            Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.blue);
+            //Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.blue);
             Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.red);
 
-            if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength))
+            //Raycast according state, ignore feet
+            if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength) && !(hitLeg.collider.gameObject.tag == "Foot"))
             {
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
                 //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
@@ -1109,24 +1120,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     rightFootIkActive = true;
 
-                    //Lockign position of left foot if climbing
                     stepUpLeg = 1;
-                    if (!stepUpPlaying && !stepUpReady)
+                    if (!stepUpPlaying && !stepUpReady && stepUpDone)
                     {
-                        rightFootTempX = hitLeg.point.x;
                         rightFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
+                        rightFootTempX = hitLeg.point.x;
                         rightFootTempZ = hitLeg.point.z;
-
-                        //lock the other foot
 
                     }
 
                     rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
                     rightFootNewPosition = new Vector3(rightFootTempX, rightFootTempY, rightFootTempZ);
-                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.02f; }
+                    if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.01f; }
                     if (footSmoothingRight > 0.95 && getForwardAmount() > 0.2f) {
                         stepUpReady = true;
+                        holdingStepUpLegPlaying = false;
                         if (!isIdle)
                         {
                             setForwardAmount(0.1f);
@@ -1139,22 +1148,32 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
 
-                if (_foot == 2 && !rightFootIkActive)
+
+                if (_foot == 2 && !rightFootIkActive && stepUpDone)
                 {
                     leftFootIkActive = true;
-                    
-
                     stepUpLeg = 0;
-                    if (!stepUpPlaying && !stepUpReady)
+
+                    if (!stepUpPlaying && !stepUpReady && stepUpDone)
                     {
-                        leftFootTempX = hitLeg.point.x;
                         leftFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
-                        leftFootTempZ = hitLeg.point.z;
+                        if (leftFoot.transform.position.y >= leftFootTempY - leftFootTempY / 1.4f)
+                        {
+                            leftFootTempX = hitLeg.point.x;
+                            leftFootTempZ = hitLeg.point.z;
+                        }
+                        else
+                        {
+                            leftFootTempX = leftFoot.position.x;
+                            leftFootTempZ = leftFoot.position.z;
+                        }
+
                     }
+
                     leftFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
                     leftFootNewPosition = new Vector3(leftFootTempX, leftFootTempY, leftFootTempZ);
-                    if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.02f; }
+                    if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.01f; }
                     if (footSmoothingLeft > 0.95 && getForwardAmount() > 0.2f) {
                         stepUpReady = true;
                         if (!isIdle)
@@ -1182,8 +1201,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
                     ScaleCapsule("stepUp");
                 }
+                
                 /*
                 //Stop following leg from animating while climbing
+                // maybe raycast down, or check last frames position and keep it there on climb
                 if (stepUpPlaying)
                 {
                     if (!rightFootIkActive) {
@@ -1195,7 +1216,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 */
-                stepUporDown = 1;
+                stepUpOrDown = 1;
             }
 
             //print(leftFootTempY + " Left foot Y");
@@ -1242,21 +1263,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     leftFootLow = Mathf.Lerp(leftFootLow, leftFoot.transform.position.y, 0.01f);
                     leftFootNewPosition = new Vector3(leftFoot.transform.position.x, leftFootLow, leftFoot.transform.position.z);
                 }
-                stepUporDown = 0;
+                stepUpOrDown = 0;
             }
 
 
             if (_foot == 1)
             {
                 m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
-                m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUporDown, 0.01f));
-                m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUporDown, 0.01f));
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUpOrDown, 0.01f));
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUpOrDown, 0.01f));
             }
             if (_foot == 2)
             {
                 m_Animator.SetIKPosition(AvatarIKGoal.LeftFoot, leftFootNewPosition);
-                m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, Mathf.Lerp(footSmoothingLeft, stepUporDown, 0.01f));
-                m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, Mathf.Lerp(footSmoothingLeft, stepUporDown, 0.01f));
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, Mathf.Lerp(footSmoothingLeft, stepUpOrDown, 0.01f));
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, Mathf.Lerp(footSmoothingLeft, stepUpOrDown, 0.01f));
             }
 
             //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
@@ -1277,7 +1298,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
         }
+        void LootAtPointer()
+        {
+            if (isIdle)
+            {
+                m_Animator.SetLookAtWeight(0.5f);
+                m_Animator.SetLookAtPosition(pointer.position);
+            }
+            else
+            {
+                m_Animator.SetLookAtWeight(0.1f);
+                m_Animator.SetLookAtPosition(pointer.position);
+            }
 
+        }
         void OnAnimatorIK()
         {
             if (m_Animator)
@@ -1286,11 +1320,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (footIkOn)
                 {
                     // Set the look target position, if one has been assigned
-                    if (pointer != null)
-                    {
-                        m_Animator.SetLookAtWeight(0.5f);
-                        m_Animator.SetLookAtPosition(pointer.position);
-                    }
+
+                    LootAtPointer();
 
                     // Set the right hand target position and rotation, if one has been assigned
                     if (rightFoot != null && leftFoot != null)
