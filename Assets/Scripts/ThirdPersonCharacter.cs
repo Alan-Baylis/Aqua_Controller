@@ -98,6 +98,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float stepUpLeg;
         bool holdingStepUpLeg, holdingStepUpLegPlaying;
         float holdingRightPosZ, holdingRightPosX;
+        float aimSmoother;
 
 
 
@@ -249,7 +250,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     runStop = Time.time;
                     runStopPlaying = true;
                 }
-                if (runStop + 4 < timer)
+                if (runStop + 1 < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
                 {
                     //print(timer);
                     isRunning = false;
@@ -292,6 +293,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
         }
+
         public void Move(Vector3 move, bool crouch, bool jump)
         {
             // convert the world relative moveInput vector into a local-relative
@@ -444,7 +446,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (collision.gameObject.name == "Lift")
             {
                 print("Collision with " + collision.gameObject.name);
-                m_Rigidbody.AddRelativeForce(0, 1000, 10);
+                m_Rigidbody.AddRelativeForce(0, 10000, 10);
             }
             foreach (ContactPoint contact in collision.contacts)
             {
@@ -561,7 +563,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void turnAround(string side)
         {
-            if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning && !runSlide)
+            if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning && !runSlide && !isIdle)
             {
                 turnningAround = true;
                 if (side == "Right")
@@ -699,7 +701,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
-			print ("call");
             {
                 if (name == "exhausted")
                 {   /*
@@ -1300,20 +1301,30 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void LootAtPointer()
         {
-            if (isIdle)
+            print(aimSmoother);
+            if (!isRunning)
             {
-                m_Animator.SetLookAtWeight(0.5f, 0.3f, 0.8f, 0.0f);
+                aimSmoother += 0.01f;
+                if (aimSmoother > 0.5f) aimSmoother = 0.5f;
+
+                m_Animator.SetLookAtWeight(aimSmoother, aimSmoother-0.3f, aimSmoother, 0);
                 m_Animator.SetLookAtPosition(pointer.position);
+
             }
             else
             {
-                m_Animator.SetLookAtWeight(0.1f);
+                aimSmoother -= 0.01f;
+                if (aimSmoother < 0.01f) aimSmoother = 0;
+
+                m_Animator.SetLookAtWeight(aimSmoother, aimSmoother, aimSmoother, 0);
                 m_Animator.SetLookAtPosition(pointer.position);
+
             }
 
         }
         void OnAnimatorIK()
         {
+            LootAtPointer();
             if (m_Animator)
             {
                 //if the IK is active, set the position and rotation directly to the goal. 
@@ -1321,7 +1332,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     // Set the look target position, if one has been assigned
 
-                    LootAtPointer();
+
 
                     // Set the right hand target position and rotation, if one has been assigned
                     if (rightFoot != null && leftFoot != null)
