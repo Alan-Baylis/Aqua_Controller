@@ -1302,7 +1302,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (isIdle)
             {
-                m_Animator.SetLookAtWeight(0.5f, 0.3f, 0.8f, 0);
+                m_Animator.SetLookAtWeight(0.5f, 0.3f, 0.8f, 0.0f);
                 m_Animator.SetLookAtPosition(pointer.position);
             }
             else
