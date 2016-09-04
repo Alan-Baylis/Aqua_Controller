@@ -222,7 +222,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             timer = Time.time;
-            //if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                                          // MAYBE NOT NEEDED
+            if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                               
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing

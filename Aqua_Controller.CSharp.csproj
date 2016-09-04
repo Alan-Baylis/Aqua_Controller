@@ -81,6 +81,7 @@
     <Compile Include="Assets\Scripts\ThirdPersonUserControl.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Assets\Info\Aqua Animations.txt" />
     <None Include="Assets\Info\CapsuleColider_main.txt" />
     <None Include="Assets\Info\Shoulder joint position.txt" />
     <None Include="Assets\Materials\SpecularColored.shader" />
