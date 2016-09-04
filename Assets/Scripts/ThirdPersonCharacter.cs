@@ -222,7 +222,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             timer = Time.time;
-            if (m_ForwardAmount < 0) { m_ForwardAmount = 0; }                               
+            if (m_ForwardAmount < 0.05f) { m_ForwardAmount = 0; }                               
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing
@@ -308,7 +308,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (mouseWheel > 1)
             {
                 mouseWheel = 1;
-                myForward = 1;
+                myForward = 1; 
             }
             else if (mouseWheel < 0)
             {
@@ -1302,7 +1302,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (isIdle)
             {
-                m_Animator.SetLookAtWeight(0.5f);
+                m_Animator.SetLookAtWeight(0.5f, 0.3f, 0.8f, 0);
                 m_Animator.SetLookAtPosition(pointer.position);
             }
             else
