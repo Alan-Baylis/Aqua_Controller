@@ -344,7 +344,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
             if (m_IsGrounded && !landing && !runSlide && !stepUpPlaying)
-            {
+           { 
                 ApplyExtraTurnRotation();
             }
 
@@ -1302,7 +1302,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void LootAtPointer()
         {
             print(aimSmoother);
-            if (!isRunning)
+            if (!isRunning && !runSlide)
             {
                 aimSmoother += 0.01f;
                 if (aimSmoother > 0.5f) aimSmoother = 0.5f;
@@ -1311,14 +1311,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.SetLookAtPosition(pointer.position);
 
             }
-            else
+            if(isRunning || isWalking)
             {
                 aimSmoother -= 0.01f;
                 if (aimSmoother < 0.01f) aimSmoother = 0;
-
                 m_Animator.SetLookAtWeight(aimSmoother, aimSmoother, aimSmoother, 0);
                 m_Animator.SetLookAtPosition(pointer.position);
-
+            }
+            if (runSlide)
+            {
+                aimSmoother += 0.01f;
+                if (aimSmoother > 0.7f) aimSmoother = 0.7f;
+                m_Animator.SetLookAtWeight(aimSmoother, 0, aimSmoother, 0);
+                m_Animator.SetLookAtPosition(pointer.position);
+                m_Animator.SetLookAtPosition(pointer.position);
             }
 
         }
