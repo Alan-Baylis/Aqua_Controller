@@ -69,6 +69,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool RunJumpLeft, RunJumpRight;
         Vector3 moveDirection;
         float groundedTimer;
+        bool crashedInAir, crashedOnGround;
 
         //Foot positioning
         RaycastHit hitSteps;
@@ -223,7 +224,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             timer = Time.time;
-            if (m_ForwardAmount < 0.05f) { m_ForwardAmount = 0; }                               
+            if (m_ForwardAmount < 0.01f) { m_ForwardAmount = 0; }                               
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing
@@ -282,6 +283,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             //print("Layer 0 is " + m_Animator.GetLayerWeight(0));
             //print("Layer 1 is " + m_Animator.GetLayerWeight(1));
+            if (crashedInAir)
+            {
+                m_Animator.enabled = false;
+                //m_Rigidbody.freezeRotation = false;
+                GameObject.Find("Camera_group").GetComponent<FreeCameraLook>().enabled = false;
+            }
         }
         private void FixedUpdate()
         {
@@ -289,7 +296,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Change gravity for the ponytail
             foreach (Rigidbody joints in ponyTail)
             {
-                joints.AddForce(30 * Physics.gravity);
+                if (!crashedInAir)
+                {
+                    joints.AddForce(30 * Physics.gravity);
+                }
             }
 
         }
@@ -317,7 +327,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 mouseWheel = 0;
                 myForward = 0;
             }
-            else if (mouseWheel > 0 && mouseWheel < 0.3f)
+            else if (mouseWheel > 0.1f && mouseWheel < 0.3f)
             {
                 mouseWheel = 0.2f;
                 myForward = 0.2f;
@@ -452,6 +462,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 Debug.DrawRay(contact.point, contact.normal, Color.white);
             }
+            if(isJumping && collision.gameObject)
+            {
+                crashedInAir = true;
+            }
+
         }
 
         //Change, detect magnitude drop and then paly animation with isgrounded condition.
@@ -855,7 +870,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if(state == "stepUp")
             {
-                m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.3f, 0.1f);
+                //m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.3f, 0.1f);
+                m_CapsuleCenter = new Vector3(0, Mathf.Lerp(m_CapsuleCenter.y, 0.38f, 0.001f), 0); /// TEST State 
+            }
+            if (state == "stepUpDone")
+            {
+                m_Capsule.center = new Vector3 (0, Mathf.Lerp(m_CapsuleCenter.y, 0.038f, 0.001f), 0 ); /// TEST State 
             }
         }
 
@@ -978,19 +998,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_GroundCheckDistance = 0.1f;
             }
 
-            if (isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
+            if (isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump") )
             {
                 if (!m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
                 {
                     isJumping = false;
                 }
             }
-
-            
-       
-
-
-
             ScaleCapsule("ground");
         }
 
@@ -1199,8 +1213,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     m_Rigidbody.useGravity = false;
                     stepUpDone = false;
-                    m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
                     ScaleCapsule("stepUp");
+                    m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
+
                 }
                 
                 /*
@@ -1245,7 +1260,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //Step up Stop
                 if (stepUpDone)
                 {
-                    m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.76f, 0.2f);
+                    ScaleCapsule("stepUpDone");
                     //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                     stepUpSmoothing = 0;
                     m_Rigidbody.useGravity = true;
@@ -1301,7 +1316,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void LootAtPointer()
         {
-            print(aimSmoother);
+            //print(aimSmoother);
             if (!isRunning && !runSlide)
             {
                 aimSmoother += 0.01f;
@@ -1309,9 +1324,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                 m_Animator.SetLookAtWeight(aimSmoother, aimSmoother-0.3f, aimSmoother, 0);
                 m_Animator.SetLookAtPosition(pointer.position);
-
             }
-            if(isRunning || isWalking)
+            if(isRunning)
             {
                 aimSmoother -= 0.01f;
                 if (aimSmoother < 0.01f) aimSmoother = 0;
@@ -1326,7 +1340,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.SetLookAtPosition(pointer.position);
                 m_Animator.SetLookAtPosition(pointer.position);
             }
-
+            
         }
         void OnAnimatorIK()
         {
