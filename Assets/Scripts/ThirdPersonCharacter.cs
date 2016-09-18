@@ -33,10 +33,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float recovery = 5f;
         public bool m_Crouching;
-        AnimationClip [] animations;
+        AnimationClip[] animations;
 
         Rigidbody m_Rigidbody;
-        Rigidbody [] ponyTail;
+        Rigidbody[] ponyTail;
         public Animator m_Animator;
         float m_OrigGroundCheckDistance;
         const float k_Half = 0.5f;
@@ -48,6 +48,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Vector3 m_CapsuleCenter;
         CapsuleCollider m_Capsule;
         RaycastHit hitInfo; // Was inside CheckGroundStatus() but why ???
+
+        //FacialEmotions
+        SkinnedMeshRenderer aquaRenderer;
+        int eyeBlink;
+        bool blinking;
+        float blinkStart, blinkTimer, nextBlink;
+
 
 
         //My movements
@@ -106,7 +113,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //spublic bool isTurning;
         public float breathingTempo = 1;
         int ways;
-        float  jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
+        float jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
         public float timer;
         float buttonTime = -1;
         float interval = 0.1f;
@@ -162,7 +169,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             playingFlip = true;
             leftFoot = GameObject.Find("Left_foot").transform;
             rightFoot = GameObject.Find("Right_foot").transform;
-			hips = GameObject.Find("Hips").transform;
+            hips = GameObject.Find("Hips").transform;
             toeEnd = GameObject.Find("Right_toe_end").transform.position.y;
             hipToFootDisc = hips.position.y - toeEnd;
             //print(hipToFootDisc + " hipToFootDisc");
@@ -185,6 +192,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             ponyTail = head.GetComponentsInChildren<Rigidbody>();
 
+            aquaRenderer = GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>();
+            //eyeBlink = (int)GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>().GetBlendShapeWeight(4);
+
         }
 
         //To get Animation Lenghts
@@ -196,7 +206,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     animIndex = i;
                 }
-                if(i >= animatorController.animationClips.Length)
+                if (i >= animatorController.animationClips.Length)
                 {
                     print("No animation found for GetAnimationLength");
                     return 0;
@@ -224,7 +234,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             timer = Time.time;
-            if (m_ForwardAmount < 0.01f) { m_ForwardAmount = 0; }                               
+            if (m_ForwardAmount < 0.01f) { m_ForwardAmount = 0; }
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing
@@ -270,10 +280,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //m_Animator.applyRootMotion = false;
                 isRunning = false;
             }
+
+            //Emotions
+
+            EyeBlink();
+
         }
         void LateUpdate()
         {
-            
+
             stopAnimatingBone("rightLeg");
 
             //aimToMouse("Neck");
@@ -320,7 +335,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (mouseWheel > 1)
             {
                 mouseWheel = 1;
-                myForward = 1; 
+                myForward = 1;
             }
             else if (mouseWheel < 0)
             {
@@ -349,12 +364,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //m_ForwardAmount = move.z * mouseWheel;
 
-               setForwardAmount(move.z * mouseWheel);
+            setForwardAmount(move.z * mouseWheel);
 
 
 
             if (m_IsGrounded && !landing && !runSlide && !stepUpPlaying)
-           { 
+            {
                 ApplyExtraTurnRotation();
             }
 
@@ -407,9 +422,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     runSlide = false;
                 }
             }
-            
 
-            
+
+
             //else runSlide = false;
 
 
@@ -431,14 +446,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             // send input and other state parameters to the animator
             UpdateAnimator(move);
-                
+
         }
         //Print all animation names and index
         void printAnimationNameIndex()
         {
             for (int i = 0; i < animatorController.animationClips.Length; i++)
             {
-                print(i+ " is animation "+ GetAnimationClips(i).name);
+                print(i + " is animation " + GetAnimationClips(i).name);
             }
             //print(" is animation " + GetAnimationClips(25).name);
         }
@@ -462,7 +477,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 Debug.DrawRay(contact.point, contact.normal, Color.white);
             }
-            if(isJumping && collision.gameObject)
+            if (isJumping && collision.gameObject)
             {
                 crashedInAir = true;
             }
@@ -487,7 +502,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
-        {   
+        {
             if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle)
             {
                 facingWall = true;
@@ -732,9 +747,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     headSound = head.GetComponent<Sounds>().Clips[6];
                     head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
                 }
-				if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
+                if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
-			
+
                     if (name == "jumpLand")
                     {
                         footSound = GetComponent<Sounds>().Clips[20];
@@ -758,7 +773,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-				if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
+                if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {
@@ -863,19 +878,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Capsule.height = m_CapsuleHeight; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
                 m_Capsule.center = m_CapsuleCenter;
             }
-            if(state == "heavyLanding")
+            if (state == "heavyLanding")
             {
-                m_Capsule.height = m_CapsuleHeight/5; 
-                m_Capsule.center = m_CapsuleCenter/5;
+                m_Capsule.height = m_CapsuleHeight / 5;
+                m_Capsule.center = m_CapsuleCenter / 5;
             }
-            if(state == "stepUp")
+            if (state == "stepUp")
             {
                 //m_CapsuleHeight = Mathf.Lerp(m_CapsuleHeight, 0.3f, 0.1f);
                 m_CapsuleCenter = new Vector3(0, Mathf.Lerp(m_CapsuleCenter.y, 0.38f, 0.001f), 0); /// TEST State 
             }
             if (state == "stepUpDone")
             {
-                m_Capsule.center = new Vector3 (0, Mathf.Lerp(m_CapsuleCenter.y, 0.038f, 0.001f), 0 ); /// TEST State 
+                m_Capsule.center = new Vector3(0, Mathf.Lerp(m_CapsuleCenter.y, 0.038f, 0.001f), 0); /// TEST State 
             }
         }
 
@@ -893,6 +908,37 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
         }
+
+        void EyeBlink(){
+
+            blinkStart +=0.01f ;
+            if (blinkStart > nextBlink)
+            {
+                    //Shutting eyes
+                    if (eyeBlink <= 90 && !blinking)
+                    {
+                        eyeBlink += 10;
+
+                        if (eyeBlink > 90) { blinking = true; }
+                    }
+
+                    //Opening eyes
+                    if (eyeBlink >= 10 && blinking)
+                    {
+                        eyeBlink -= 10;
+
+                        if (eyeBlink < 10)
+                        {
+                            blinking = false;
+                            blinkStart = 0;
+                            nextBlink = UnityEngine.Random.Range(1, 4);
+                        }
+                    }
+                    aquaRenderer.SetBlendShapeWeight(4, eyeBlink);
+
+                }
+           
+         }
 
 
         void UpdateAnimator(Vector3 move)

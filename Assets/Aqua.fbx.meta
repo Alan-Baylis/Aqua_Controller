@@ -422,6 +422,7 @@ ModelImporter:
     100828: Pony_tail_skeleton_3
     100830: Pony_tail_skeleton_4
     100832: Pony_tail_skeleton_5
+    100834: Bra_Weights
     400000: //RootNode
     400002: Body
     400004: Bra
@@ -839,6 +840,7 @@ ModelImporter:
     400828: Pony_tail_skeleton_3
     400830: Pony_tail_skeleton_4
     400832: Pony_tail_skeleton_5
+    400834: Bra_Weights
     2300000: Body3
     2300002: Body4
     2300004: Body_eye
@@ -882,6 +884,15 @@ ModelImporter:
     2300080: Walk_Left_sharp1
     2300082: Walk_Right
     2300084: Head_colider
+    2300086: Body
+    2300088: Bra
+    2300090: Hair
+    2300092: Left_cornea
+    2300094: Left_eye
+    2300096: Panties
+    2300098: Pony_tail_mesh
+    2300100: Right_cornea
+    2300102: Right_eye
     3300000: Body3
     3300002: Body4
     3300004: Body_eye
@@ -925,6 +936,15 @@ ModelImporter:
     3300080: Walk_Left_sharp1
     3300082: Walk_Right
     3300084: Head_colider
+    3300086: Body
+    3300088: Bra
+    3300090: Hair
+    3300092: Left_cornea
+    3300094: Left_eye
+    3300096: Panties
+    3300098: Pony_tail_mesh
+    3300100: Right_cornea
+    3300102: Right_eye
     4300000: Right_eye
     4300002: Left_eye
     4300004: Hair
@@ -985,6 +1005,7 @@ ModelImporter:
     4300114: pCube2
     4300116: Head_colider
     4300118: Pony_tail_mesh
+    4300120: Bra_Weights
     7400000: GetUpFromBack
     7400002: Walk
     7400004: Walk Left
@@ -1042,6 +1063,7 @@ ModelImporter:
     13700028: Left_cornea
     13700030: Right_cornea
     13700032: Pony_tail_mesh
+    13700034: Bra_Weights
   materials:
     importMaterials: 1
     materialName: 0
@@ -1060,18 +1082,18 @@ ModelImporter:
       animation that will be discarded.\n\t'Right_pinky' has translation animation
       that will be discarded.\n"
     animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftUpperArm
-      average position error 37.9 mm and maximum position error 94.8 mm at time 309:
-      8 (48.2%) Frame 7424\n\tLeftLowerArm average position error 37.9 mm and maximum
-      position error 94.8 mm at time 309: 8 (48.2%) Frame 7424\n\tLeftHand average
-      position error 37.9 mm and maximum position error 94.8 mm at time 309: 8 (48.2%)
-      Frame 7424\n\tRightUpperArm average position error 39.2 mm and maximum position
-      error 77.5 mm at time 310:12 (48.4%) Frame 7452\n\tRightLowerArm average position
-      error 39.2 mm and maximum position error 77.5 mm at time 310:12 (48.4%) Frame
-      7452\n\tRightHand average position error 39.2 mm and maximum position error
-      77.5 mm at time 310:12 (48.4%) Frame 7452\n\tLeftFoot average orientation error
-      0.2 deg and maximum orientation error 173.8 deg at time 387:10 (60.4%) Frame
-      9298\n\tRightFoot average orientation error 0.3 deg and maximum orientation
-      error 175.6 deg at time 387:16 (60.4%) Frame 9304\n"
+      average position error 38.0 mm and maximum position error 94.8 mm at time 309:
+      8 (47.9%) Frame 7424\n\tLeftLowerArm average position error 38.0 mm and maximum
+      position error 94.8 mm at time 309: 8 (47.9%) Frame 7424\n\tLeftHand average
+      position error 38.0 mm and maximum position error 94.8 mm at time 309: 8 (47.9%)
+      Frame 7424\n\tRightUpperArm average position error 39.3 mm and maximum position
+      error 77.5 mm at time 310:12 (48.1%) Frame 7452\n\tRightLowerArm average position
+      error 39.3 mm and maximum position error 77.5 mm at time 310:12 (48.1%) Frame
+      7452\n\tRightHand average position error 39.3 mm and maximum position error
+      77.5 mm at time 310:12 (48.1%) Frame 7452\n\tLeftFoot average orientation error
+      0.2 deg and maximum orientation error 161.5 deg at time 387: 6 (60.0%) Frame
+      9294\n\tRightFoot average orientation error 0.3 deg and maximum orientation
+      error 175.6 deg at time 387:16 (60.0%) Frame 9304\n"
     animationDoRetargetingWarnings: 1
     animationCompression: 0
     animationRotationError: 0.5
