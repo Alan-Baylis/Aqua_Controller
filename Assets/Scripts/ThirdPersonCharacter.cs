@@ -78,6 +78,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float groundedTimer;
         bool crashedInAir, crashedOnGround;
 
+
         //Foot positioning
         RaycastHit hitSteps;
         public bool footIkOn;
@@ -110,7 +111,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
 
-        //spublic bool isTurning;
+        //public bool isTurning;
         public float breathingTempo = 1;
         int ways;
         float jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
@@ -120,6 +121,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float myForward;
         public float detectWall = 1f;
         public bool facingWall;
+        public bool ragdolEnabled;
         float runSlideForward, runSlideSide;
 
         /*
@@ -298,7 +300,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             //print("Layer 0 is " + m_Animator.GetLayerWeight(0));
             //print("Layer 1 is " + m_Animator.GetLayerWeight(1));
-            if (crashedInAir)
+            if (crashedInAir && ragdolEnabled)
             {
                 m_Animator.enabled = false;
                 //m_Rigidbody.freezeRotation = false;
@@ -307,7 +309,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         private void FixedUpdate()
         {
-
+            
             //Change gravity for the ponytail
             foreach (Rigidbody joints in ponyTail)
             {
@@ -316,7 +318,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     joints.AddForce(30 * Physics.gravity);
                 }
             }
-
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -860,13 +861,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (state == "jump")
             {
                 //m_IsGrounded = false;
-                m_Capsule.height = 0.5f; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+                m_Capsule.height = m_CapsuleHeight/5; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 //m_CapsuleCenter = hips.transform.position;
             }
             if (state == "slide")
             {
-                m_Capsule.height = m_CapsuleHeight / 4f;
-                m_Capsule.center = m_CapsuleCenter / 5f;
+                m_Capsule.height = m_CapsuleHeight / 4;
+                m_Capsule.center = m_CapsuleCenter / 5;
                 m_Animator.applyRootMotion = false;
             }
             if (state == "frontFlip")
