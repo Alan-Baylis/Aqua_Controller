@@ -30,5 +30,7 @@ StepUpLegLeft 15000 - 15100
 
 Run Slide 10300 11300
 
+Run Kick 15500
+
 
 

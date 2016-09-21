@@ -77,6 +77,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Vector3 moveDirection;
         float groundedTimer;
         bool crashedInAir, crashedOnGround;
+        public bool runKick, walkKick;
 
 
         //Foot positioning
@@ -229,6 +230,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             fwd = transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 999));
             // Do not use Find function here - too slow
             hips = GameObject.Find("Hips").transform;
+
+
             if (Input.GetMouseButtonDown(0))
             {
                 Cursor.visible = true;
@@ -261,9 +264,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (!runStopPlaying && isRunning)
                 {
                     runStop = Time.time;
-                    runStopPlaying = true;
+                    stopRun();
                 }
-                if (runStop + 1 < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+                if (runStop + 0.1f < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
                 {
                     //print(timer);
                     isRunning = false;
@@ -283,9 +286,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 isRunning = false;
             }
 
-            //Emotions
+            if (Input.GetMouseButton(0) && isRunning)
+            {
+                runKick = true;
 
-            EyeBlink();
+            }
+            if (Input.GetMouseButton(0) && isWalking || Input.GetMouseButton(0) && isIdle)
+            {
+                walkKick = true;
+
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                runKick = false;
+                walkKick = false;
+            }
 
         }
         void LateUpdate()
@@ -315,7 +330,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 if (!crashedInAir)
                 {
-                    joints.AddForce(30 * Physics.gravity);
+                    //print("Adding force");
+                    //joints.AddForce(30 * Physics.gravity);
                 }
             }
         }
@@ -422,15 +438,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     runSlide = false;
                 }
+
             }
 
 
+            EyeBlink();
 
             //else runSlide = false;
 
 
             // Turn on LegIk only on suitable conditions
-            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping)
+            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick || runStopPlaying)
             {
                 footIkOn = false;
 
@@ -443,6 +461,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 footIkOn = true;
             }
+
 
 
             // send input and other state parameters to the animator
@@ -483,6 +502,36 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 crashedInAir = true;
             }
 
+            if ((walkKick || runKick ) && collision.gameObject.name != "Foot")
+            {
+                try
+                {
+                    print("Add Force");
+                    collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 4, ForceMode.Impulse);
+                }
+                catch (NullReferenceException ex)
+                {
+                    Debug.Log("Cannot kick without rigid body");
+                }
+            }
+            if (collision.gameObject.tag == "Foot")
+            {
+                Physics.IgnoreCollision(collision.collider, m_Capsule.GetComponent<Collider>(), true);
+            }
+
+
+        }
+        
+        bool frontFootRight()
+        {
+           if (Mathf.Abs(rightFoot.transform.localPosition.z) < Mathf.Abs(leftFoot.transform.localPosition.z))
+            {
+               return true;
+             }
+            else return false;
+
+
+
         }
 
         //Change, detect magnitude drop and then paly animation with isgrounded condition.
@@ -495,7 +544,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     if (m_IsGrounded && !runSlide)
                     {
-                        m_Animator.Play("RunStop");
+                        runStopPlaying = true;
+                        //m_Animator.Play("RunStop");
                         setForwardAmount(0);
                     }
                 }
@@ -852,7 +902,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void ScaleCapsule(string state)
         {
-            if (state == "ground")
+            if (state == "ground" && !landing)
             {
                 //m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
                 m_Capsule.height = m_CapsuleHeight;
@@ -876,13 +926,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (state == "falling")
             {
-                m_Capsule.height = m_CapsuleHeight; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
-                m_Capsule.center = m_CapsuleCenter;
+               // m_Capsule.height = m_CapsuleHeight; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
+               // m_Capsule.center = m_CapsuleCenter;
             }
             if (state == "heavyLanding")
             {
-                m_Capsule.height = m_CapsuleHeight / 5;
-                m_Capsule.center = m_CapsuleCenter / 5;
+                //print("Call");
+                m_Capsule.height = m_CapsuleHeight / 4;
+                m_Capsule.center = m_CapsuleCenter / 4;
             }
             if (state == "stepUp")
             {
@@ -916,19 +967,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (blinkStart > nextBlink)
             {
                     //Shutting eyes
-                    if (eyeBlink <= 90 && !blinking)
+                    if (eyeBlink <= 85 && !blinking)
                     {
-                        eyeBlink += 10;
+                        eyeBlink += 15;
 
-                        if (eyeBlink > 90) { blinking = true; }
+                        if (eyeBlink > 85) { blinking = true; }
                     }
 
                     //Opening eyes
-                    if (eyeBlink >= 10 && blinking)
+                    if (eyeBlink >= 15 && blinking)
                     {
-                        eyeBlink -= 10;
+                        eyeBlink -= 15;
 
-                        if (eyeBlink < 10)
+                        if (eyeBlink < 15)
                         {
                             blinking = false;
                             blinkStart = 0;
@@ -979,6 +1030,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetFloat("runSlideSide", runSlideSide);
             m_Animator.SetFloat("runSlideForward", runSlideForward);
             m_Animator.SetBool("standUp", standUp);
+            m_Animator.SetBool("runKick", runKick);
+            m_Animator.SetBool("walkKick", walkKick);
+            m_Animator.SetBool("frontFootRight", frontFootRight());
+            m_Animator.SetBool("RunStop", runStopPlaying);
 
             if (!m_IsGrounded && isJumping)
             {
