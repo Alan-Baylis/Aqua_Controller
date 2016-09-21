@@ -491,7 +491,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (collision.gameObject.name == "Lift")
             {
                 print("Collision with " + collision.gameObject.name);
-                m_Rigidbody.AddRelativeForce(0, 10000, 10);
+                collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 40000, ForceMode.Impulse);
             }
             foreach (ContactPoint contact in collision.contacts)
             {
