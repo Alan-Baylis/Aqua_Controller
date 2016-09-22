@@ -331,7 +331,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (!crashedInAir)
                 {
                     //print("Adding force");
-                    //joints.AddForce(30 * Physics.gravity);
+                    joints.AddForce(30 * Physics.gravity);
                 }
             }
         }
@@ -490,8 +490,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (collision.gameObject.name == "Lift")
             {
-                print("Collision with " + collision.gameObject.name);
-                collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 40000, ForceMode.Impulse);
+                try{
+                    print("Collision with " + collision.gameObject.name);
+                    collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 400, ForceMode.Impulse);
+                }
+                catch (NullReferenceException ex)
+                {
+                    Debug.Log("Cannot kick without rigid body");
+                }
             }
             foreach (ContactPoint contact in collision.contacts)
             {
