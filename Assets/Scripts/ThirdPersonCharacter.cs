@@ -9,6 +9,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
     [RequireComponent(typeof(Animator))]
     public class ThirdPersonCharacter : MonoBehaviour
     {
+        Emotions emotions;
         [SerializeField]
         float m_MovingTurnSpeed = 360;
         [SerializeField]
@@ -50,10 +51,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         RaycastHit hitInfo; // Was inside CheckGroundStatus() but why ???
 
         //FacialEmotions
-        SkinnedMeshRenderer aquaRenderer;
-        int eyeBlink;
-        bool blinking;
-        float blinkStart, blinkTimer, nextBlink;
+
+
 
 
 
@@ -78,6 +77,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float groundedTimer;
         bool crashedInAir, crashedOnGround;
         public bool runKick, walkKick;
+
 
 
         //Foot positioning
@@ -146,10 +146,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         int animIndex;
 
 
-
-
         void Start()
         {
+
             //Dissable Mouse                
             Cursor.visible = false;
             Screen.lockCursor = true;
@@ -195,9 +194,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             ponyTail = head.GetComponentsInChildren<Rigidbody>();
 
-            aquaRenderer = GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>();
-            //eyeBlink = (int)GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>().GetBlendShapeWeight(4);
 
+            //eyeBlink = (int)GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>().GetBlendShapeWeight(4);
+            emotions = new Emotions();
         }
 
         //To get Animation Lenghts
@@ -442,7 +441,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
 
-            EyeBlink();
+            emotions.EyeBlink();
 
             //else runSlide = false;
 
@@ -459,8 +458,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else
             {
-                footIkOn = true;
+                footIkOn = false;
             }
+            
 
 
 
@@ -513,7 +513,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 try
                 {
                     print("Add Force");
-                    collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 4, ForceMode.Impulse);
+                    collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 40, ForceMode.Impulse);
                 }
                 catch (NullReferenceException ex)
                 {
@@ -676,6 +676,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Animator.Play("FrontFlip");
                 isJumping = true;
+                emotions.Surprised();
                 if (jumpPrepare + 0.3 < timer)
                 {
                     m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower * 1.2f, m_Rigidbody.velocity.z);
@@ -967,37 +968,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
-        void EyeBlink(){
-
-            blinkStart +=0.01f ;
-            if (blinkStart > nextBlink)
-            {
-                    //Shutting eyes
-                    if (eyeBlink <= 85 && !blinking)
-                    {
-                        eyeBlink += 15;
-
-                        if (eyeBlink > 85) { blinking = true; }
-                    }
-
-                    //Opening eyes
-                    if (eyeBlink >= 15 && blinking)
-                    {
-                        eyeBlink -= 15;
-
-                        if (eyeBlink < 15)
-                        {
-                            blinking = false;
-                            blinkStart = 0;
-                            nextBlink = UnityEngine.Random.Range(1, 4);
-                        }
-                    }
-                    aquaRenderer.SetBlendShapeWeight(4, eyeBlink);
-
-                }
-           
-         }
-
 
         void UpdateAnimator(Vector3 move)
         {
@@ -1111,6 +1081,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (!m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
                 {
                     isJumping = false;
+                    emotions.Surprised();
                 }
             }
             ScaleCapsule("ground");
@@ -1168,6 +1139,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     landedStart = Time.time;
                     landed = true;
                     ScaleCapsule("heavyLanding");
+                   // emotions.Surprised();
                 }
 
                 isFalling = false;
@@ -1195,6 +1167,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     {
                         landLight = true;
                         isFalling = true;
+                        //emotions.Surprised();
+
                     }
                     if (fallStart + 0.5 < timer)
                     {

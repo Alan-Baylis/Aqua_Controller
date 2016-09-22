@@ -1076,7 +1076,7 @@ ModelImporter:
   animations:
     legacyGenerateAnimations: 4
     bakeSimulation: 0
-    resampleRotations: 1
+    resampleCurves: 1
     optimizeGameObjects: 0
     motionNodeName: 
     animationImportErrors: 
@@ -1088,17 +1088,17 @@ ModelImporter:
       that will be discarded.\n"
     animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftUpperArm
       average position error 38.0 mm and maximum position error 94.8 mm at time 309:
-      8 (46.4%) Frame 7424\n\tLeftLowerArm average position error 38.0 mm and maximum
-      position error 94.8 mm at time 309: 8 (46.4%) Frame 7424\n\tLeftHand average
-      position error 38.0 mm and maximum position error 94.8 mm at time 309: 8 (46.4%)
-      Frame 7424\n\tRightUpperArm average position error 39.3 mm and maximum position
-      error 77.5 mm at time 310:12 (46.6%) Frame 7452\n\tRightLowerArm average position
-      error 39.3 mm and maximum position error 77.5 mm at time 310:12 (46.6%) Frame
-      7452\n\tRightHand average position error 39.3 mm and maximum position error
-      77.5 mm at time 310:12 (46.6%) Frame 7452\n\tLeftFoot average orientation error
-      0.2 deg and maximum orientation error 161.5 deg at time 387: 6 (58.1%) Frame
+      8 (46.1%) Frame 7424\n\tLeftLowerArm average position error 38.0 mm and maximum
+      position error 94.8 mm at time 309: 8 (46.1%) Frame 7424\n\tLeftHand average
+      position error 38.0 mm and maximum position error 94.8 mm at time 309: 8 (46.1%)
+      Frame 7424\n\tRightUpperArm average position error 39.4 mm and maximum position
+      error 77.5 mm at time 310:12 (46.3%) Frame 7452\n\tRightLowerArm average position
+      error 39.4 mm and maximum position error 77.5 mm at time 310:12 (46.3%) Frame
+      7452\n\tRightHand average position error 39.4 mm and maximum position error
+      77.5 mm at time 310:12 (46.3%) Frame 7452\n\tLeftFoot average orientation error
+      0.2 deg and maximum orientation error 161.5 deg at time 387: 6 (57.7%) Frame
       9294\n\tRightFoot average orientation error 0.3 deg and maximum orientation
-      error 175.6 deg at time 387:16 (58.2%) Frame 9304\n"
+      error 175.6 deg at time 387:16 (57.8%) Frame 9304\n"
     animationDoRetargetingWarnings: 1
     animationCompression: 0
     animationRotationError: 0.5
@@ -8069,7 +8069,7 @@ ModelImporter:
       name: RunKickLeft
       takeName: Take 001
       firstFrame: 15800
-      lastFrame: 16000
+      lastFrame: 16100
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -8243,7 +8243,7 @@ ModelImporter:
       name: RunKickRight
       takeName: Take 001
       firstFrame: 15800
-      lastFrame: 16000
+      lastFrame: 16100
       wrapMode: 0
       orientationOffsetY: 0
       level: 0

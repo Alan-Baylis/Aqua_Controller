@@ -71,6 +71,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\AICharacterControl.cs" />
     <Compile Include="Assets\Scripts\ColorChanger.cs" />
+    <Compile Include="Assets\Scripts\Emotions.cs" />
     <Compile Include="Assets\Scripts\FollowTarget.cs" />
     <Compile Include="Assets\Scripts\FreeCameraLook.cs" />
     <Compile Include="Assets\Scripts\Pivot.cs" />

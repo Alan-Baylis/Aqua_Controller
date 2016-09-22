@@ -16,7 +16,7 @@ public class ColorChanger : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        print(this.transform.rotation.x);
+       // print(this.transform.rotation.x);
         //GetComponentInChildren<Renderer>().material.color = new Vector4(this.transform.rotation.x, this.transform.rotation.y, this.transform.rotation.z, 1);
 
     }
