@@ -122,7 +122,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float myForward;
         public float detectWall = 1f;
         public bool facingWall;
-        public bool ragdolEnabled;
+        public bool ragdolEnabled,inRagdol;
         float runSlideForward, runSlideSide;
 
         /*
@@ -197,6 +197,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //eyeBlink = (int)GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>().GetBlendShapeWeight(4);
             emotions = new Emotions();
+            ragdolEnabled = true;
         }
 
         //To get Animation Lenghts
@@ -316,6 +317,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //print("Layer 1 is " + m_Animator.GetLayerWeight(1));
             if (crashedInAir && ragdolEnabled)
             {
+                inRagdol = true;
                 m_Animator.enabled = false;
                 //m_Rigidbody.freezeRotation = false;
                 GameObject.Find("Camera_group").GetComponent<FreeCameraLook>().enabled = false;
@@ -520,11 +522,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     Debug.Log("Cannot kick without rigid body");
                 }
             }
-            if (collision.gameObject.tag == "Foot")
+            if (collision.gameObject.tag == "Foot" || collision.gameObject.tag == "Leg" || collision.gameObject.tag == "Torso")
             {
+                print("Ignoring collision");
                 Physics.IgnoreCollision(collision.collider, m_Capsule.GetComponent<Collider>(), true);
             }
-
 
         }
         
@@ -560,7 +562,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
         {
-            if (Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle)
+            if (Physics.Raycast(new Vector3(transform.position.x+1, transform.position.y + 1, transform.position.z+1), fwd, detectWall) && m_IsGrounded && !isIdle)
             {
                 facingWall = true;
                 m_Animator.applyRootMotion = false;

@@ -10,7 +10,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
     {
         ThirdPersonCharacter m_Character;
 
-        float eyeBlink, blinkStart, nextBlink, blinkTimer;
+        static float eyeBlink, blinkStart, nextBlink, blinkTimer;
         bool blinking;
         static SkinnedMeshRenderer aquaRenderer;
         void Start()
