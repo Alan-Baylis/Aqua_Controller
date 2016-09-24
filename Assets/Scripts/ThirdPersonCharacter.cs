@@ -33,6 +33,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float stamina = 5f;
         [SerializeField]
         float recovery = 5f;
+        [Range(200, 1000)]
+        [SerializeField]
+        int slideForce = 500;
         public bool m_Crouching;
         AnimationClip[] animations;
 
@@ -77,6 +80,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float groundedTimer;
         bool crashedInAir, crashedOnGround;
         public bool runKick, walkKick;
+        bool slideForceEnabled;
+        float slideStart;
+        float _slideForce;
+        bool slideSound;
 
 
 
@@ -125,15 +132,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool ragdolEnabled,inRagdol;
         float runSlideForward, runSlideSide;
 
-        /*
-                //For head movements according camera
-                float xHead, yHead, yCam, yHip;
-                GameObject cameraGroup;
-                GameObject playerNeck;
-                GameObject playerHips;
-                GameObject pivot;
-        */
-
         GameObject head;
         Transform spine;
         AudioClip footSound, headSound;
@@ -168,7 +166,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             head = GameObject.Find("Head");
             spine = GameObject.Find("Spine").transform;
             m_Animator.SetLayerWeight(0, 1);
-            playingFlip = true;
             leftFoot = GameObject.Find("Left_foot").transform;
             rightFoot = GameObject.Find("Right_foot").transform;
             hips = GameObject.Find("Hips").transform;
@@ -265,10 +262,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     runStop = Time.time;
                     stopRun();
+                    runStopPlaying = true;
                 }
                 if (runStop + 0.1f < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
                 {
-                    //print(timer);
                     isRunning = false;
                     runStopPlaying = false;
                 }
@@ -277,7 +274,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
             Exhausted();
-            doFlip();
 
             if (landForwardHeavy || landLight)
             {
@@ -301,7 +297,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 runKick = false;
                 walkKick = false;
             }
-
+            if (Input.GetMouseButton(1))
+            {
+                inRagdol = true;
+            }
+            if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
+            {
+                flipReady = true;   
+            }
+            if (flipReady)
+            {
+                doFlip();
+            }
+            if (isRunning && Input.GetKey(KeyCode.C))
+            {
+                runSlide = true;
+            }
         }
         void LateUpdate()
         {
@@ -318,9 +329,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (crashedInAir && ragdolEnabled)
             {
                 inRagdol = true;
-                m_Animator.enabled = false;
+
                 //m_Rigidbody.freezeRotation = false;
-                GameObject.Find("Camera_group").GetComponent<FreeCameraLook>().enabled = false;
+                //GameObject.Find("Camera_group").GetComponent<FreeCameraLook>().enabled = false;
+            }
+            if (inRagdol)
+            {
+                m_Animator.enabled = false;
             }
         }
         private void FixedUpdate()
@@ -329,7 +344,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Change gravity for the ponytail
             foreach (Rigidbody joints in ponyTail)
             {
-                if (!crashedInAir)
+                if (!crashedInAir && !inRagdol)
                 {
                     //print("Adding force");
                     joints.AddForce(30 * Physics.gravity);
@@ -404,22 +419,36 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //ScaleCapsuleForCrouching(crouch);
             //PreventStandingInLowHeadroom();
 
-            if (isRunning && Input.GetKey(KeyCode.C))
-            {
-                runSlide = true;
-            }
+
             if (runSlide)
             {
-                m_Animator.Play("RunSlide");
-                PlaySounds("gravslip");
+                if (!slideSound)
+                {
+                    PlaySounds("gravslip");
+                    slideSound = true;
+                }
                 standUp = false;
-                //m_Rigidbody.useGravity = false;
-                //m_Capsule.material.dynamicFriction = 0;
-                //m_Capsule.material.staticFriction = 0;
-                //m_Capsule.material.bounciness = 999f;
-                //m_Animator.applyRootMotion = false;
-                //m_Rigidbody.isKinematic = true;
-                //m_Rigidbody.AddRelativeForce(0, 0, m_Rigidbody.velocity.z * 2);
+                ScaleCapsule("slide");
+                
+                slideStart = Time.time;
+                if (GetAnimationClips(29).length / 2 < slideStart && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideStart"))
+                {
+                    _slideForce = slideForce * m_ForwardAmount;
+                }
+                else if (!slideForceEnabled && (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideRight")))
+                {
+                    slideForceEnabled = true;
+                    _slideForce = slideForce * m_ForwardAmount;
+
+                }
+                if (_slideForce > 10)
+                {
+                    _slideForce = _slideForce - 10; //* Mathf.Pow(0.99f, Time.time);
+                }
+                else _slideForce = 0;
+
+                m_Rigidbody.AddRelativeForce(Vector3.forward * _slideForce, ForceMode.Impulse);
+
 
                 if (Input.GetKeyDown(KeyCode.A))
                 {
@@ -432,31 +461,24 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (Input.GetKeyDown(KeyCode.W))
                 {
                     standUp = true;
-
                 }
-                // TODO: 
+
                 if (runSlide && standUp && !m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlidefinish"))
                 {
+                    slideForceEnabled = false;
                     runSlide = false;
+                    slideStart = 0;
+                    slideSound = false;
                 }
-
             }
 
 
             emotions.EyeBlink();
 
-            //else runSlide = false;
-
-
             // Turn on LegIk only on suitable conditions
             if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick || runStopPlaying)
             {
                 footIkOn = false;
-
-                if (runSlide)
-                {
-                    ScaleCapsule("slide");
-                }
             }
             else
             {
@@ -498,14 +520,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 catch (NullReferenceException ex)
                 {
-                    Debug.Log("Cannot kick without rigid body");
+                    //Debug.Log("Cannot kick without rigid body");
                 }
             }
             foreach (ContactPoint contact in collision.contacts)
             {
-                Debug.DrawRay(contact.point, contact.normal, Color.white);
+                Debug.DrawRay(contact.point, contact.normal, Color.green);
             }
-            if (isJumping && collision.gameObject)
+
+            
+            if (isJumping && collision.gameObject && collision.gameObject.tag !="Leg" && collision.gameObject.tag != "Foot" &&  collision.gameObject.tag != "Torso" && collision.gameObject.tag != "Arm")
             {
                 crashedInAir = true;
             }
@@ -514,20 +538,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 try
                 {
-                    print("Add Force");
+                    //print("Add Force");
                     collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 40, ForceMode.Impulse);
                 }
                 catch (NullReferenceException ex)
                 {
-                    Debug.Log("Cannot kick without rigid body");
+                    //Debug.Log("Cannot kick without rigid body");
                 }
             }
-            if (collision.gameObject.tag == "Foot" || collision.gameObject.tag == "Leg" || collision.gameObject.tag == "Torso")
+            if (collision.gameObject.tag == "Foot" || collision.gameObject.tag == "Leg" || collision.gameObject.tag == "Torso" || collision.gameObject.tag == "Arm")
             {
-                print("Ignoring collision");
-                Physics.IgnoreCollision(collision.collider, m_Capsule.GetComponent<Collider>(), true);
+               // print("Ignoring collision");
+                Physics.IgnoreCollision(collision.collider, m_Capsule, true);
             }
-
+            
         }
         
         bool frontFootRight()
@@ -568,7 +592,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
                 setForwardAmount(0);
-                print("Next to a wall !");
+                //print("Next to a wall !");
             } else facingWall = false;
 
             /*
@@ -668,20 +692,28 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void doFlip()
         {
             //To-Do: Flip animations depending on conditions
+
+
             if (flipReady && playingFlip)
             {
                 jumpPrepare = Time.time;
                 playingFlip = false;
-
             }
+            if (GetAnimationLength("FrontFlip") < jumpPrepare)
+            {
+                print(GetAnimationLength("FrontFlip"));
+                flipReady = false;
+                jumpPrepare = 0;
+            }
+
             if (flipReady)
             {
-                m_Animator.Play("FrontFlip");
-                isJumping = true;
+                //m_Animator.Play("FrontFlip");
+                //isJumping = true;
                 emotions.Surprised();
                 if (jumpPrepare + 0.3 < timer)
                 {
-                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower * 1.2f, m_Rigidbody.velocity.z);
+                    m_Rigidbody.velocity = new Vector3(0, m_JumpPower * 1.2f, 0);
                     //m_Rigidbody.AddRelativeForce(0, 0, 5);
                     flipReady = false;
                     m_IsGrounded = false;
@@ -692,6 +724,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 }
             }
+            
         }
 
         void Exhausted()
@@ -933,16 +966,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Capsule.height = 0.3f;
             }
-            if (state == "falling")
+            if (state == "falling" && !landForwardHeavy)
             {
-               // m_Capsule.height = m_CapsuleHeight; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
-               // m_Capsule.center = m_CapsuleCenter;
+               //m_Capsule.height = m_CapsuleHeight / 2; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
+              // m_Capsule.center = m_CapsuleCenter / 2;
             }
             if (state == "heavyLanding")
             {
                 //print("Call");
-                m_Capsule.height = m_CapsuleHeight / 4;
-                m_Capsule.center = m_CapsuleCenter / 4;
+               m_Capsule.height = m_CapsuleHeight / 3f;
+               m_Capsule.center = m_CapsuleCenter / 3f;
             }
             if (state == "stepUp")
             {
@@ -975,10 +1008,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             //Detecing walls to play stop animation
             detectWallsAndIdle();//m_ForwardAmount, detectWall);
-            if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
-            {
-                flipReady = true;
-            }
+
 
             if (!stepUpReady && !facingWall)
             {
@@ -1012,6 +1042,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("walkKick", walkKick);
             m_Animator.SetBool("frontFootRight", frontFootRight());
             m_Animator.SetBool("RunStop", runStopPlaying);
+            m_Animator.SetBool("inRagdol", inRagdol);
+            m_Animator.SetBool("playingFlip", playingFlip);
 
             if (!m_IsGrounded && isJumping)
             {
@@ -1136,12 +1168,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (Physics.Raycast(transform.position + (Vector3.up * 0.1f), Vector3.down, out hitInfo, m_GroundCheckDistance))
             {
 
-                if (!landed)
+                if (!landed && isFalling)
                 {
                     landedStart = Time.time;
                     landed = true;
                     ScaleCapsule("heavyLanding");
-                   // emotions.Surprised();
+                    PlaySounds("jumpLand");
+                    // emotions.Surprised();
                 }
 
                 isFalling = false;
@@ -1157,23 +1190,47 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 landed = false;
                 m_GroundNormal = Vector3.up;
                 ScaleCapsule("falling");
-                if (!isJumping && !stepUpPlaying)
+                if (!stepUpPlaying && !isJumping)
                 {
                     //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
                     if (!playingFall)
                     {
                         fallStart = Time.time;
                         playingFall = true;
+                        //isFalling = true;
                     }
                     if (fallStart + 0.3 < timer)
                     {
                         landLight = true;
                         isFalling = true;
-                        //emotions.Surprised();
+                        emotions.Surprised();
 
                     }
                     if (fallStart + 0.5 < timer)
                     {
+                        isFalling = true;
+                        landLight = false;
+                        landForwardHeavy = true;
+                    }
+                    if (fallStart + 0.6 < timer && Physics.Raycast(transform.position + (Vector3.down * 0.1f), Vector3.down, out hitInfo, m_GroundCheckDistance))
+                    {
+                        inRagdol = true;
+                        isFalling = false;
+                        landLight = false;
+                        landForwardHeavy = false;
+                    }
+                }
+                if (isJumping)
+                {
+                    if (!playingFall)
+                    {
+                        fallStart = Time.time;
+                        playingFall = true;
+                        //isFalling = true;
+                    }
+                    if (fallStart + 0.8 < timer)
+                    {
+                        isFalling = true;
                         landLight = false;
                         landForwardHeavy = true;
                     }

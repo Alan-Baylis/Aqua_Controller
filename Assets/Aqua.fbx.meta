@@ -1096,8 +1096,8 @@ ModelImporter:
       error 39.4 mm and maximum position error 77.5 mm at time 310:12 (46.3%) Frame
       7452\n\tRightHand average position error 39.4 mm and maximum position error
       77.5 mm at time 310:12 (46.3%) Frame 7452\n\tLeftFoot average orientation error
-      0.2 deg and maximum orientation error 161.5 deg at time 387: 6 (57.7%) Frame
-      9294\n\tRightFoot average orientation error 0.3 deg and maximum orientation
+      0.2 deg and maximum orientation error 173.8 deg at time 387:10 (57.8%) Frame
+      9298\n\tRightFoot average orientation error 0.3 deg and maximum orientation
       error 175.6 deg at time 387:16 (57.8%) Frame 9304\n"
     animationDoRetargetingWarnings: 1
     animationCompression: 0

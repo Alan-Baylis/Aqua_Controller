@@ -8,7 +8,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
     public class Emotions : MonoBehaviour
     {
-        ThirdPersonCharacter m_Character;
+        static ThirdPersonCharacter m_Character;
 
         static float eyeBlink, blinkStart, nextBlink, blinkTimer;
         bool blinking;
@@ -26,7 +26,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             catch (NullReferenceException ex)
             {
-                print("Cant find");
+                //print("Cant find");
             }
 
         }
@@ -64,7 +64,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void Surprised()
         {
-            print("Falling scared");
+            //print("Falling scared");
             if (m_Character.isFalling)
             {
                 aquaRenderer.SetBlendShapeWeight(0, 100);
