@@ -14,7 +14,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         static float breathStart, bellyBreath,mouthBreath, breathIntensity, breathStrength;
         bool inhale, exhale;
         bool blinking;
-        static SkinnedMeshRenderer aquaRenderer;
+        static SkinnedMeshRenderer aquaRenderer, pantsRenderer;
         void Start()
         {
 
@@ -25,10 +25,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             try
             {
                 aquaRenderer = GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>();
+                pantsRenderer = GameObject.Find("Pants").GetComponent<SkinnedMeshRenderer>();
             }
             catch (NullReferenceException ex)
             {
-                //print("Cant find");
+                print("Can't find Blend Shapes");
             }
 
         }
@@ -65,8 +66,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void Breath(bool isRunning, bool isExhausted)
         {
-            if (!isExhausted) //IS runing
-            {
+            if (!isExhausted) { 
                 breathIntensity = 80;
                 breathStrength = 2;
             }
@@ -77,17 +77,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 breathStrength = 4;
             }
 
-
             if (bellyBreath < breathIntensity && !inhale)
             {
                 bellyBreath += breathStrength;
                 if (isRunning || isExhausted)
                 {
                     mouthBreath = bellyBreath;
+                    //Call sound function
                 }
             }
             else inhale = true;
-            
 
             if (bellyBreath > 0 && inhale)
             {
@@ -102,9 +101,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else inhale = false;
 
-
-
             aquaRenderer.SetBlendShapeWeight(7, bellyBreath);
+            pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
             aquaRenderer.SetBlendShapeWeight(8, mouthBreath);
         }
 
