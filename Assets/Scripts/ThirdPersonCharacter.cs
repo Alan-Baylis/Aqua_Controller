@@ -474,6 +474,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
             emotions.EyeBlink();
+            emotions.Breath(isRunning, isExhausted);
 
             // Turn on LegIk only on suitable conditions
             if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick || runStopPlaying)

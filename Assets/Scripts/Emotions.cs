@@ -11,6 +11,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         static ThirdPersonCharacter m_Character;
 
         static float eyeBlink, blinkStart, nextBlink, blinkTimer;
+        static float breathStart, bellyBreath,mouthBreath, breathIntensity, breathStrength;
+        bool inhale, exhale;
         bool blinking;
         static SkinnedMeshRenderer aquaRenderer;
         void Start()
@@ -59,6 +61,51 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 aquaRenderer.SetBlendShapeWeight(4, eyeBlink);
             }
+        }
+
+        public void Breath(bool isRunning, bool isExhausted)
+        {
+            if (!isExhausted) //IS runing
+            {
+                breathIntensity = 80;
+                breathStrength = 2;
+            }
+
+            if (isExhausted)
+            {
+                breathIntensity = 100;
+                breathStrength = 4;
+            }
+
+
+            if (bellyBreath < breathIntensity && !inhale)
+            {
+                bellyBreath += breathStrength;
+                if (isRunning || isExhausted)
+                {
+                    mouthBreath = bellyBreath;
+                }
+            }
+            else inhale = true;
+            
+
+            if (bellyBreath > 0 && inhale)
+            {
+                bellyBreath -= breathStrength;
+                if ((isRunning || isExhausted))
+                {
+                    mouthBreath = bellyBreath;
+                }
+                else {
+                    if(mouthBreath > 0) mouthBreath -= breathStrength;
+                }
+            }
+            else inhale = false;
+
+
+
+            aquaRenderer.SetBlendShapeWeight(7, bellyBreath);
+            aquaRenderer.SetBlendShapeWeight(8, mouthBreath);
         }
 
 
