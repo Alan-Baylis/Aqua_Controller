@@ -229,18 +229,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             hips = GameObject.Find("Hips").transform;
 
 
-            if (Input.GetMouseButtonDown(0))
-            {
-                Cursor.visible = true;
-                Screen.lockCursor = false;
-            }
 
             timer = Time.time;
             if (m_ForwardAmount < 0.01f) { m_ForwardAmount = 0; }
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing
-            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5)
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5 && !isFalling)
             {
                 if (!runPlaying)
                 {
@@ -252,33 +247,41 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     isRunning = true;
                     runPlaying = false;
                 }
-
             }
-            //Not Running
-            if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5))
-            {
 
-                if (!runStopPlaying && isRunning)
+
+            //Not Runnings
+            if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5 && !isFalling))
+            {
+               // print("asdas");
+                if (!runStopPlaying)
                 {
                     runStop = Time.time;
-                    //stopRun();
                     runStopPlaying = true;
+                    StopRun();
                 }
-                if (isRunning && turnningAround)
+                if (runStop + 1f < timer)
                 {
-                    runStopPlaying = true;
-                }
-                if (runStop + 2f < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
-                {
-
                     isRunning = false;
                     runStopPlaying = false;
                 }
+                
 
+                /*
+                if (isRunning && turnningAround)
+                {
+                    //runStopPlaying = true;
+                }
+                
+                if (runStop + 1f < timer)
+                {
 
+                    runStopPlaying = false;
+                }*/
             }
 
 
+            //print(m_Rigidbody.velocity.magnitude);
 
 
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
@@ -579,7 +582,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
         //Change, detect magnitude drop and then paly animation with isgrounded condition.
-        public void stopRun()
+        public void StopRun()
         {
             if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S))
             {
@@ -589,12 +592,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (m_IsGrounded && !runSlide)
                     {
                         runStopPlaying = true;
-                        //m_Animator.Play("RunStop");
-                        setForwardAmount(0);
                         print("Stoping");
+                        setForwardAmount(0);
                     }
                 }
             }
+            else { runStopPlaying = false; }
         }
 
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
@@ -689,19 +692,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void turnAround(string side)
         {
-            if (myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning && !runSlide && !isIdle)
+            if (m_ForwardAmount > 0.5 && myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning && !runSlide && !isIdle)
             {
                 turnningAround = true;
                 if (side == "Right")
                 {
+                    //TO DO: bool instead
                     m_Animator.Play("TurnAroundRight");
                 }
                 if ((side == "Left"))
                 {
                     m_Animator.Play("TurnAroundLeft");
                 }
-            }
+            }    
         }
+
         void doFlip()
         {
             //To-Do: Flip animations depending on conditions

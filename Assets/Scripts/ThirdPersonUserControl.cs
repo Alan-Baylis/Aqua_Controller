@@ -44,6 +44,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         private void Update()
         {
+
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                Cursor.visible = true;
+                Screen.lockCursor = false;
+            }
             if (!m_Jump)
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
@@ -52,7 +59,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (m_Character.isRunning)
             {
-                m_Character.stopRun();
+                m_Character.StopRun();
             }
 
             if (m_Character.m_TurnAmount < -0.9)
@@ -60,11 +67,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                 m_Character.turnAround("Left");
             }
+            else m_Character.turnningAround = false;
+
             if (m_Character.m_TurnAmount > 0.9) /* || m_Character.directionSwitch(4) == true || m_Character.directionSwitch(3) == true*/
 
             {
                 m_Character.turnAround("Right");
             }
+            else m_Character.turnningAround = false;
 
 
             // To jump right or left while running
