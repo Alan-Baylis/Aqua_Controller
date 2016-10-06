@@ -66,6 +66,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void Breath(bool isRunning, bool isExhausted)
         {
+
+            //breathing = true;
             if (!isExhausted) { 
                 breathIntensity = 80;
                 breathStrength = 2;

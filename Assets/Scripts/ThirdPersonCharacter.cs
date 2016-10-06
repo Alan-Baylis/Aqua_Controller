@@ -261,15 +261,25 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (!runStopPlaying && isRunning)
                 {
                     runStop = Time.time;
-                    stopRun();
+                    //stopRun();
                     runStopPlaying = true;
                 }
-                if (runStop + 0.1f < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+                if (isRunning && turnningAround)
                 {
+                    runStopPlaying = true;
+                }
+                if (runStop + 2f < timer) //WAS 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! 
+                {
+
                     isRunning = false;
                     runStopPlaying = false;
                 }
+
+
             }
+
+
+
 
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
@@ -313,6 +323,55 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 runSlide = true;
             }
+
+            if (runSlide)
+            {
+                if (!slideSound)
+                {
+                    PlaySounds("gravslip");
+                    slideSound = true;
+                }
+                standUp = false;
+                ScaleCapsule("slide");
+
+                slideStart = Time.time;
+                if (GetAnimationClips(29).length / 2 < slideStart && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideStart"))
+                {
+                    _slideForce = slideForce * m_ForwardAmount;
+                }
+                else if (!slideForceEnabled && (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideRight")))
+                {
+                    slideForceEnabled = true;
+                    _slideForce = slideForce * m_ForwardAmount;
+
+                }
+                if (_slideForce > 10)
+                {
+                    _slideForce = _slideForce - 10; //* Mathf.Pow(0.99f, Time.time);
+                }
+                else _slideForce = 0;
+
+                if (Input.GetKeyDown(KeyCode.A))
+                {
+                    runSlideSide = 0;
+                }
+                if (Input.GetKeyDown(KeyCode.D))
+                {
+                    runSlideSide = 1;
+                }
+                if (Input.GetKeyDown(KeyCode.W))
+                {
+                    standUp = true;
+                }
+
+                if (runSlide && standUp && !m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlidefinish"))
+                {
+                    slideForceEnabled = false;
+                    runSlide = false;
+                    slideStart = 0;
+                    slideSound = false;
+                }
+            }
         }
         void LateUpdate()
         {
@@ -349,6 +408,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     //print("Adding force");
                     joints.AddForce(30 * Physics.gravity);
                 }
+            }
+            emotions.EyeBlink();
+            emotions.Breath(isRunning, isExhausted);
+            if (runSlide)
+            {
+                m_Rigidbody.AddRelativeForce(Vector3.forward * _slideForce, ForceMode.Impulse);
             }
         }
 
@@ -420,61 +485,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //PreventStandingInLowHeadroom();
 
 
-            if (runSlide)
-            {
-                if (!slideSound)
-                {
-                    PlaySounds("gravslip");
-                    slideSound = true;
-                }
-                standUp = false;
-                ScaleCapsule("slide");
-                
-                slideStart = Time.time;
-                if (GetAnimationClips(29).length / 2 < slideStart && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideStart"))
-                {
-                    _slideForce = slideForce * m_ForwardAmount;
-                }
-                else if (!slideForceEnabled && (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideRight")))
-                {
-                    slideForceEnabled = true;
-                    _slideForce = slideForce * m_ForwardAmount;
 
-                }
-                if (_slideForce > 10)
-                {
-                    _slideForce = _slideForce - 10; //* Mathf.Pow(0.99f, Time.time);
-                }
-                else _slideForce = 0;
-
-                m_Rigidbody.AddRelativeForce(Vector3.forward * _slideForce, ForceMode.Impulse);
-
-
-                if (Input.GetKeyDown(KeyCode.A))
-                {
-                    runSlideSide = 0;
-                }
-                if (Input.GetKeyDown(KeyCode.D))
-                {
-                    runSlideSide = 1;
-                }
-                if (Input.GetKeyDown(KeyCode.W))
-                {
-                    standUp = true;
-                }
-
-                if (runSlide && standUp && !m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlidefinish"))
-                {
-                    slideForceEnabled = false;
-                    runSlide = false;
-                    slideStart = 0;
-                    slideSound = false;
-                }
-            }
-
-
-            emotions.EyeBlink();
-            emotions.Breath(isRunning, isExhausted);
 
             // Turn on LegIk only on suitable conditions
             if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick || runStopPlaying)
@@ -580,6 +591,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         runStopPlaying = true;
                         //m_Animator.Play("RunStop");
                         setForwardAmount(0);
+                        print("Stoping");
                     }
                 }
             }
@@ -593,7 +605,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
                 setForwardAmount(0);
-                //print("Next to a wall !");
+                print("Next to a wall, stoping!");
             } else facingWall = false;
 
             /*

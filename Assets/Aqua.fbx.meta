@@ -428,6 +428,8 @@ ModelImporter:
     100840: Brest_control
     100842: Brest_controlNew
     100844: Pants
+    100846: BodyCut
+    100848: BodyCutOld
     400000: //RootNode
     400002: Body
     400004: Bra
@@ -851,6 +853,8 @@ ModelImporter:
     400840: Brest_control
     400842: Brest_controlNew
     400844: Pants
+    400846: BodyCut
+    400848: BodyCutOld
     2300000: Body3
     2300002: Body4
     2300004: Body_eye
@@ -903,6 +907,8 @@ ModelImporter:
     2300098: Pony_tail_mesh
     2300100: Right_cornea
     2300102: Right_eye
+    2300104: BodyCut
+    2300106: BodyCutOld
     3300000: Body3
     3300002: Body4
     3300004: Body_eye
@@ -955,6 +961,8 @@ ModelImporter:
     3300098: Pony_tail_mesh
     3300100: Right_cornea
     3300102: Right_eye
+    3300104: BodyCut
+    3300106: BodyCutOld
     4300000: Right_eye
     4300002: Left_eye
     4300004: Hair
@@ -1017,6 +1025,8 @@ ModelImporter:
     4300118: Pony_tail_mesh
     4300120: Bra_Weights
     4300122: Pants
+    4300124: BodyCut
+    4300126: BodyCutOld
     7400000: GetUpFromBack
     7400002: Walk
     7400004: Walk Left
@@ -1081,6 +1091,7 @@ ModelImporter:
     13700032: Pony_tail_mesh
     13700034: Bra_Weights
     13700036: Pants
+    13700038: BodyCut
   materials:
     importMaterials: 1
     materialName: 0
