@@ -23,7 +23,7 @@ Fall Land light 11400 11600
 
 Fall heavy in Place 12400 13300
 
-Jump to left while run 13400 -13700			
+Jump to left while run 13400 -13967			
 Jump to right while run 14100 - 14620
 
 StepUpLegLeft 15000 - 15100

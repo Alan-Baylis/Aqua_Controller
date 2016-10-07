@@ -254,7 +254,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5 && !isFalling))
             {
                // print("asdas");
-                if (!runStopPlaying)
+                if (!runStopPlaying && turnningAround)
                 {
                     runStop = Time.time;
                     runStopPlaying = true;
@@ -491,13 +491,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
             // Turn on LegIk only on suitable conditions
-            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick || runStopPlaying)
+            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick)
             {
                 footIkOn = false;
             }
             else
             {
-                footIkOn = false;
+                footIkOn = true;
             }
             
 
@@ -592,7 +592,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (m_IsGrounded && !runSlide)
                     {
                         runStopPlaying = true;
-                        print("Stoping");
                         setForwardAmount(0);
                     }
                 }
@@ -602,13 +601,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
         {
-            if (Physics.Raycast(new Vector3(transform.position.x+1, transform.position.y + 1, transform.position.z+1), fwd, detectWall) && m_IsGrounded && !isIdle)
+            if (Physics.Raycast(new Vector3(transform.position.x+1, transform.position.y + 1, transform.position.z+1), fwd, out hitInfo, detectWall) && m_IsGrounded && !isIdle)
             {
-                facingWall = true;
+                //Stop only if not pushable object (has a rigid body)
+                if (!hitInfo.rigidbody) {
+                    facingWall = true;
+                    print("Next to a wall, stoping!");
+                }
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
                 setForwardAmount(0);
-                print("Next to a wall, stoping!");
+
             } else facingWall = false;
 
             /*
@@ -1164,9 +1167,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         // Setter getter for m_forwardAmount
         void setForwardAmount(float preferedMovingSpeed)
         {
-
             m_ForwardAmount = Mathf.Lerp(getForwardAmount(), preferedMovingSpeed, 0.06f);
-
+            if (facingWall)
+            {
+                m_ForwardAmount = 0;
+            }
 
         }
         float getForwardAmount()
@@ -1287,20 +1292,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Raycast according state, ignore feet
             if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength) && !(hitLeg.collider.gameObject.tag == "Foot"))
             {
+
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
                 //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                 if (_foot == 1 && !leftFootIkActive)
                 {
                     rightFootIkActive = true;
-
                     stepUpLeg = 1;
+
                     if (!stepUpPlaying && !stepUpReady && stepUpDone)
                     {
                         rightFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
                         rightFootTempX = hitLeg.point.x;
                         rightFootTempZ = hitLeg.point.z;
-
                     }
 
                     rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
@@ -1318,7 +1323,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     else
                     {
                         stepUpReady = false;
-                        //setForwardAmount(0f);
+                        //setForwardAmount(0.1f);
                     }
                 }
 
