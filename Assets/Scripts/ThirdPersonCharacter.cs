@@ -30,9 +30,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float m_GroundCheckDistance = 0.1f;
         [SerializeField]
-        float stamina = 5f;
+        public float maxStamina;
         [SerializeField]
-        float recovery = 5f;
+        float recovery = 6f;
         [Range(200, 1000)]
         [SerializeField]
         int slideForce = 500;
@@ -70,6 +70,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isFalling, landLight, landForwardHeavy;
         public bool runSlide;
         public float transition;
+        float stamina;
+        float recoverySpeed = 0.01f;
+        bool setStamina;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
         bool landed, landing;
@@ -129,7 +132,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float myForward;
         public float detectWall = 1f;
         public bool facingWall;
-        public bool ragdolEnabled,inRagdol;
+        public bool ragdolEnabled, inRagdol;
         float runSlideForward, runSlideSide;
 
         GameObject head;
@@ -146,7 +149,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Start()
         {
-
             //Dissable Mouse                
             Cursor.visible = false;
             Screen.lockCursor = true;
@@ -194,7 +196,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //eyeBlink = (int)GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>().GetBlendShapeWeight(4);
             emotions = new Emotions();
+            //Emotions emotions;
             ragdolEnabled = true;
+            stamina = maxStamina;
         }
 
         //To get Animation Lenghts
@@ -224,7 +228,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void Update()
         {
             //TODO: Better set these two according size of the player, dynamic
-            fwd = transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 999));
+            fwd = (transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 100))).normalized;
             // Do not use Find function here - too slow
             hips = GameObject.Find("Hips").transform;
 
@@ -253,7 +257,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Not Runnings
             if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5 && !isFalling))
             {
-               // print("asdas");
+                // print("asdas");
                 if (!runStopPlaying && turnningAround)
                 {
                     runStop = Time.time;
@@ -265,19 +269,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     isRunning = false;
                     runStopPlaying = false;
                 }
-                
 
-                /*
-                if (isRunning && turnningAround)
-                {
-                    //runStopPlaying = true;
-                }
-                
-                if (runStop + 1f < timer)
-                {
-
-                    runStopPlaying = false;
-                }*/
             }
 
 
@@ -316,7 +308,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (Input.GetKeyDown(KeyCode.Tab) && isRunning && m_IsGrounded && !isExhausted)
             {
-                flipReady = true;   
+                flipReady = true;
             }
             if (flipReady)
             {
@@ -375,6 +367,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     slideSound = false;
                 }
             }
+
+            detectWallsAndIdle();//m_ForwardAmount, detectWall);
+
         }
         void LateUpdate()
         {
@@ -402,7 +397,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         private void FixedUpdate()
         {
-            
+
             //Change gravity for the ponytail
             foreach (Rigidbody joints in ponyTail)
             {
@@ -418,6 +413,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Rigidbody.AddRelativeForce(Vector3.forward * _slideForce, ForceMode.Impulse);
             }
+
+            setGuiStats();
         }
 
         public void Move(Vector3 move, bool crouch, bool jump)
@@ -463,6 +460,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 mouseWheel += Input.GetAxis("Mouse ScrollWheel");
             }
 
+            m_Crouching = crouch;
+
+            if (m_Crouching) // To crouch from layer 0 to 2
+            {
+                StartCoroutine(AnimatorLayerSmoother(1, m_Animator.GetLayerWeight(0), 1, 0.02f, 2));
+            }
+            else // To stand up, layer 2 to 0
+            {
+                StartCoroutine(AnimatorLayerSmoother(0, m_Animator.GetLayerWeight(0), 1, 0.02f, 2));
+            }
+
+
+
+
             //m_ForwardAmount = move.z * mouseWheel;
 
             setForwardAmount(move.z * mouseWheel);
@@ -486,12 +497,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //ScaleCapsuleForCrouching(crouch);
             //PreventStandingInLowHeadroom();
-
-
-
-
             // Turn on LegIk only on suitable conditions
-            if (isFalling || crouch || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick)
+            if (isFalling || m_Crouching || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick)
             {
                 footIkOn = false;
             }
@@ -499,9 +506,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 footIkOn = true;
             }
-            
-
-
 
             // send input and other state parameters to the animator
             UpdateAnimator(move);
@@ -529,7 +533,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             if (collision.gameObject.name == "Lift")
             {
-                try{
+                try
+                {
                     print("Collision with " + collision.gameObject.name);
                     collision.rigidbody.AddRelativeForce(collision.relativeVelocity * 400, ForceMode.Impulse);
                 }
@@ -543,13 +548,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 Debug.DrawRay(contact.point, contact.normal, Color.green);
             }
 
-            
-            if (isJumping && collision.gameObject && collision.gameObject.tag !="Leg" && collision.gameObject.tag != "Foot" &&  collision.gameObject.tag != "Torso" && collision.gameObject.tag != "Arm")
+
+            if (isJumping && collision.gameObject && collision.gameObject.tag != "Leg" && collision.gameObject.tag != "Foot" && collision.gameObject.tag != "Torso" && collision.gameObject.tag != "Arm")
             {
                 crashedInAir = true;
             }
 
-            if ((walkKick || runKick ) && collision.gameObject.name != "Foot")
+            if ((walkKick || runKick) && collision.gameObject.name != "Foot")
             {
                 try
                 {
@@ -563,18 +568,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (collision.gameObject.tag == "Foot" || collision.gameObject.tag == "Leg" || collision.gameObject.tag == "Torso" || collision.gameObject.tag == "Arm")
             {
-               // print("Ignoring collision");
+                // print("Ignoring collision");
                 Physics.IgnoreCollision(collision.collider, m_Capsule, true);
             }
-            
+
         }
-        
+
         bool frontFootRight()
         {
-           if (Mathf.Abs(rightFoot.transform.localPosition.z) < Mathf.Abs(leftFoot.transform.localPosition.z))
+            if (Mathf.Abs(rightFoot.transform.localPosition.z) < Mathf.Abs(leftFoot.transform.localPosition.z))
             {
-               return true;
-             }
+                return true;
+            }
             else return false;
 
 
@@ -584,6 +589,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //Change, detect magnitude drop and then paly animation with isgrounded condition.
         public void StopRun()
         {
+
             if (!Input.GetKey(KeyCode.W) && !Input.GetKey(KeyCode.D) && !Input.GetKey(KeyCode.A) && !Input.GetKey(KeyCode.S))
             {
                 if (Input.GetKeyUp(KeyCode.W) && m_ForwardAmount > 0.5 || Input.GetKeyUp(KeyCode.D) && m_ForwardAmount > 0.5
@@ -601,18 +607,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
         {
-            if (Physics.Raycast(new Vector3(transform.position.x+1, transform.position.y + 1, transform.position.z+1), fwd, out hitInfo, detectWall) && m_IsGrounded && !isIdle)
+            if (Physics.Raycast(hips.TransformPoint(0, 0, 0.15f), fwd, out hitInfo, detectWall) && m_IsGrounded)
             {
+                Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.black);
                 //Stop only if not pushable object (has a rigid body)
-                if (!hitInfo.rigidbody) {
+                if (hitInfo.rigidbody == false)
+                {
                     facingWall = true;
+                    setForwardAmount(0);
                     print("Next to a wall, stoping!");
                 }
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
-                setForwardAmount(0);
 
-            } else facingWall = false;
+
+            }
+            else facingWall = false;
 
             /*
             if (!(Physics.Raycast(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z), fwd, detectWall) && m_IsGrounded && !isIdle))
@@ -707,7 +717,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     m_Animator.Play("TurnAroundLeft");
                 }
-            }    
+            }
         }
 
         void doFlip()
@@ -745,7 +755,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 }
             }
-            
+
         }
 
         void Exhausted()
@@ -758,9 +768,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning)
             {
                 runTime = timer - runStart;
-                if (runTime > stamina && isRunning)
+                if (stamina > -0.1 && !isExhausted)
                 {
-                    StartCoroutine(Smoother(1, m_Animator.GetLayerWeight(1), 1, 0.02f));
+                    stamina = maxStamina - runTime;
+                }
+                else stamina = 0;
+
+                if (runTime > maxStamina && isRunning)
+                {
+                    StartCoroutine(AnimatorLayerSmoother(1, m_Animator.GetLayerWeight(1), 1, 0.02f, 1));
                     //exhaustTime = 0;
                     if (m_Animator.GetLayerWeight(1) >= 0.95)
                     {
@@ -768,6 +784,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
 
+            }
+            else
+            {
+                if (!isExhausted)
+                {
+
+                    if (stamina < maxStamina)
+                    {
+                        stamina += recoverySpeed;
+                    }
+                    else stamina = maxStamina;
+
+                }
             }
             // to become not exhausted
             if (isExhausted)
@@ -778,13 +807,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     playingExhausted = true;
                 }
                 exhaustTime = timer - exhaustStart;
-                if (exhaustTime > recovery /*&& isExhausted*/)
+
+                if (stamina <= maxStamina)
+                {
+                    stamina = exhaustTime;
+                }
+                else stamina = maxStamina;
+
+                if (exhaustTime > recovery && isExhausted)
                 {
                     runTime = 0;
                     playing = false;
 
                     //m_Animator.SetLayerWeight(0, 1);
-                    StartCoroutine(Smoother(0, m_Animator.GetLayerWeight(0), 1, 0.02f));
+                    StartCoroutine(AnimatorLayerSmoother(0, m_Animator.GetLayerWeight(0), 1, 0.02f, 1));
 
                     //StartCoroutine(Exhaust());
                     if (m_Animator.GetLayerWeight(0) > 0.1)
@@ -796,6 +832,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
         }
+            
+
 
         //Using only for breathing sound
         IEnumerator Exhaust()
@@ -814,28 +852,28 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
-        //Smoothes out numbers from start to finish wit hgiven interval. function is specific cases,
-        IEnumerator Smoother(int function, float start, float finish, float interval)
+
+        IEnumerator AnimatorLayerSmoother(int function, float start, float finish, float interval, int layer)
         {
             yield return new WaitForSeconds(interval);
-            //for going back to fit state
+            //for going back to Original layer 0
             if (function == 0)
             {
-                if (m_Animator.GetLayerWeight(0) <= 1 && m_Animator.GetLayerWeight(1) >= 0)
+                if (m_Animator.GetLayerWeight(0) <= 1 && m_Animator.GetLayerWeight(layer) >= 0)
                 {
-                    m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) - interval);
+                    m_Animator.SetLayerWeight(layer, m_Animator.GetLayerWeight(layer) - interval);
                     m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) + interval);
                     //m_ForwardAmount += interval;
 
                 }
             }
-            //for going to tired state
+            //for going to new layer X
             if (function == 1)
             {
-                if (m_Animator.GetLayerWeight(1) <= 1 && m_Animator.GetLayerWeight(0) >= 0)
+                if (m_Animator.GetLayerWeight(layer) <= 1 && m_Animator.GetLayerWeight(0) >= 0)
                 {
                     //m_ForwardAmount -= interval;
-                    m_Animator.SetLayerWeight(1, m_Animator.GetLayerWeight(1) + interval);
+                    m_Animator.SetLayerWeight(layer, m_Animator.GetLayerWeight(layer) + interval);
                     m_Animator.SetLayerWeight(0, m_Animator.GetLayerWeight(0) - interval);
 
 
@@ -938,7 +976,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void ScaleCapsuleForCrouching(bool crouch)
         {
-
+            /*
             if (m_IsGrounded && crouch)
             {
                 if (m_Crouching) return;
@@ -959,7 +997,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Capsule.center = m_CapsuleCenter;
                 m_Crouching = false;
             }
-
+            */
         }
 
 
@@ -974,7 +1012,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (state == "jump")
             {
                 //m_IsGrounded = false;
-                m_Capsule.height = m_CapsuleHeight/5; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
+                m_Capsule.height = m_CapsuleHeight / 5; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 //m_CapsuleCenter = hips.transform.position;
             }
             if (state == "slide")
@@ -989,14 +1027,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (state == "falling" && !landForwardHeavy)
             {
-               //m_Capsule.height = m_CapsuleHeight / 2; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
-              // m_Capsule.center = m_CapsuleCenter / 2;
+                //m_Capsule.height = m_CapsuleHeight / 2; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
+                // m_Capsule.center = m_CapsuleCenter / 2;
             }
             if (state == "heavyLanding")
             {
                 //print("Call");
-               m_Capsule.height = m_CapsuleHeight / 3f;
-               m_Capsule.center = m_CapsuleCenter / 3f;
+                m_Capsule.height = m_CapsuleHeight / 3f;
+                m_Capsule.center = m_CapsuleCenter / 3f;
             }
             if (state == "stepUp")
             {
@@ -1013,6 +1051,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void PreventStandingInLowHeadroom()
         {
             // prevent standing up in crouch-only zones
+            /*
             if (!m_Crouching)
             {
                 Ray crouchRay = new Ray(m_Rigidbody.position + Vector3.up * m_Capsule.radius * k_Half, Vector3.up);
@@ -1022,22 +1061,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Crouching = true;
                 }
             }
+            */
         }
 
 
         void UpdateAnimator(Vector3 move)
         {
             //Detecing walls to play stop animation
-            detectWallsAndIdle();//m_ForwardAmount, detectWall);
-
 
             if (!stepUpReady && !facingWall)
             {
-                m_Animator.SetFloat("Forward", m_ForwardAmount, 0.1f, Time.deltaTime);
+                m_Animator.SetFloat("Forward", getForwardAmount(), 0.1f, Time.deltaTime);
             }
-            if (facingWall)
+            else if (facingWall)
             {
-                m_Animator.SetFloat("Forward", m_ForwardAmount, 0.5f, 0);
+                m_Animator.SetFloat("Forward", getForwardAmount(), getForwardAmount(), Time.deltaTime);
             }
 
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
@@ -1118,7 +1156,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void HandleGroundedMovement(bool crouch, bool jump)
         {
-			isJumping = false;
+            isJumping = false;
             // check whether conditions are right to allow a jump:
             if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling    /*m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded")*/)
             {
@@ -1131,7 +1169,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_GroundCheckDistance = 0.1f;
             }
 
-            if (isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump") )
+            if (isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
             {
                 if (!m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Jump"))
                 {
@@ -1167,10 +1205,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         // Setter getter for m_forwardAmount
         void setForwardAmount(float preferedMovingSpeed)
         {
-            m_ForwardAmount = Mathf.Lerp(getForwardAmount(), preferedMovingSpeed, 0.06f);
+
             if (facingWall)
             {
                 m_ForwardAmount = 0;
+            }
+            else
+            {
+                m_ForwardAmount = Mathf.Lerp(getForwardAmount(), preferedMovingSpeed, 0.06f);
             }
 
         }
@@ -1282,9 +1324,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (_foot == 1) { legRay = 0.1f; }
             if (_foot == 2) { legRay = -0.1f; }
             if (isRunning && !isExhausted) { rayLength = 0.4f; rayPoss = 0.6f; }
-            if (isRunning &&  isExhausted) { rayLength = 0.38f; }
+            if (isRunning && isExhausted) { rayLength = 0.38f; }
             if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.3f; }
-            if (isIdle)    { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.3f; } //Test org 0.1f
+            if (isIdle) { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.3f; } //Test org 0.1f
 
             //Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.blue);
             Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.red);
@@ -1312,7 +1354,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     rightFootLow = rightFootHigh;
                     rightFootNewPosition = new Vector3(rightFootTempX, rightFootTempY, rightFootTempZ);
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.01f; }
-                    if (footSmoothingRight > 0.95 && getForwardAmount() > 0.2f) {
+                    if (footSmoothingRight > 0.95 && getForwardAmount() > 0.2f)
+                    {
                         stepUpReady = true;
                         holdingStepUpLegPlaying = false;
                         if (!isIdle)
@@ -1353,7 +1396,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     leftFootLow = leftFootHigh;
                     leftFootNewPosition = new Vector3(leftFootTempX, leftFootTempY, leftFootTempZ);
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.01f; }
-                    if (footSmoothingLeft > 0.95 && getForwardAmount() > 0.2f) {
+                    if (footSmoothingLeft > 0.95 && getForwardAmount() > 0.2f)
+                    {
                         stepUpReady = true;
                         if (!isIdle)
                         {
@@ -1381,7 +1425,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
 
                 }
-                
+
                 /*
                 //Stop following leg from animating while climbing
                 // maybe raycast down, or check last frames position and keep it there on climb
@@ -1465,9 +1509,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //called from late update, used to stop following leg on climb up from anmating
         void stopAnimatingBone(string bone)
         {
-            if (bone== "rightLeg")
+            if (bone == "rightLeg")
             {
-                if(!rightFootIkActive && stepUpReady)
+                if (!rightFootIkActive && stepUpReady)
                 {
 
                 }
@@ -1481,15 +1525,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void LootAtPointer()
         {
             //print(aimSmoother);
-            if (!isRunning && !runSlide)
+            if (!isRunning && !runSlide && !m_Crouching)
             {
                 aimSmoother += 0.01f;
                 if (aimSmoother > 0.5f) aimSmoother = 0.5f;
 
-                m_Animator.SetLookAtWeight(aimSmoother, aimSmoother-0.3f, aimSmoother, 0);
+                m_Animator.SetLookAtWeight(aimSmoother, aimSmoother - 0.3f, aimSmoother, 0);
                 m_Animator.SetLookAtPosition(pointer.position);
             }
-            if(isRunning)
+            if (isRunning)
             {
                 aimSmoother -= 0.01f;
                 if (aimSmoother < 0.01f) aimSmoother = 0;
@@ -1504,10 +1548,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.SetLookAtPosition(pointer.position);
                 m_Animator.SetLookAtPosition(pointer.position);
             }
-            
+            if (m_Crouching)
+            {
+                aimSmoother -= 0.01f;
+                if (aimSmoother < 0.2f) aimSmoother = 0.2f;
+                m_Animator.SetLookAtWeight(aimSmoother, aimSmoother, aimSmoother, 0);
+                m_Animator.SetLookAtPosition(pointer.position);
+            }
+
         }
         void OnAnimatorIK()
         {
+
             LootAtPointer();
             if (m_Animator)
             {
@@ -1529,10 +1581,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                         // Different states as running walking idle, requires diffferent footIk settings
                         //
-                        
+
                         legIK(1);
                         legIK(2);
-                        
+
                         /*
                         if ((rightFoot.transform.position.z > leftFoot.transform.position.z && !isIdle ) && !leftLegStepUp)
                         {
@@ -1577,6 +1629,31 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
         }
+
+        void setGuiStats()
+        {
+            if (stamina < 0)
+            {
+                stamina = 0;
+            } if(stamina > maxStamina)
+            {
+                stamina = maxStamina;
+            }
+            else ObjectManager.Get().stamina = stamina;
+
+            if (!setStamina) //Set once
+            {
+                ObjectManager.Get().maxStamina = stamina;
+                setStamina = true;
+
+            }
+            //else ObjectManager.Get().maxStamina = recovery;
+
+
+
+        }
+
+
     }
 }
 

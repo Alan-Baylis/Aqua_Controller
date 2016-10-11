@@ -1,5 +1,7 @@
 Idle 10-400
 Walk 420-820
+Walk Left 840 - 1240
+Walk Right 1300 - 1700
 
 Run 2500 2900
 Run Left 3000 3400
@@ -31,6 +33,10 @@ StepUpLegLeft 15000 - 15100
 Run Slide 10300 11300
 
 Run Kick 15500
+
+Crouch 16200 - 16300
+CrouchIdle 16300- 16500
+Crouch walk 16700 - 16900
 
 
 

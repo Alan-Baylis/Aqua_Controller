@@ -16,6 +16,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private bool jumpToSidePressed;
         float jumpToSideStart;
         public bool RunJumpLeft, RunJumpRight;
+        bool crouch;
 
         Animator m_Animator;
 
@@ -123,7 +124,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // read inputs
             float h = CrossPlatformInputManager.GetAxis("Horizontal");
             float v = CrossPlatformInputManager.GetAxis("Vertical");
-            bool crouch = Input.GetKey(KeyCode.C);
+
+            if(crouch && Input.GetKeyDown(KeyCode.C)){
+                crouch = false;
+            }
+            else if (!crouch && Input.GetKeyDown(KeyCode.C)){
+                crouch = true;
+            }
+
 
             // calculate move direction to pass to character
             if (m_Cam != null)

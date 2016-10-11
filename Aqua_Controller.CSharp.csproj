@@ -74,6 +74,9 @@
     <Compile Include="Assets\Scripts\Emotions.cs" />
     <Compile Include="Assets\Scripts\FollowTarget.cs" />
     <Compile Include="Assets\Scripts\FreeCameraLook.cs" />
+    <Compile Include="Assets\Scripts\GUIStats.cs" />
+    <Compile Include="Assets\Scripts\GameManager.cs" />
+    <Compile Include="Assets\Scripts\ObjectManager.cs" />
     <Compile Include="Assets\Scripts\Pivot.cs" />
     <Compile Include="Assets\Scripts\RagdollHelper.cs" />
     <Compile Include="Assets\Scripts\RagdollPartScript.cs" />
