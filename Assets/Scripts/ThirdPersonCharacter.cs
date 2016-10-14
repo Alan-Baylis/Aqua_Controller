@@ -769,7 +769,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 runTime = timer - runStart;
 
-                setStamina(0, runTime);
+                setStamina(0, stamina/ stamina/maxStamina);
 
 
                 if (runTime > maxStamina && isRunning)
@@ -783,7 +783,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }else if (stamina < maxStamina)
             {
-                setStamina(maxStamina, runTime);
+                setStamina(maxStamina, 0.1f);
             }
             
             // to become not exhausted
@@ -798,7 +798,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                 if (stamina <= maxStamina)
                 {
-                    setStamina(maxStamina, exhaustTime);
+                    setStamina(maxStamina, 0.1f);
                 }
                 
 
@@ -820,7 +820,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
 
-           // print(stamina);
+           print(stamina / stamina / maxStamina);
         }
 
 
