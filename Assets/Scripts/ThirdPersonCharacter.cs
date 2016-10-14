@@ -72,7 +72,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float transition;
         float stamina;
         float recoverySpeed = 0.01f;
-        bool setStamina;
+        bool setStaminaBool;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
         bool landed, landing;
@@ -278,7 +278,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
-            Exhausted();
+            
 
             if (landForwardHeavy || landLight)
             {
@@ -367,7 +367,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     slideSound = false;
                 }
             }
-
+            Exhausted();
             detectWallsAndIdle();//m_ForwardAmount, detectWall);
 
         }
@@ -768,11 +768,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning)
             {
                 runTime = timer - runStart;
-                if (stamina > -0.1 && !isExhausted)
-                {
-                    stamina = maxStamina - runTime;
-                }
-                else stamina = 0;
+
+                setStamina(0);
+
 
                 if (runTime > maxStamina && isRunning)
                 {
@@ -783,21 +781,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         isExhausted = true;
                     }
                 }
-
-            }
-            else
+            }else if (stamina < maxStamina)
             {
-                if (!isExhausted)
-                {
-
-                    if (stamina < maxStamina)
-                    {
-                        stamina += recoverySpeed;
-                    }
-                    else stamina = maxStamina;
-
-                }
+                setStamina(maxStamina);
             }
+            
             // to become not exhausted
             if (isExhausted)
             {
@@ -810,9 +798,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                 if (stamina <= maxStamina)
                 {
-                    stamina = exhaustTime;
+                    setStamina(maxStamina);
                 }
-                else stamina = maxStamina;
+                
 
                 if (exhaustTime > recovery && isExhausted)
                 {
@@ -831,8 +819,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
             }
+
+            print(stamina);
         }
-            
+
 
 
         //Using only for breathing sound
@@ -1219,6 +1209,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float getForwardAmount()
         {
             return m_ForwardAmount;
+        }
+
+
+        void setStamina(float newStamina)
+        {
+            if (stamina >= 0 && stamina <= maxStamina)
+            {
+                stamina = Mathf.Lerp(stamina, newStamina, 0.01f);
+            }
+            /*           if (stamina < 0) { stamina = 0; }
+            if (stamina > maxStamina) { stamina = maxStamina; }
+            */
         }
 
         void CheckGroundStatus()
@@ -1632,19 +1634,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void setGuiStats()
         {
-            if (stamina < 0)
-            {
-                stamina = 0;
-            } if(stamina > maxStamina)
-            {
-                stamina = maxStamina;
-            }
-            else ObjectManager.Get().stamina = stamina;
 
-            if (!setStamina) //Set once
+            ObjectManager.Get().stamina = stamina;
+
+            if (!setStaminaBool) //Set once
             {
                 ObjectManager.Get().maxStamina = stamina;
-                setStamina = true;
+                setStaminaBool = true;
 
             }
             //else ObjectManager.Get().maxStamina = recovery;
