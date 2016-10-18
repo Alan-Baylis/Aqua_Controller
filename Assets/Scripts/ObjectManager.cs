@@ -5,7 +5,7 @@ public class ObjectManager : MonoBehaviour
 {
     public Texture2D StaminaTextureBackground, StaminaTextureFill;
     public Texture2D HealthTextureBackground, HealthTextureFill;
-    public float stamina, maxStamina;
+    public float stamina, maxStamina, health, maxHealth;
 
 
 

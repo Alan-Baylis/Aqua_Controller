@@ -100,13 +100,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             /* if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.m_Animator.GetCurrentAnimatorStateInfo(0).length
                  - m_Character.m_Animator.GetCurrentAnimatorStateInfo(0).length / 3 < m_Character.timer)*/
 
-
             if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.GetAnimationLength("RunJumpLeft")/12- m_Character.GetAnimationLength("RunJumpLeft")/3/12
             < m_Character.timer)
             {
                 m_Character.RunJumpRight = false;
                 m_Character.RunJumpLeft = false;
                 jumpToSidePressed = false;
+            }
+            if (m_Character.isRunning && Input.GetKey(KeyCode.C))
+            {
+                m_Character.runSlide = true;
+            }
+            if (Input.GetKeyDown(KeyCode.K)){
+
             }
 
         }

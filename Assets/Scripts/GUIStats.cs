@@ -7,8 +7,8 @@ public class GUIStats : MonoBehaviour
     static public Texture2D StaminaTexture, StaminaTextureFill;
     static public Texture2D HealthTexture, HealthTextureFill;
 
-    private float staminaWidth, staminaHeight, staminaPosX, staminaPosY, healthPosY;
-    private static float stamina, staminaFull, staminaGUI;
+    private float staminaWidth, staminaHeight, staminaPosX, staminaPosY, healthPosY, healthWidth;
+    private static float stamina, staminaFull, staminaGUI, health, healthFull, healthGUI;
     private bool setStamina;
     //Texture2D pixelsStaminaTextureFill;
     void Start()
@@ -22,32 +22,30 @@ public class GUIStats : MonoBehaviour
 
         HealthTexture = ObjectManager.Get().HealthTextureBackground;
         HealthTextureFill = ObjectManager.Get().HealthTextureFill;
+        healthWidth = staminaWidth;
         healthPosY = StaminaTexture.height * 0.64f * guiScale;
-
-        //Color[] fillPixels = StaminaTextureFill.GetPixels(0, 0, staminaWidth, staminaHeight);
-        //pixelsStaminaTextureFill = new Texture2D(staminaWidth, staminaHeight);
-        //pixelsStaminaTextureFill.SetPixels(fillPixels);
-        //pixelsStaminaTextureFill.Apply();
 
     }
 
     void OnGUI()
     {
+
         staminaFull = ObjectManager.Get().maxStamina;
         stamina = ObjectManager.Get().stamina;
-
         staminaGUI = stamina * staminaWidth / staminaFull;
 
-        //else staminaGUI = 1;
+        healthFull = ObjectManager.Get().maxHealth;
+        health = ObjectManager.Get().health;
+        healthGUI = health * healthWidth / healthFull;;
 
-        //print(staminaGUI);
-
+        //Stamina GUI
         GUI.DrawTexture(new Rect(Screen.width - staminaPosX, staminaPosY, staminaGUI, staminaHeight), StaminaTextureFill);
         GUI.DrawTexture(new Rect(Screen.width - staminaPosX, staminaPosY, staminaWidth , staminaHeight), StaminaTexture);
-
-        GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, staminaGUI, staminaHeight), HealthTextureFill);
+        //Health GUI
+        GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, healthGUI, staminaHeight), HealthTextureFill);
         GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, staminaWidth, staminaHeight), HealthTexture);
 
+        //Display framerate
         GUI.Label(new Rect(0, 0, 100, 100), (1.0f / Time.smoothDeltaTime).ToString());
 
 
