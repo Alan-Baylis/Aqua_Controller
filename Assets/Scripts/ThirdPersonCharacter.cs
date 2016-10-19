@@ -80,8 +80,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float transition;
         bool playing, playingExhausted, playingFlip, playingFall, runPlaying, runStopPlaying;
         bool flipReady;
-        bool landed, landing;
+        public bool landed, landing;
         bool standUp;
+        float standUpStart;
         public bool turnningAround;
         public bool RunJumpLeft, RunJumpRight;
         Vector3 moveDirection;
@@ -238,7 +239,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
-            print("m_GroundCheckDistance " + m_GroundCheckDistance);
             //TODO: Better set these two according size of the player, dynamic
             fwd = (transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 100))).normalized;
             // Do not use Find function here - too slow
@@ -325,6 +325,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 doFlip();
             }
 
+            if (isExhausted)
+            {
+                runSlide = false;
+            }
 
             if (runSlide)
             {
@@ -332,11 +336,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     PlaySounds("gravslip");
                     slideSound = true;
+                    slideStart = Time.time; //Could have indicidual if
+                    standUp = false;
                 }
-                standUp = false;
+
                 ScaleCapsule("slide");
 
-                slideStart = Time.time;
+                //Add force after few seconds of sliding, approx when character is on ground
                 if (GetAnimationClips(29).length / 2 < slideStart && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideStart"))
                 {
                     _slideForce = slideForce * m_ForwardAmount;
@@ -345,14 +351,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     slideForceEnabled = true;
                     _slideForce = slideForce * m_ForwardAmount;
-
                 }
+                //remove force linearnly
                 if (_slideForce > 10)
                 {
                     _slideForce = _slideForce - 10; //* Mathf.Pow(0.99f, Time.time);
                 }
                 else _slideForce = 0;
 
+                //Slide movements
                 if (Input.GetKeyDown(KeyCode.A))
                 {
                     runSlideSide = 0;
@@ -361,17 +368,23 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     runSlideSide = 1;
                 }
-                if (Input.GetKeyDown(KeyCode.W))
+                if (Input.GetKeyDown(KeyCode.W) && !standUp)
                 {
                     standUp = true;
+                    standUpStart = timer;
                 }
 
-                if (runSlide && standUp && !m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlidefinish"))
+                if (standUp)
                 {
-                    slideForceEnabled = false;
-                    runSlide = false;
                     slideStart = 0;
-                    slideSound = false;
+
+                    if (GetAnimationClips(39).length / 18 < timer - standUpStart) {
+                        slideForceEnabled = false;
+                        standUp = false;
+                        runSlide = false;
+                        slideSound = false;
+                        standUpStart = 0;
+                    }
                 }
             }
 
@@ -485,7 +498,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
 
-            if (m_IsGrounded  && !runSlide && !stepUpPlaying)
+            if (m_IsGrounded  && !runSlide && !stepUpPlaying && !landing)
             {
                 ApplyExtraTurnRotation();
             }
@@ -503,7 +516,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //ScaleCapsuleForCrouching(crouch);
             //PreventStandingInLowHeadroom();
             // Turn on LegIk only on suitable conditions
-            if (isFalling || m_Crouching || runSlide || landForwardHeavy || landLight || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick)
+            if (isFalling || m_Crouching || runSlide || landing || RunJumpLeft || RunJumpRight || facingWall || isJumping || runKick || walkKick)
             {
                 footIkOn = false;
             }
@@ -1058,39 +1071,37 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void HandleGroundedMovement(bool crouch, bool jump)
         {
             timeInAirBool = false;
-
+            ScaleCapsule("ground");
             // check whether conditions are right to allow a jump:
-            if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling    /*m_Animator.GetCurrentAnimatorStateInfo(0).IsName("Grounded")*/)
+            if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling)
             {
+                isJumping = true;
                 jump = false;
                 jumpStart = timer;
                 m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-                //m_IsGrounded = false;                                                                                  //TEMPORARY
-                isJumping = true;
                 m_Animator.applyRootMotion = false;
                 temporaryGroundCheckDistance = 0.1f;
-                //ScaleCapsule("jump");
                 emotions.Surprised();
+                //m_IsGrounded = false;      
+                //ScaleCapsule("jump");
             }
             else
             {
                 temporaryGroundCheckDistance = m_GroundCheckDistance;
             }
-            if (isJumping && jumpStart + GetAnimationLength("Jump") / 13 < timer )
+            print(jumpStart);
+            if (isJumping && jumpStart + GetAnimationLength("Jump") / 40 < timer ) // WHY THIS NUMBER??
             {
                 isJumping = false;
             }
 
-            if (m_IsGrounded) // remove if 
-            {
-                //ScaleCapsule("ground");
-            }
-
-            if (timeInAir + 10 < timer) //CHANGE 10
+            //Landing is over when animation is over
+            if (timeInAir + GetAnimationLength("LandForwardHeavy") / 18 < timer)
             {
                 landForwardHeavy = false;
                 landLight = false;
                 timeInAirBool = true;
+                landing = false;      
 
             }
             
@@ -1169,7 +1180,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             #endif
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
-            if (Physics.Raycast(transform.position + new Vector3(0,m_CapsuleHeight,0) / 2 , Vector3.down, out hitInfo, m_GroundCheckDistance)) // Checking how far is ground from half size of main colider to ground side, with vector leangth of m_groundCheckdistance
+            // Checking how far is ground from half size of main colider to ground side, with vector leangth of m_groundCheckdistance
+            if (Physics.Raycast(transform.position + new Vector3(0,m_CapsuleHeight,0) / 2 , Vector3.down, out hitInfo, m_GroundCheckDistance)) 
             {
                 //m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
@@ -1186,12 +1198,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 playingFall = false;
                 isFalling = false;
             }
-            else
+            else // In Air
             {
 
                 m_IsGrounded = false;                                                                                         
                 //landed = false;
-                m_GroundNormal = Vector3.up;
+                //m_GroundNormal = Vector3.up;
 
                 if (!stepUpPlaying && !isJumping)
                 {
@@ -1201,6 +1213,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         fallStart = Time.time;
                         playingFall = true;
                         //isFalling = true;
+                        landed = true;
                     }
 
                     if (fallStart + 0.3 < timer)
@@ -1229,6 +1242,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //Die here when lands
                     }
                 }
+                
                 if (isJumping)
                 {
                     if (!playingFall)
@@ -1245,27 +1259,29 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         landForwardHeavy = true;
                     }
                 }
+                
             }
             if (m_IsGrounded)
             {
                 groundedTimer = Time.time;
-                
+
             }
             else
+            {
                 groundedTimer = 0;
+            }
 
-            //Landing is over when player is stood up
+            //Landed when touched the ground from fall
             if (landed && timer > landedStart + 0.1f)
             {
+                landed = false;
                 if (landForwardHeavy)
                 {
                     setHealth((int)(healthChange)); //Set minus health according how long it is falling
                     healthChange = 0;
                 }
-
-                landed = false;
-                landing = false;
             }
+            
         }
 
 

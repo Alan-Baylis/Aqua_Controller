@@ -1065,7 +1065,7 @@ ModelImporter:
     7400070: RunSlideStart
     7400072: RunSlideLeft
     7400074: RunSlideRight
-    7400076: RunSlidefinish
+    7400076: RunSlideFinish
     7400078: WalkKickLeft
     7400080: WalkKickRight
     7400082: RunKickLeft
@@ -7682,7 +7682,7 @@ ModelImporter:
       maskSource: {instanceID: 0}
       additiveReferencePoseFrame: 0
     - serializedVersion: 16
-      name: RunSlidefinish
+      name: RunSlideFinish
       takeName: Take 001
       firstFrame: 10800
       lastFrame: 11350
@@ -7710,9 +7710,15 @@ ModelImporter:
         weight: 1
       - path: Body
         weight: 1
+      - path: BodyCut
+        weight: 1
+      - path: BodyCutOld
+        weight: 1
       - path: Bra
         weight: 1
       - path: Hair
+        weight: 1
+      - path: Head_colider
         weight: 1
       - path: Hip_control
         weight: 1
@@ -7778,6 +7784,8 @@ ModelImporter:
         weight: 1
       - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb/Left_e_thumb
         weight: 1
+      - path: Hips/Spine/Chest/Left_Brest
+        weight: 1
       - path: Hips/Spine/Chest/Neck
         weight: 1
       - path: Hips/Spine/Chest/Neck/Head
@@ -7789,16 +7797,6 @@ ModelImporter:
       - path: Hips/Spine/Chest/Neck/Head/Jaw
         weight: 1
       - path: Hips/Spine/Chest/Neck/Head/Left_eye 1
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/pony_tail_1
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/pony_tail_1/pony_tail_2
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/pony_tail_1/pony_tail_2/pony_tail_3
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/pony_tail_1/pony_tail_2/pony_tail_3/pony_tail_4
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/pony_tail_1/pony_tail_2/pony_tail_3/pony_tail_4/pony_tail_5
         weight: 1
       - path: Hips/Spine/Chest/Neck/Head/Right_eye 1
         weight: 1
@@ -7838,11 +7836,29 @@ ModelImporter:
         weight: 1
       - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb/Right_e_thumb
         weight: 1
+      - path: Hips/Spine/Chest/Right_Brest
+        weight: 1
+      - path: Left_cornea
+        weight: 1
       - path: Left_eye
         weight: 1
       - path: Panties
         weight: 1
-      - path: Pony_tail
+      - path: Pants
+        weight: 1
+      - path: Pony_tail_mesh
+        weight: 1
+      - path: Pony_tail_skeleton_1
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2/Pony_tail_skeleton_3
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2/Pony_tail_skeleton_3/Pony_tail_skeleton_4
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2/Pony_tail_skeleton_3/Pony_tail_skeleton_4/Pony_tail_skeleton_5
+        weight: 1
+      - path: Right_cornea
         weight: 1
       - path: Right_eye
         weight: 1
