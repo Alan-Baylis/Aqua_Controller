@@ -522,7 +522,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else
             {
-                footIkOn = true;
+                footIkOn = false; //ON
             }
 
             // send input and other state parameters to the animator
@@ -821,10 +821,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     //headSound is an audio clip
                     headSound = head.GetComponent<Sounds>().Clips[UnityEngine.Random.Range(0, 6)];
                     head.GetComponent<Sounds>().audioSources[UnityEngine.Random.Range(0, 6)].PlayOneShot(headSound, 0.1f);
+
                 }
                 //Delete when all specific sounds are implemented
                 if (name == "jumpLand")
                 {
+                    //GameObject.Find("Camera").GetComponent<AudioEchoFilter>().delay = 1000;
                     footSound = GetComponent<Sounds>().Clips[20];
                     AudioSource.PlayClipAtPoint(footSound, transform.position);
                 }
@@ -834,9 +836,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     headSound = head.GetComponent<Sounds>().Clips[6];
                     head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
                 }
-                if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
+                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
-
+                    print(transform.position + new Vector3(0, m_Capsule.height / 2, 0));
                     if (name == "jumpLand")
                     {
                         footSound = GetComponent<Sounds>().Clips[20];
@@ -848,7 +850,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
 
                     }
-                    if (name == "stepsRun" && isRunning && !isWalking)
+                    if (name == "stepsRun" && isRunning && !isWalking || name == "stepsRun" && isExhausted)
                     {
                         footSound = GetComponent<Sounds>().Clips[UnityEngine.Random.Range(25, 44)];
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
@@ -860,7 +862,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-                if (Physics.Raycast(hips.position, down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
+                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height/2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {

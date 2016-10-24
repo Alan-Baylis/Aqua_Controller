@@ -23,7 +23,8 @@ Fall 10000 10200
 Run Slide 10300 11300
 Fall Land light 11400 11600
 
-Fall heavy in Place 12400 13300
+Fall heavy in Place 1 12400 13300
+Fall heavy in Place 2 16200 16450
 
 Jump to left while run 13400 -13967			
 Jump to right while run 14100 - 14620
@@ -34,9 +35,11 @@ Run Slide 10300 11300
 
 Run Kick 15500
 
-Crouch 16200 - 16300
-CrouchIdle 16300- 16500
-Crouch walk 16700 - 16900
+
+
+Crouch 16900 - 17000
+CrouchIdle 17000- 17300
+Crouch walk 17400 - 17600
 
 
 
