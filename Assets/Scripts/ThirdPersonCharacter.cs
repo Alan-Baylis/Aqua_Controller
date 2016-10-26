@@ -838,7 +838,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
-                    print(transform.position + new Vector3(0, m_Capsule.height / 2, 0));
                     if (name == "jumpLand")
                     {
                         footSound = GetComponent<Sounds>().Clips[20];
@@ -922,14 +921,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (state == "ground" && !landing)
             {
                 //m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
-                m_Capsule.height = m_CapsuleHeight;
-                m_Capsule.center = m_CapsuleCenter;
+                m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, Time.time);
+                m_Capsule.center = new Vector3(m_CapsuleCenter.x, Mathf.Lerp(m_Capsule.center.y, m_CapsuleCenter.y, Time.time), m_CapsuleCenter.z);
             }
             if (state == "jump")
             {
                 //m_IsGrounded = false;
-                m_Capsule.height = m_CapsuleHeight / 5; //Mathf.Abs(head.transform.position.y - (rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
-                //m_CapsuleCenter = hips.transform.position;
+                m_Capsule.height = m_CapsuleHeight / 2;
+                m_Capsule.center = m_CapsuleCenter * 2;
             }
             if (state == "slide")
             {
@@ -1067,13 +1066,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 timeInAirStart = timer;
             }
             timeInAir = timer - timeInAirStart;
+            if (isJumping)
+            {
+                ScaleCapsule("jump");
+            }
         }
 
 
         void HandleGroundedMovement(bool crouch, bool jump)
         {
             timeInAirBool = false;
-            ScaleCapsule("ground");
             // check whether conditions are right to allow a jump:
             if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling)
             {
@@ -1083,15 +1085,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                 m_Animator.applyRootMotion = false;
                 temporaryGroundCheckDistance = 0.1f;
-                emotions.Surprised();
-                //m_IsGrounded = false;      
-                //ScaleCapsule("jump");
+                emotions.Surprised();  
             }
             else
             {
                 temporaryGroundCheckDistance = m_GroundCheckDistance;
+                ScaleCapsule("ground");
             }
-            print(jumpStart);
             if (isJumping && jumpStart + GetAnimationLength("Jump") / 40 < timer ) // WHY THIS NUMBER??
             {
                 isJumping = false;
@@ -1175,15 +1175,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void CheckGroundStatus()
         {
-
             #if UNITY_EDITOR
             // helper to visualise the ground check ray in the scene view
-            Debug.DrawLine(transform.position +  new Vector3(0, m_CapsuleHeight, 0) / 2, transform.position - new Vector3(0, m_CapsuleHeight, 0) / 4,  Color.yellow);
+            Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.transform.position.y / 2, 0), m_Capsule.transform.position + new Vector3(0,-20,0) /*_Capsule.transform.position - new Vector3(0, m_Capsule.height/2, 0)*/,  Color.yellow);
             #endif
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
             // Checking how far is ground from half size of main colider to ground side, with vector leangth of m_groundCheckdistance
-            if (Physics.Raycast(transform.position + new Vector3(0,m_CapsuleHeight,0) / 2 , Vector3.down, out hitInfo, m_GroundCheckDistance)) 
+            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, m_Capsule.transform.position.y / 2, 0), Vector3.down, out hitInfo, m_GroundCheckDistance)) 
             {
                 //m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
@@ -1202,7 +1201,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else // In Air
             {
-
                 m_IsGrounded = false;                                                                                         
                 //landed = false;
                 //m_GroundNormal = Vector3.up;
@@ -1222,7 +1220,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     {
                         healthChange = -(timer - fallStart) * 3;
                         //print("healthChange " + healthChange);
-
                         isFalling = true;
                         landLight = true;
                         emotions.Surprised();
@@ -1240,7 +1237,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //isFalling = false;
                         // landLight = false;
                         //landForwardHeavy = false;
-
                         //Die here when lands
                     }
                 }
