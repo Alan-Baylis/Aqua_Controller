@@ -103,9 +103,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else inhale = false;
 
-            aquaRenderer.SetBlendShapeWeight(7, bellyBreath);
-            pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
-            aquaRenderer.SetBlendShapeWeight(8, mouthBreath);
+            try { 
+                aquaRenderer.SetBlendShapeWeight(7, bellyBreath);
+                pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
+                aquaRenderer.SetBlendShapeWeight(8, mouthBreath);
+            }
+            catch (NullReferenceException ex)
+            {
+                print("Can't find Blend Shapes");
+            }
         }
 
 
