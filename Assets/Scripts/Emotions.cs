@@ -110,7 +110,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             catch (NullReferenceException ex)
             {
-                print("Can't find Blend Shapes");
+                print("Can't find breathing Blend Shapes ");
             }
         }
 
