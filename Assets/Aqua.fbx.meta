@@ -441,6 +441,7 @@ ModelImporter:
     100866: Sad1
     100868: Smile1
     100870: Surprised1
+    100872: ShirtImport
     400000: //RootNode
     400002: Body
     400004: Bra
@@ -877,6 +878,7 @@ ModelImporter:
     400866: Sad1
     400868: Smile1
     400870: Surprised1
+    400872: ShirtImport
     2300000: Body3
     2300002: Body4
     2300004: Body_eye
@@ -943,6 +945,7 @@ ModelImporter:
     2300126: Smile1
     2300128: Surprised1
     2300130: Pants
+    2300132: ShirtImport
     3300000: Body3
     3300002: Body4
     3300004: Body_eye
@@ -1009,6 +1012,7 @@ ModelImporter:
     3300126: Smile1
     3300128: Surprised1
     3300130: Pants
+    3300132: ShirtImport
     4300000: Right_eye
     4300002: Left_eye
     4300004: Hair
@@ -1084,6 +1088,7 @@ ModelImporter:
     4300144: Kiss2
     4300146: BellyIn2
     4300148: MouthIn2
+    4300150: ShirtImport
     7400000: GetUpFromBack
     7400002: Walk
     7400004: Walk Left
@@ -1165,25 +1170,8 @@ ModelImporter:
     optimizeGameObjects: 0
     motionNodeName: 
     animationImportErrors: 
-    animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
-      might lower retargeting quality:\n\t'Chest' has translation animation that will
-      be discarded.\n\t'Left_index' has translation animation that will be discarded.\n\t'Left_m_thumb'
-      has translation animation that will be discarded.\n\t'Right_arm' has translation
-      animation that will be discarded.\n\t'Right_pinky' has translation animation
-      that will be discarded.\n"
-    animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftUpperArm
-      average position error 38.5 mm and maximum position error 94.8 mm at time 309:
-      8 (41.9%) Frame 7424\n\tLeftLowerArm average position error 38.5 mm and maximum
-      position error 94.8 mm at time 309: 8 (41.9%) Frame 7424\n\tLeftHand average
-      position error 38.5 mm and maximum position error 94.8 mm at time 309: 8 (41.9%)
-      Frame 7424\n\tRightUpperArm average position error 39.5 mm and maximum position
-      error 77.5 mm at time 310:12 (42.1%) Frame 7452\n\tRightLowerArm average position
-      error 39.5 mm and maximum position error 77.5 mm at time 310:12 (42.1%) Frame
-      7452\n\tRightHand average position error 39.5 mm and maximum position error
-      77.5 mm at time 310:12 (42.1%) Frame 7452\n\tLeftFoot average orientation error
-      0.2 deg and maximum orientation error 173.8 deg at time 387:10 (52.5%) Frame
-      9298\n\tRightFoot average orientation error 0.0 deg and maximum orientation
-      error 1.4 deg at time 444:23 (60.3%) Frame 10679\n"
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 1
     animationCompression: 0
     animationRotationError: 0.5
