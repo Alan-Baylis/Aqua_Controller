@@ -105,7 +105,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             try { 
                 aquaRenderer.SetBlendShapeWeight(7, bellyBreath);
-                pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
+                //pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
                 aquaRenderer.SetBlendShapeWeight(8, mouthBreath);
             }
             catch (NullReferenceException ex)

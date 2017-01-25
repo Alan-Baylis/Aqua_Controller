@@ -28,7 +28,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [SerializeField]
         float m_AnimSpeedMultiplier = 1f;
         [SerializeField]
-        float m_GroundCheckDistance = 1f;
+        float m_GroundCheckDistance;
         float temporaryGroundCheckDistance;
 
         //Stats
@@ -74,6 +74,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool m_IsGrounded;
         public bool isExhausted;
         public bool isJumping;
+        bool idleJump, runJump;
         float jumpStart;
         public bool isFalling, landLight, landForwardHeavy;
         public bool runSlide;
@@ -95,6 +96,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool lookAtPointer;
         float timeInAir, timeInAirStart;
         bool timeInAirBool;
+        bool WalkStepOverLeft, WalkStepOverRight, RunStepOverLeft, RunStepOverRight;
 
         //Stats
         float stamina, health, healthChange;
@@ -114,7 +116,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool stepUpDone;
         public bool stepUpPlaying, stepUpReady;
         float rayLength, rayPoss, legRay; // dynamic for right or left leg
-        float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow, hipToFootDisc, toeEnd;
+        float footNewPos, leftFootNewPos, footHigh, rightFootHigh, leftFootHigh, leftFootLow, rightFootLow, hipToFootDist, toeEnd;
         float climbDist;
         float landedStart;
         string footName;
@@ -141,7 +143,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float buttonTime = -1;
         float interval = 0.1f;
         public float myForward;
-        public float detectWall = 1f;
+        public float wallDetectDist = 1f;
         public bool facingWall;
         public bool ragdolEnabled, inRagdol;
         float runSlideForward, runSlideSide;
@@ -183,7 +185,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             rightFoot = GameObject.Find("Right_foot").transform;
             hips = GameObject.Find("Hips").transform;
             toeEnd = GameObject.Find("Right_toe_end").transform.position.y;
-            hipToFootDisc = hips.position.y - toeEnd;
+            hipToFootDist = hips.position.y - toeEnd;
             //print(hipToFootDisc + " hipToFootDisc");
             charScale = 100 / (transform.localScale.x * 100 / 1.635238f);
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
@@ -197,7 +199,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             animatorController.animationClips.CopyTo(animations, 0);
 
             //print animation names
-            //printAnimationNameIndex();
+            printAnimationNameIndex();
 
             //Assigning ponytail rigid bodies
             //ponyTail = GameObject.Find("Pony_tail_skeleton_2").GetComponent<Rigidbody>();
@@ -211,6 +213,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             ragdolEnabled = true;
             stamina = maxStamina;
             health = maxHealth;
+
         }
 
         //To get Animation Lenghts
@@ -249,7 +252,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //if (m_TurnAmount != 0) { isTurning = true; } else isTurning = false;
 
             //Runing
-            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5 && !isFalling)
+            if (m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 /*&& myForward > 0.5*/ && !isFalling)
             {
                 if (!runPlaying)
                 {
@@ -265,7 +268,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
 
             //Not Runnings
-            if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 && myForward > 0.5 && !isFalling))
+            if (!(m_ForwardAmount > 0.5 && m_Rigidbody.velocity.magnitude > 4 /*&& myForward > 0.5*/ && !isFalling))
             {
                 // print("asdas");
                 if (!runStopPlaying && turnningAround)
@@ -288,7 +291,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (m_ForwardAmount <= 0.5 && m_ForwardAmount > 0.1) { isWalking = true; } else isWalking = false;
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
-            
+
 
             if (landForwardHeavy || landLight)
             {
@@ -378,7 +381,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     slideStart = 0;
 
-                    if (GetAnimationClips(39).length / 18 < timer - standUpStart) {
+                    if (GetAnimationClips(41).length / 18 < timer - standUpStart)
+                    {
                         slideForceEnabled = false;
                         standUp = false;
                         runSlide = false;
@@ -404,7 +408,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //print("Layer 0 is " + m_Animator.GetLayerWeight(0));
             //print("Layer 1 is " + m_Animator.GetLayerWeight(1));
 
-            if (dead) {
+            if (dead)
+            {
                 m_Animator.enabled = false;
                 inRagdol = true;
 
@@ -447,7 +452,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             move = Vector3.ProjectOnPlane(move, m_GroundNormal);
             m_TurnAmount = Mathf.Atan2(move.x, move.z);
 
-            mouseWheel += Input.GetAxis("Mouse ScrollWheel");
+
             if (mouseWheel > 1)
             {
                 mouseWheel = 1;
@@ -458,6 +463,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 mouseWheel = 0;
                 myForward = 0;
             }
+
             else if (mouseWheel > 0.1f && mouseWheel < 0.3f)
             {
                 mouseWheel = 0.2f;
@@ -473,10 +479,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 mouseWheel = 0.9f;
                 myForward = 0.9f;
             }
-            else
+
+            mouseWheel += Input.GetAxis("Mouse ScrollWheel");
+            if (!Input.GetKey(KeyCode.LeftShift))
             {
-                mouseWheel += Input.GetAxis("Mouse ScrollWheel");
+                setForwardAmount(move.z);
             }
+
 
             m_Crouching = crouch;
 
@@ -490,15 +499,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
 
-
-
-            //m_ForwardAmount = move.z * mouseWheel;
-
-            setForwardAmount(move.z * mouseWheel);
-
-
-
-            if (m_IsGrounded  && !runSlide && !stepUpPlaying && !landing)
+            if (m_IsGrounded && !runSlide && !stepUpPlaying && !landing)
             {
                 ApplyExtraTurnRotation();
             }
@@ -599,9 +600,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 return true;
             }
             else return false;
-
-
-
         }
 
         //Change, detect magnitude drop and then paly animation with isgrounded condition.
@@ -625,24 +623,29 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
         {
-            if (Physics.Raycast(hips.TransformPoint(0, 0, 0.15f), fwd, out hitInfo, detectWall) && m_IsGrounded)
+            //Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), m_Capsule.transform.position + new Vector3(0, -m_GroundCheckDistance, 0), Color.yellow);
+
+            //if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), Vector3.down, out hitInfo, m_GroundCheckDistance))
+
+           // Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.yellow);
+            //if (Physics.Raycast(hips.TransformPoint(0, 0, 0.15f), fwd, out hitInfo, detectWall) && m_IsGrounded)
+            print(hips.transform.position);
+            Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist/2, 0), fwd, Color.blue);
+            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist/2, 0), fwd, out hitInfo, wallDetectDist) && m_IsGrounded)
             {
-                Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.black);
+
                 //Stop only if not pushable object (has a rigid body)
                 if (hitInfo.rigidbody == false)
                 {
                     facingWall = true;
-                    setForwardAmount(0);
                     print("Next to a wall, stoping!");
                 }
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
-
-
             }
             else facingWall = false;
         }
- 
+
 
         public void turnAround(string side)
         {
@@ -688,14 +691,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Rigidbody.velocity = new Vector3(0, m_JumpPower * 1.2f, 0);
                     //m_Rigidbody.AddRelativeForce(0, 0, 5);
                     flipReady = false;
-                    m_IsGrounded = false;                                                       
+                    m_IsGrounded = false;
                     playingFlip = true;
                     //m_Animator.applyRootMotion = false;
-                    temporaryGroundCheckDistance =  0.1f;
+                    temporaryGroundCheckDistance = 0.1f;
                     ScaleCapsule("frontFlip");
                     //print((rightFeet.transform.position.y + leftFeet.transform.position.y) / 2);
                 }
-            }else  temporaryGroundCheckDistance = m_GroundCheckDistance;
+            }
+            else temporaryGroundCheckDistance = m_GroundCheckDistance;
 
         }
 
@@ -710,7 +714,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (isRunning)
             {
                 runTime = timer - runStart;
-                setStamina(0, Time.smoothDeltaTime/stamina);
+                setStamina(0, Time.smoothDeltaTime / stamina);
 
                 if (runTime > maxStamina && isRunning)
                 {
@@ -721,11 +725,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         isExhausted = true;
                     }
                 }
-            }else if (stamina < maxStamina)
+            }
+            else if (stamina < maxStamina)
             {
                 setStamina(maxStamina, Time.smoothDeltaTime / recovery);
             }
-            
+
             // to become not exhausted
             if (isExhausted)
             {
@@ -738,7 +743,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                 if (stamina <= maxStamina)
                 {
-                    setStamina(maxStamina, Time.smoothDeltaTime/recovery);
+                    setStamina(maxStamina, Time.smoothDeltaTime / recovery);
                 }
 
 
@@ -861,7 +866,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height/2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
+                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {
@@ -918,6 +923,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void ScaleCapsule(string state)
         {
+
             if (state == "ground" && !landing)
             {
                 //m_Capsule.height = Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
@@ -940,16 +946,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Capsule.height = 0.3f;
             }
-            if (state == "falling" && !landForwardHeavy)
+            if (state == "falling" )//&& !landForwardHeavy)
             {
                 //m_Capsule.height = m_CapsuleHeight / 2; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
-                // m_Capsule.center = m_CapsuleCenter / 2;
+               // m_Capsule.center = m_CapsuleCenter * 2;
             }
             if (state == "heavyLanding")
             {
                 //print("Call");
-                m_Capsule.height = m_CapsuleHeight / 3f;
-                m_Capsule.center = m_CapsuleCenter / 3f;
+               m_Capsule.height = m_CapsuleHeight / 3f;
+               m_Capsule.center = m_CapsuleCenter / 3f;
             }
             if (state == "stepUp")
             {
@@ -994,6 +1000,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             m_Animator.SetFloat("Turn", m_TurnAmount, 0.1f, Time.deltaTime);
+            m_Animator.SetFloat("Forward", m_ForwardAmount);
             m_Animator.SetBool("Crouch", m_Crouching);
             m_Animator.SetBool("OnGround", m_IsGrounded);
             m_Animator.SetBool("isExhausted", isExhausted);
@@ -1018,6 +1025,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("RunStop", runStopPlaying);
             m_Animator.SetBool("inRagdol", inRagdol);
             m_Animator.SetBool("playingFlip", playingFlip);
+            m_Animator.SetBool("StepOverLeft", WalkStepOverLeft);
+            m_Animator.SetBool("StepOverRight", WalkStepOverRight);
+            m_Animator.SetBool("idleJump", idleJump);
+            m_Animator.SetBool("FacingWall", facingWall);
+
 
             if (!m_IsGrounded && isJumping)
             {
@@ -1028,9 +1040,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // calculate which leg is behind, so as to leave that leg trailing in the jump animation
             // (This code is reliant on the specific run cycle offset in our animations,
             // and assumes one leg passes the other at the normalized clip times of 0.0 and 0.5)
-            float runCycle =
-                Mathf.Repeat(
-                    m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
+            float runCycle = Mathf.Repeat(m_Animator.GetCurrentAnimatorStateInfo(0).normalizedTime + m_RunCycleLegOffset, 1);
             float jumpLeg = (runCycle < k_Half ? 1 : -1) * m_ForwardAmount;
             if (m_IsGrounded)
             {
@@ -1049,6 +1059,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Animator.speed = 1;
             }
 
+            //Play leg step over animation
+            if (!isRunning && !isWalking && !runSlide && m_IsGrounded)
+            {
+                if (m_TurnAmount > 0.3)
+                {
+                    WalkStepOverRight = true;
+                }
+                else WalkStepOverRight = false;
+
+                if (m_TurnAmount < -0.3)
+                {
+                    WalkStepOverLeft = true;
+                }
+                else WalkStepOverLeft = false;
+            }
             m_Animator.applyRootMotion = true;
         }
 
@@ -1076,25 +1101,67 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void HandleGroundedMovement(bool crouch, bool jump)
         {
             timeInAirBool = false;
-            // check whether conditions are right to allow a jump:
-            if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling)
+
+            //Jump
+            if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling && !runSlide)
             {
-                isJumping = true;
-                jump = false;
-                jumpStart = timer;
-                m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-                m_Animator.applyRootMotion = false;
-                temporaryGroundCheckDistance = 0.1f;
-                emotions.Surprised();  
+                if (m_ForwardAmount > 0.3) //Jump if moving
+                {
+                    runJump = true;
+                }
+                else     //Jump while Idle
+                {
+                    jumpStart = timer;
+                    idleJump = true;
+                }
+
             }
             else
             {
                 temporaryGroundCheckDistance = m_GroundCheckDistance;
                 ScaleCapsule("ground");
             }
-            if (isJumping && jumpStart + GetAnimationLength("Jump") / 40 < timer ) // WHY THIS NUMBER??
+
+            // Idle Jump
+            if (idleJump && !isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("IdleJump"))
+            {
+                isJumping = true;
+                jump = false;
+                if (jumpStart + GetAnimationLength("IdleJump") / 8 < timer)
+                {
+
+                    idleJump = false;
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
+                    m_Animator.applyRootMotion = false;
+                    temporaryGroundCheckDistance = m_GroundCheckDistance / 4;
+                    emotions.Surprised();
+                }
+            }
+
+            //Run Jump
+            if (runJump && !isJumping)
+            {
+
+                jumpStart = timer;
+                isJumping = true;
+                jump = false;
+
+                // if(!facingWall){
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
+                //} else{}
+
+                m_Animator.applyRootMotion = false;
+                temporaryGroundCheckDistance = m_GroundCheckDistance / 4;
+                emotions.Surprised();
+                runJump = false;
+
+            }
+
+            //End of IsJumping
+            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 30 < timer) // WHY THIS NUMBER??
             {
                 isJumping = false;
+
             }
 
             //Landing is over when animation is over
@@ -1103,10 +1170,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 landForwardHeavy = false;
                 landLight = false;
                 timeInAirBool = true;
-                landing = false;      
+                landing = false;
 
             }
-            
+
         }
 
         void ApplyExtraTurnRotation()
@@ -1132,12 +1199,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
         // Setter getter for m_forwardAmount
-        void setForwardAmount(float preferedMovingSpeed)
+        public void setForwardAmount(float preferedMovingSpeed)
         {
 
             if (facingWall)
             {
-                m_ForwardAmount = 0;
+                m_ForwardAmount = Mathf.Lerp(getForwardAmount(), 0, 0.1f);
+                //m_ForwardAmount = 0;
             }
             else
             {
@@ -1163,26 +1231,27 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void setHealth(int healthChange)
         {
-            if(health > 0 && health <= maxHealth)
+            if (health > 0 && health <= maxHealth)
             {
                 health += healthChange;
                 print("Health loss " + healthChange);
-            }else if(health < 0) { health = 0; }
-            else if(health > maxHealth) { health = maxHealth; }
+            }
+            else if (health < 0) { health = 0; }
+            else if (health > maxHealth) { health = maxHealth; }
 
             if (dead) { health = 0; }
         }
 
         void CheckGroundStatus()
         {
-            #if UNITY_EDITOR
+#if UNITY_EDITOR
             // helper to visualise the ground check ray in the scene view
-            Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.transform.position.y / 2, 0), m_Capsule.transform.position + new Vector3(0,-20,0) /*_Capsule.transform.position - new Vector3(0, m_Capsule.height/2, 0)*/,  Color.yellow);
-            #endif
+            Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), m_Capsule.transform.position + new Vector3(0, -m_GroundCheckDistance, 0) /*_Capsule.transform.position - new Vector3(0, m_Capsule.height/2, 0)*/, Color.yellow);
+#endif
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
             // Checking how far is ground from half size of main colider to ground side, with vector leangth of m_groundCheckdistance
-            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, m_Capsule.transform.position.y / 2, 0), Vector3.down, out hitInfo, m_GroundCheckDistance)) 
+            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), Vector3.down, out hitInfo, m_GroundCheckDistance))
             {
                 //m_GroundNormal = hitInfo.normal;
                 m_IsGrounded = true;
@@ -1201,10 +1270,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else // In Air
             {
-                m_IsGrounded = false;                                                                                         
+                m_IsGrounded = false;
                 //landed = false;
                 //m_GroundNormal = Vector3.up;
-
+                ScaleCapsule("falling");
                 if (!stepUpPlaying && !isJumping)
                 {
                     //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
@@ -1240,7 +1309,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         //Die here when lands
                     }
                 }
-                
+
                 if (isJumping)
                 {
                     if (!playingFall)
@@ -1257,7 +1326,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         landForwardHeavy = true;
                     }
                 }
-                
+
             }
             if (m_IsGrounded)
             {
@@ -1279,7 +1348,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     healthChange = 0;
                 }
             }
-            
+
         }
 
 
@@ -1289,14 +1358,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (_foot == 2) { legRay = -0.1f; }
             if (isRunning && !isExhausted) { rayLength = 0.4f; rayPoss = 0.6f; }
             if (isRunning && isExhausted) { rayLength = 0.38f; }
-            if (isWalking) { rayLength = hipToFootDisc / 2.4f; rayPoss = 0.3f; }
-            if (isIdle) { rayLength = hipToFootDisc / 2.2f; rayPoss = 0.3f; } //Test org 0.1f
+            if (isWalking) { rayLength = hipToFootDist / 2.4f; rayPoss = 0.3f; }
+            if (isIdle) { rayLength = hipToFootDist / 2.2f; rayPoss = 0.3f; } //Test org 0.1f
 
             //Debug.DrawRay(new Vector3(legRay, hipToFootDisc / 2, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.blue);
-            Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), Color.red);
+            Debug.DrawRay(hips.TransformPoint(legRay, -hipToFootDist / 4, rayPoss), new Vector3(0, -hipToFootDist / 2, 0), Color.red);
 
             //Raycast according state, ignore feet
-            if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength) && !(hitLeg.collider.gameObject.tag == "Foot"))
+            if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDist / 4, rayPoss), new Vector3(0, -hipToFootDist / 2, 0), out hitLeg, rayLength) && !(hitLeg.collider.gameObject.tag == "Foot"))
             {
 
                 //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
@@ -1309,12 +1378,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     if (!stepUpPlaying && !stepUpReady && stepUpDone)
                     {
-                        rightFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
+                        rightFootTempY = hipToFootDist / 10 + hitLeg.point.y;
                         rightFootTempX = hitLeg.point.x;
                         rightFootTempZ = hitLeg.point.z;
                     }
 
-                    rightFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
+                    rightFootHigh = hipToFootDist / 1.45f - hitLeg.distance;
                     rightFootLow = rightFootHigh;
                     rightFootNewPosition = new Vector3(rightFootTempX, rightFootTempY, rightFootTempZ);
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.01f; }
@@ -1342,7 +1411,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     if (!stepUpPlaying && !stepUpReady && stepUpDone)
                     {
-                        leftFootTempY = hipToFootDisc / 10 + hitLeg.point.y;
+                        leftFootTempY = hipToFootDist / 10 + hitLeg.point.y;
                         if (leftFoot.transform.position.y >= leftFootTempY - leftFootTempY / 1.4f)
                         {
                             leftFootTempX = hitLeg.point.x;
@@ -1356,7 +1425,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     }
 
-                    leftFootHigh = hipToFootDisc / 1.45f - hitLeg.distance;
+                    leftFootHigh = hipToFootDist / 1.45f - hitLeg.distance;
                     leftFootLow = leftFootHigh;
                     leftFootNewPosition = new Vector3(leftFootTempX, leftFootTempY, leftFootTempZ);
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.01f; }
@@ -1410,7 +1479,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //print(leftFootTempY + " Left foot Y");
             //print(rightFootTempY + " Right foot Y");
 
-            if (!(Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDisc / 4, rayPoss), new Vector3(0, -hipToFootDisc / 2, 0), out hitLeg, rayLength)))
+            if (!(Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDist / 4, rayPoss), new Vector3(0, -hipToFootDist / 2, 0), out hitLeg, rayLength)))
             {
                 leftFootIkActive = false;
                 rightFootIkActive = false;

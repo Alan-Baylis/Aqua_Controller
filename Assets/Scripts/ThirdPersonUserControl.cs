@@ -55,7 +55,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (!m_Jump)
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");
-                //m_Character.isJumping = true;  // Why this is off?
             }
 
             if (m_Character.isRunning)
@@ -152,7 +151,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 #if !MOBILE_INPUT
             // walk speed multiplier
-            if (Input.GetKey(KeyCode.LeftShift)) m_Move *= 0.5f;
+            if (Input.GetKey(KeyCode.LeftShift)) { m_Character.setForwardAmount(0.46f); }
 #endif
 
             // pass all parameters to the character control script

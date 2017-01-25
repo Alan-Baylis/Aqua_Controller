@@ -9,7 +9,8 @@ Run Left Sharp 3500 3700
 
 Run Right 4000 4400
 Run Right Sharp 4500 4900
-Jump 	 5000-5250
+Run Jump 	5000-5250
+Idle Jump	19020 - 19160
 WallStop 5300 5600
 GetUpFromBelly 5700 5950
 GetUpFromBack 6000 6300
