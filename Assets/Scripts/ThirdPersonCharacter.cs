@@ -44,7 +44,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         [Range(200, 1000)]
         [SerializeField]
         int slideForce = 500;
+
         public bool m_Crouching;
+        public float myForward;
+
         AnimationClip[] animations;
 
         Rigidbody m_Rigidbody;
@@ -142,7 +145,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public float timer;
         float buttonTime = -1;
         float interval = 0.1f;
-        public float myForward;
+
         public float wallDetectDist = 1f;
         public bool facingWall;
         public bool ragdolEnabled, inRagdol;
@@ -213,6 +216,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             ragdolEnabled = true;
             stamina = maxStamina;
             health = maxHealth;
+
+            myForward = 0.5f;
 
         }
 
@@ -453,38 +458,43 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_TurnAmount = Mathf.Atan2(move.x, move.z);
 
 
-            if (mouseWheel > 1)
-            {
-                mouseWheel = 1;
-                myForward = 1;
-            }
-            else if (mouseWheel < 0)
-            {
-                mouseWheel = 0;
-                myForward = 0;
-            }
-
-            else if (mouseWheel > 0.1f && mouseWheel < 0.3f)
-            {
-                mouseWheel = 0.2f;
-                myForward = 0.2f;
-            }
-            if (mouseWheel > 0.5f && mouseWheel < 0.7f)
-            {
-                mouseWheel = 0.5f;
-                myForward = 0.5f;
-            }
-            else if (mouseWheel > 0.7f && mouseWheel < 0.9f)
-            {
-                mouseWheel = 0.9f;
-                myForward = 0.9f;
-            }
 
             mouseWheel += Input.GetAxis("Mouse ScrollWheel");
-            if (!Input.GetKey(KeyCode.LeftShift))
+            if (Input.GetKey(KeyCode.LeftShift))
             {
-                setForwardAmount(move.z);
+                setForwardAmount(0.5f);
             }
+            else
+            {
+                if (mouseWheel > 1)
+                {
+                    mouseWheel = 1;
+                    myForward = 1;
+                }
+                else if (mouseWheel < 0)
+                {
+                    mouseWheel = 0;
+                    myForward = 0;
+                }
+                else if (mouseWheel > 0.3f && mouseWheel < 0.5f)
+                {
+                    myForward = 0.3f;
+                }
+
+                if (mouseWheel > 0.5f && mouseWheel < 0.7f)
+                {
+                    mouseWheel = 0.5f;
+                    myForward = 0.5f;
+                }
+                else if (mouseWheel > 0.7f && mouseWheel < 0.9f)
+                {
+                    mouseWheel = 0.9f;
+                    myForward = 0.9f;
+                }
+                setForwardAmount(myForward * move.z);
+            }
+            
+
 
 
             m_Crouching = crouch;
@@ -523,7 +533,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else
             {
-                footIkOn = false; //ON
+                footIkOn = true;
             }
 
             // send input and other state parameters to the animator

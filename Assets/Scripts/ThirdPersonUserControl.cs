@@ -15,8 +15,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private bool m_Jump;                      // the world-relative desired move direction, calculated from the camForward and user input.
         private bool jumpToSidePressed;
         float jumpToSideStart;
-        public bool RunJumpLeft, RunJumpRight;
+        //public bool RunJumpLeft, RunJumpRight;
         bool crouch;
+
+        //Functions
+        public bool lookAtPointer;
+        public bool footIkOn;
 
         Animator m_Animator;
 
@@ -125,6 +129,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         // Fixed update is called in sync with physics
         private void FixedUpdate()
         {
+            //Functions
+            m_Character.lookAtPointer = lookAtPointer;
+            m_Character.footIkOn = m_Character;
+
             // read inputs
             float h = CrossPlatformInputManager.GetAxis("Horizontal");
             float v = CrossPlatformInputManager.GetAxis("Vertical");
