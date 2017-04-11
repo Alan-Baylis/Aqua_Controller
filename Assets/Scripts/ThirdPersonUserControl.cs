@@ -107,7 +107,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 jumpToSidePressed = false;
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftControl) && !m_Character.isIdle && ObjectManager.Get().stamina > ObjectManager.Get().maxStamina/5) //Check if player has at least 10/100 of stamina, then slide.
+            if (Input.GetKeyDown(KeyCode.LeftControl) && !m_Character.isIdle && GameManager.Get().stamina > GameManager.Get().maxStamina/5) //Check if player has at least 10/100 of stamina, then slide.
             {
                 m_Character.runSlide = true;
             }

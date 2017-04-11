@@ -13,15 +13,15 @@ public class GUIStats : MonoBehaviour
     //Texture2D pixelsStaminaTextureFill;
     void Start()
     {
-        StaminaTexture = ObjectManager.Get().StaminaTextureBackground;
-        StaminaTextureFill = ObjectManager.Get().StaminaTextureFill;
+        StaminaTexture = GameManager.Get().StaminaTextureBackground;
+        StaminaTextureFill = GameManager.Get().StaminaTextureFill;
         staminaWidth = StaminaTexture.width / 2 * guiScale;
         staminaHeight = StaminaTexture.height / 2 * guiScale;
         staminaPosX = StaminaTexture.width /2 + StaminaTextureFill.width / 100 * guiScale;
         staminaPosY = StaminaTexture.height/ 10 * guiScale;
 
-        HealthTexture = ObjectManager.Get().HealthTextureBackground;
-        HealthTextureFill = ObjectManager.Get().HealthTextureFill;
+        HealthTexture = GameManager.Get().HealthTextureBackground;
+        HealthTextureFill = GameManager.Get().HealthTextureFill;
         healthWidth = staminaWidth;
         healthPosY = StaminaTexture.height * 0.64f * guiScale;
 
@@ -30,12 +30,12 @@ public class GUIStats : MonoBehaviour
     void OnGUI()
     {
 
-        staminaFull = ObjectManager.Get().maxStamina;
-        stamina = ObjectManager.Get().stamina;
+        staminaFull = GameManager.Get().maxStamina;
+        stamina = GameManager.Get().stamina;
         staminaGUI = stamina * staminaWidth / staminaFull;
 
-        healthFull = ObjectManager.Get().maxHealth;
-        health = ObjectManager.Get().health;
+        healthFull = GameManager.Get().maxHealth;
+        health = GameManager.Get().health;
         healthGUI = health * healthWidth / healthFull;;
 
         //Stamina GUI

@@ -25,11 +25,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             try
             {
                 aquaRenderer = GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>();
-                pantsRenderer = GameObject.Find("Pants").GetComponent<SkinnedMeshRenderer>();
+                //pantsRenderer = GameObject.Find("Pants").GetComponent<SkinnedMeshRenderer>();
             }
             catch (NullReferenceException ex)
             {
-                print("Can't find Blend Shapes");
+                print("Can't find Mesh Renderer");
             }
 
         }
@@ -57,20 +57,19 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     {
                         blinking = false;
                         blinkStart = 0;
-                        nextBlink = UnityEngine.Random.Range(1, 4);
+                        nextBlink = UnityEngine.Random.Range(1, 2);
                     }
                 }
-                aquaRenderer.SetBlendShapeWeight(4, eyeBlink);
+                aquaRenderer.SetBlendShapeWeight(7, eyeBlink);
             }
         }
 
         public void Breath(bool isRunning, bool isExhausted)
         {
-
             //breathing = true;
             if (!isExhausted) { 
                 breathIntensity = 80;
-                breathStrength = 2;
+                breathStrength = 1.2f;
             }
 
             if (isExhausted)
@@ -104,9 +103,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             else inhale = false;
 
             try { 
-                aquaRenderer.SetBlendShapeWeight(7, bellyBreath);
+                aquaRenderer.SetBlendShapeWeight(13, bellyBreath);
                 //pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
-                aquaRenderer.SetBlendShapeWeight(8, mouthBreath);
+                aquaRenderer.SetBlendShapeWeight(12, mouthBreath);
             }
             catch (NullReferenceException ex)
             {

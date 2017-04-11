@@ -9,6 +9,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
     [RequireComponent(typeof(Animator))]
     public class ThirdPersonCharacter : MonoBehaviour
     {
+
+        public bool lookAtPointer;
         Emotions emotions;
         [SerializeField]
         float m_MovingTurnSpeed = 360;
@@ -93,7 +95,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         bool slideForceEnabled;
         float slideStart, _slideForce;
         bool slideSound;
-        public bool lookAtPointer;
+
         float timeInAir, timeInAirStart;
         bool timeInAirBool;
         bool WalkStepOverLeft, WalkStepOverRight, RunStepOverLeft, RunStepOverRight;
@@ -535,7 +537,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             for (int i = 0; i < animatorController.animationClips.Length; i++)
             {
-                print(i + " is animation " + GetAnimationClips(i).name);
+                //print(i + " is animation " + GetAnimationClips(i).name);
             }
             //print(" is animation " + GetAnimationClips(25).name);
         }
@@ -629,7 +631,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
            // Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.yellow);
             //if (Physics.Raycast(hips.TransformPoint(0, 0, 0.15f), fwd, out hitInfo, detectWall) && m_IsGrounded)
-            print(hips.transform.position);
+           // print(hips.transform.position);
             Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist/2, 0), fwd, Color.blue);
             if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist/2, 0), fwd, out hitInfo, wallDetectDist) && m_IsGrounded)
             {
@@ -1667,12 +1669,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void setGuiStats()
         {
 
-            ObjectManager.Get().stamina = stamina;
-            ObjectManager.Get().health = health;
+            GameManager.Get().stamina = stamina;
+            GameManager.Get().health = health;
             if (!setPlayerStats) //Set once
             {
-                ObjectManager.Get().maxStamina = stamina;
-                ObjectManager.Get().maxHealth = health;
+                GameManager.Get().maxStamina = stamina;
+                GameManager.Get().maxHealth = health;
                 setPlayerStats = true;
 
             }
