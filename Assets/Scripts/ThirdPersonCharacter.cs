@@ -180,13 +180,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Capsule = GetComponent<CapsuleCollider>();
             m_CapsuleHeight = m_Capsule.height;
             m_CapsuleCenter = m_Capsule.center;
-            head = GameObject.Find("Head");
-            spine = GameObject.Find("Spine").transform;
+            head = transform.Find("Aqua/Hips/Spine/Chest/Neck/Head").gameObject;
+            spine = transform.Find("Aqua/Hips/Spine");
             m_Animator.SetLayerWeight(0, 1);
-            leftFoot = GameObject.Find("Left_foot").transform;
-            rightFoot = GameObject.Find("Right_foot").transform;
-            hips = GameObject.Find("Hips").transform;
-            toeEnd = GameObject.Find("Right_toe_end").transform.position.y;
+            leftFoot = transform.Find("Aqua/Hips/Left_leg/Left_knee/Left_foot");
+            rightFoot = transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot").transform;
+            hips = transform.Find("Aqua/Hips").transform;
+            toeEnd = transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot/Right_toe/Right_toe_end").transform.position.y;
             hipToFootDist = hips.position.y - toeEnd;
             //print(hipToFootDisc + " hipToFootDisc");
             charScale = 100 / (transform.localScale.x * 100 / 1.635238f);
@@ -247,7 +247,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //TODO: Better set these two according size of the player, dynamic
             fwd = (transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 100))).normalized;
             // Do not use Find function here - too slow
-            hips = GameObject.Find("Hips").transform;
+            hips = transform.Find("Aqua/Hips").transform;
 
             timer = Time.time;
             if (m_ForwardAmount < 0.01f) { m_ForwardAmount = 0; }

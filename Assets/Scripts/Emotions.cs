@@ -24,7 +24,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Character = GetComponent<ThirdPersonCharacter>();
             try
             {
-                aquaRenderer = GameObject.Find("Body").GetComponent<SkinnedMeshRenderer>();
+                aquaRenderer = transform.Find("Aqua/Body").GetComponent<SkinnedMeshRenderer>();
                 //pantsRenderer = GameObject.Find("Pants").GetComponent<SkinnedMeshRenderer>();
             }
             catch (NullReferenceException ex)
@@ -103,9 +103,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             else inhale = false;
 
             try { 
-                aquaRenderer.SetBlendShapeWeight(13, bellyBreath);
-                //pantsRenderer.SetBlendShapeWeight(0, bellyBreath);
-                aquaRenderer.SetBlendShapeWeight(12, mouthBreath);
+                aquaRenderer.SetBlendShapeWeight(13, (int)bellyBreath);
+                aquaRenderer.SetBlendShapeWeight(12, (int)mouthBreath);
             }
             catch (NullReferenceException ex)
             {
