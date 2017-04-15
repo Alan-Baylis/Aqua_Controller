@@ -473,6 +473,7 @@ ModelImporter:
     100930: Left_shoulder
     100932: Right_shoulder
     100934: Panties 1
+    100936: ClothesBS
     400000: //RootNode
     400002: Body
     400004: Bra
@@ -941,6 +942,7 @@ ModelImporter:
     400930: Left_shoulder
     400932: Right_shoulder
     400934: Panties 1
+    400936: ClothesBS
     2300000: Body3
     2300002: Body4
     2300004: Body_eye
@@ -1303,12 +1305,10 @@ ModelImporter:
       animation that will be discarded.\n\t'Right_shoulder' has translation animation
       that will be discarded.\n\t'Right_pinky' has translation animation that will
       be discarded.\n"
-    animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftLowerArm
-      average position error 0.3 mm and maximum position error 1.5 mm at time 568:15
-      (70.0%) Frame 13647\n\tLeftFoot average orientation error 0.2 deg and maximum
-      orientation error 173.8 deg at time 387:10 (47.7%) Frame 9298\n\tRightFoot average
-      orientation error 0.0 deg and maximum orientation error 3.6 deg at time 777:
-      7 (95.7%) Frame 18655\n"
+    animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftFoot
+      average orientation error 0.2 deg and maximum orientation error 173.8 deg at
+      time 387:10 (47.7%) Frame 9298\n\tRightFoot average orientation error 0.0 deg
+      and maximum orientation error 3.6 deg at time 777: 7 (95.7%) Frame 18655\n"
     animationDoRetargetingWarnings: 1
     animationCompression: 0
     animationRotationError: 0.5

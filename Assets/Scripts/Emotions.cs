@@ -68,7 +68,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             //breathing = true;
             if (!isExhausted) { 
-                breathIntensity = 80;
+                breathIntensity = 60;
                 breathStrength = 1.2f;
             }
 

@@ -5,12 +5,16 @@ using UnityEngine;
 
 public class MuscleSystem : MonoBehaviour
 {
-    private SkinnedMeshRenderer bodyRenderer, pantiesRenderer;
+    private SkinnedMeshRenderer bodyRenderer, pantiesRenderer, braRenderer;
 
     //Arm muscles
     private int rightBicepsFlex, rightTricepsFlex, rightDeltoidFlex, leftBicepsFlex, leftTricepsFlex, leftDeltoidFlex, leftBrachioradialis, rightBrachioradialis, leftExtensors, rightExtensors;
     //Leg muscles
     private int leftGastrocnemius, rightGastrocnemius, leftSemitendinosus, rightSemitendinosus;
+    //Head muscles
+    private int leftSternal, rightSternal;
+    //Back muscles
+    private int leftTeres, rightTeres, leftTrapezius, rightTrapezius;
 
     public bool enableMuscles;
     [Range(0, 10)]
@@ -28,6 +32,12 @@ public class MuscleSystem : MonoBehaviour
     [Range(0, 10)]
     public int deltoidEffect;
     float _deltoidEffect;
+    [Range(0, 10)]
+    public int teresMajorEffect;
+    float _teresMajorEffect;
+    [Range(0, 10)]
+    public int trapeziusEffect;
+    float _trapeziusEffect;
 
     void Start()
     {
@@ -38,6 +48,7 @@ public class MuscleSystem : MonoBehaviour
         {
             bodyRenderer = transform.Find("Aqua/Body").GetComponent<SkinnedMeshRenderer>();
             pantiesRenderer = transform.Find("Aqua/Panties").GetComponent<SkinnedMeshRenderer>();
+            braRenderer = transform.Find("Aqua/Bra").GetComponent<SkinnedMeshRenderer>();
         }
         catch (NullReferenceException ex)
         {
@@ -54,12 +65,18 @@ public class MuscleSystem : MonoBehaviour
         _backArmsEffect = backArmsEffect / 10f;
         _frontArmsEffect = frontArmsEffect / 10f;
         _deltoidEffect = deltoidEffect / 10f;
+        _trapeziusEffect = trapeziusEffect / 10f;
+        _teresMajorEffect = teresMajorEffect / 10f;
 
         if (enableMuscles)
         {
 
             try
             {
+                //Neck muscles
+                rightSternal = Mathf.Max(0, 90 - (int)transform.Find("Aqua/Hips/Spine/Chest/Neck").transform.localEulerAngles.y) * 2;
+                leftSternal = Mathf.Max(0, (int)transform.Find("Aqua/Hips/Spine/Chest/Neck").transform.localEulerAngles.y - 80) * 2;
+
                 //Left Arm muscles
                 leftBicepsFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.localEulerAngles.x - 285) * 1.5f);
                 leftTricepsFlex = (int)(385 - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.localEulerAngles.x);
@@ -94,6 +111,12 @@ public class MuscleSystem : MonoBehaviour
                     rightGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * 3000);
                     rightSemitendinosus = rightGastrocnemius;
                 }
+
+                //Back Muscles
+                leftTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.localRotation.x) * 400);
+                leftTrapezius = leftTeres;
+                rightTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.localRotation.x) * 400);
+                rightTrapezius = rightTeres;
             }
 
             catch (NullReferenceException ex)
@@ -124,6 +147,14 @@ public class MuscleSystem : MonoBehaviour
             rightGastrocnemius = 0;
             rightSemitendinosus = 0;
 
+            leftSternal = 0;
+            rightSternal = 0;
+
+            rightTeres = 0;
+            leftTeres = 0;
+            leftTrapezius = 0;
+            rightTrapezius = 0;
+
         }
         if (enableMuscles)
         {
@@ -152,10 +183,10 @@ public class MuscleSystem : MonoBehaviour
 
             //Back leg muscles
             bodyRenderer.SetBlendShapeWeight(20, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(20), leftGastrocnemius * _allMuscleEffect, 1));
-            bodyRenderer.SetBlendShapeWeight(22, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(22), rightSemitendinosus * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(23, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(23), rightSemitendinosus * _allMuscleEffect, 1));
 
             bodyRenderer.SetBlendShapeWeight(21, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(21), rightGastrocnemius * _allMuscleEffect, 1));
-            bodyRenderer.SetBlendShapeWeight(23, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(23), leftSemitendinosus * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(22, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(22), leftSemitendinosus * _allMuscleEffect, 1));
 
             //Buttocks & panties
             bodyRenderer.SetBlendShapeWeight(24, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(24), (int)(leftGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
@@ -163,7 +194,17 @@ public class MuscleSystem : MonoBehaviour
             pantiesRenderer.SetBlendShapeWeight(1, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(1), (int)(rightGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
             pantiesRenderer.SetBlendShapeWeight(0, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(0), (int)(leftGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
 
+            //Neck
+            bodyRenderer.SetBlendShapeWeight(31, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(31), rightSternal * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(30, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(30), leftSternal * _allMuscleEffect, 1));
 
+            //Back && bra back
+            bodyRenderer.SetBlendShapeWeight(32, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(32), leftTeres * _teresMajorEffect * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(33, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(33), rightTeres * _teresMajorEffect * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(34, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(34), leftTrapezius * _trapeziusEffect * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(35, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(35), rightTrapezius * _trapeziusEffect * _allMuscleEffect, 1));
+            braRenderer.SetBlendShapeWeight(0, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(0), leftTrapezius * _trapeziusEffect * _allMuscleEffect, 1));
+            braRenderer.SetBlendShapeWeight(1, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(1), leftTrapezius * _trapeziusEffect * _allMuscleEffect, 1));
         }
         catch (NullReferenceException ex)
         {
