@@ -118,11 +118,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //print("Falling scared");
             if (m_Character.isFalling)
             {
-                aquaRenderer.SetBlendShapeWeight(0, 100);
+                //aquaRenderer.SetBlendShapeWeight(0, 100);
             }
             if (!m_Character.isFalling)
             {
-                aquaRenderer.SetBlendShapeWeight(0, 0);
+                //aquaRenderer.SetBlendShapeWeight(0, 0);
             }
         }
 

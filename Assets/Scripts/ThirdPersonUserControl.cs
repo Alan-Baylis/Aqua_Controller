@@ -45,8 +45,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         private void Update()
         {
-
-
             if (Input.GetMouseButtonDown(0))
             {
                 Cursor.visible = true;
@@ -66,7 +64,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             { /* || m_Character.directionSwitch(1) == true || m_Character.directionSwitch(2) == true*/
 
                 m_Character.turnAround("Left");
-            } else if (m_Character.m_TurnAmount > 0.9) /* || m_Character.directionSwitch(4) == true || m_Character.directionSwitch(3) == true*/
+            }
+            else if (m_Character.m_TurnAmount > 0.9) /* || m_Character.directionSwitch(4) == true || m_Character.directionSwitch(3) == true*/
 
             {
                 m_Character.turnAround("Right");
@@ -99,7 +98,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             /* if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.m_Animator.GetCurrentAnimatorStateInfo(0).length
                  - m_Character.m_Animator.GetCurrentAnimatorStateInfo(0).length / 3 < m_Character.timer)*/
 
-            if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.GetAnimationLength("RunJumpLeft")/12- m_Character.GetAnimationLength("RunJumpLeft")/3/12
+            if ((m_Character.RunJumpLeft || m_Character.RunJumpRight) && jumpToSideStart + m_Character.GetAnimationLength("RunJumpLeft") / 12 - m_Character.GetAnimationLength("RunJumpLeft") / 3 / 12
             < m_Character.timer)
             {
                 m_Character.RunJumpRight = false;
@@ -107,19 +106,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 jumpToSidePressed = false;
             }
 
-            if (Input.GetKeyDown(KeyCode.LeftControl) && !m_Character.isIdle && GameManager.Get().stamina > GameManager.Get().maxStamina/5) //Check if player has at least 10/100 of stamina, then slide.
+            if (Input.GetKeyDown(KeyCode.LeftControl) && !m_Character.isIdle && GameManager.Get().stamina > GameManager.Get().maxStamina / 5) //Check if player has at least 10/100 of stamina, then slide.
             {
                 m_Character.runSlide = true;
             }
 
 
         }
-
-
-
-
-
-
 
 
         // Fixed update is called in sync with physics
@@ -129,12 +122,23 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             float h = CrossPlatformInputManager.GetAxis("Horizontal");
             float v = CrossPlatformInputManager.GetAxis("Vertical");
 
-            if(crouch && Input.GetKeyDown(KeyCode.C)){
-                crouch = false;
+            if (m_Character.m_IsGrounded)
+            {
+                if (crouch && Input.GetKeyDown(KeyCode.C))
+                {
+                    print("in");
+                    crouch = false;
+                }
+                else if (!crouch && Input.GetKeyDown(KeyCode.C))
+                {
+                    crouch = true;
+                }
             }
-            else if (!crouch && Input.GetKeyDown(KeyCode.C)){
-                crouch = true;
+            if (m_Character.startLedgeHang) { 
+
+                m_Character.startLedgeHang = !Input.GetKeyDown(KeyCode.C);
             }
+            
 
 
             // calculate move direction to pass to character
