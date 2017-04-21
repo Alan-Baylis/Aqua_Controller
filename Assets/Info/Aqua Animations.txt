@@ -42,7 +42,5 @@ Crouch 16900 - 17000
 CrouchIdle 17000- 17300
 Crouch walk 17400 - 17600
 
-Climb from hands up
-
 
 

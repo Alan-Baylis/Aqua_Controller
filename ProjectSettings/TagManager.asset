@@ -14,10 +14,6 @@ TagManager:
   - Leg
   - Torso
   - Arm
-  - Panties
-  - Body
-  - Ledge
-  - LedgePoint
   layers:
   - Default
   - TransparentFX

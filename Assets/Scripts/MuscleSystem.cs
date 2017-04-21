@@ -10,7 +10,7 @@ public class MuscleSystem : MonoBehaviour
     //Arm muscles
     private int rightBicepsFlex, rightTricepsFlex, rightDeltoidFlex, leftBicepsFlex, leftTricepsFlex, leftDeltoidFlex, leftBrachioradialis, rightBrachioradialis, leftExtensors, rightExtensors;
     //Leg muscles
-    private int leftGastrocnemius, rightGastrocnemius, leftSemitendinosus, rightSemitendinosus, leftRectusFemoris, rightRectusFemoris;
+    private int leftGastrocnemius, rightGastrocnemius, leftSemitendinosus, rightSemitendinosus;
     //Head muscles
     private int leftSternal, rightSternal;
     //Back muscles
@@ -39,8 +39,6 @@ public class MuscleSystem : MonoBehaviour
     public int trapeziusEffect;
     float _trapeziusEffect;
 
-    float muscleTimer;
-
     void Start()
     {
         enableMuscles = true;
@@ -62,44 +60,6 @@ public class MuscleSystem : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        //enable muscles if m is pressed
-        if (!enableMuscles && Input.GetKeyDown(KeyCode.M))
-        {
-            enableMuscles = true;
-
-        }
-        // dissable muscles if m is pressed, set all blend shapes to 0
-        else if (Input.GetKeyDown(KeyCode.M))
-        {
-            enableMuscles = false;
-
-            leftBicepsFlex = 0;
-            leftTricepsFlex = 0;
-            leftDeltoidFlex = 0;
-            leftExtensors = 0;
-            leftBrachioradialis = 0;
-
-            rightBicepsFlex = 0;
-            rightTricepsFlex = 0;
-            rightDeltoidFlex = 0;
-            rightExtensors = 0;
-            rightBrachioradialis = 0;
-
-            leftGastrocnemius = 0;
-            leftSemitendinosus = 0;
-
-            rightGastrocnemius = 0;
-            rightSemitendinosus = 0;
-
-            leftSternal = 0;
-            rightSternal = 0;
-
-            rightTeres = 0;
-            leftTeres = 0;
-            leftTrapezius = 0;
-            rightTrapezius = 0;
-        }
-
         _allMuscleEffect = allMuscleEffect / 10f;
         _buttocksEffect = buttocksEffect / 10f;
         _backArmsEffect = backArmsEffect / 10f;
@@ -110,7 +70,7 @@ public class MuscleSystem : MonoBehaviour
 
         if (enableMuscles)
         {
-            muscleTimer = Time.time;
+
             try
             {
                 //Neck muscles
@@ -145,13 +105,11 @@ public class MuscleSystem : MonoBehaviour
                     //Or if character not idle check z
                     leftGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * -3000);
                     leftSemitendinosus = leftGastrocnemius;
-                    leftRectusFemoris = leftGastrocnemius;
                 }
                 else
                 {
                     rightGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * 3000);
                     rightSemitendinosus = rightGastrocnemius;
-                    rightRectusFemoris = rightGastrocnemius;
                 }
 
                 //Back Muscles
@@ -160,24 +118,52 @@ public class MuscleSystem : MonoBehaviour
                 rightTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.localRotation.x) * 400);
                 rightTrapezius = rightTeres;
             }
+
             catch (NullReferenceException ex)
             {
                 print("Can't find one of the bones for muscle system");
             }
-            StartCoroutine(Flex());
+
+
         }
         else
         {
-            if (muscleTimer + 3 > Time.time)
-            {
-                StartCoroutine(Flex());
-            }
-        }
 
+            leftBicepsFlex = 0;
+            leftTricepsFlex = 0;
+            leftDeltoidFlex = 0;
+            leftExtensors = 0;
+            leftBrachioradialis = 0;
+
+            rightBicepsFlex = 0;
+            rightTricepsFlex = 0;
+            rightDeltoidFlex = 0;
+            rightExtensors = 0;
+            rightBrachioradialis = 0;
+
+            leftGastrocnemius = 0;
+            leftSemitendinosus = 0;
+
+            rightGastrocnemius = 0;
+            rightSemitendinosus = 0;
+
+            leftSternal = 0;
+            rightSternal = 0;
+
+            rightTeres = 0;
+            leftTeres = 0;
+            leftTrapezius = 0;
+            rightTrapezius = 0;
+
+        }
+        if (enableMuscles)
+        {
+            Flex();
+        }
 
     }
 
-    private IEnumerator Flex()
+    private void Flex()
     {
         try
         {
@@ -202,10 +188,6 @@ public class MuscleSystem : MonoBehaviour
             bodyRenderer.SetBlendShapeWeight(21, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(21), rightGastrocnemius * _allMuscleEffect, 1));
             bodyRenderer.SetBlendShapeWeight(22, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(22), leftSemitendinosus * _allMuscleEffect, 1));
 
-            //Front leg muscles
-            bodyRenderer.SetBlendShapeWeight(36, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(36), leftRectusFemoris * _allMuscleEffect, 1));
-            bodyRenderer.SetBlendShapeWeight(37, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(37), rightRectusFemoris * _allMuscleEffect, 1));
-
             //Buttocks & panties
             bodyRenderer.SetBlendShapeWeight(24, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(24), (int)(leftGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
             bodyRenderer.SetBlendShapeWeight(25, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(25), (int)(rightGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
@@ -228,7 +210,5 @@ public class MuscleSystem : MonoBehaviour
         {
             print("There is no muscle with such index.");
         }
-
-        yield return new WaitForSeconds(1);
     }
 }

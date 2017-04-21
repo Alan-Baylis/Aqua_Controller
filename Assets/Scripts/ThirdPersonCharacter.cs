@@ -136,15 +136,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float aimSmoother;
 
 
-        //Climbing
-        public bool ledgeDetected;
-        public bool ledgeHang;
-        GameObject ledgeObject;
-        Vector3 armHangPoint;
-        public bool startLedgeHang;
-
-
-
 
         //public bool isTurning;
         public float breathingTempo = 1;
@@ -170,7 +161,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         RuntimeAnimatorController animatorController;
         int animIndex;
 
-        float palmToHipDist;
 
         void Start()
         {
@@ -226,16 +216,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             stamina = maxStamina;
             health = maxHealth;
 
-            //Get hand to hip position for climbing
-            try {
-                palmToHipDist = Vector3.Distance(transform.Find("Aqua/Hips/Spine/Chest").transform.position, (transform.Find("Aqua/Hips").transform.position)) 
-                + Vector3.Distance(transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.position, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.position));
-
-                print("palmToHipDist " + palmToHipDist);
-            }
-            catch (NullReferenceException ex){
-                print("No bones found to calculate distance from hip to palm");
-            }
         }
 
         //To get Animation Lenghts
@@ -413,9 +393,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
             }
+
             detectWallsAndIdle();//m_ForwardAmount, detectWall);
-
-
 
         }
         void LateUpdate()
@@ -522,7 +501,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
 
-            if (m_IsGrounded && !runSlide && !stepUpPlaying && !landing && !ledgeHang)
+            if (m_IsGrounded && !runSlide && !stepUpPlaying && !landing)
             {
                 ApplyExtraTurnRotation();
             }
@@ -650,18 +629,18 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             //if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), Vector3.down, out hitInfo, m_GroundCheckDistance))
 
-            // Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.yellow);
+           // Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.yellow);
             //if (Physics.Raycast(hips.TransformPoint(0, 0, 0.15f), fwd, out hitInfo, detectWall) && m_IsGrounded)
-            // print(hips.transform.position);
-            Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), fwd, Color.blue);
-            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), fwd, out hitInfo, wallDetectDist) && m_IsGrounded)
+           // print(hips.transform.position);
+            Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist/2, 0), fwd, Color.blue);
+            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist/2, 0), fwd, out hitInfo, wallDetectDist) && m_IsGrounded)
             {
 
                 //Stop only if not pushable object (has a rigid body)
                 if (hitInfo.rigidbody == false)
                 {
                     facingWall = true;
-                    //print("Next to a wall, stoping!");
+                    print("Next to a wall, stoping!");
                 }
                 m_Animator.applyRootMotion = false;
                 //m_Animator.Play("WallStop");
@@ -969,16 +948,16 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Capsule.height = 0.3f;
             }
-            if (state == "falling")//&& !landForwardHeavy)
+            if (state == "falling" )//&& !landForwardHeavy)
             {
                 //m_Capsule.height = m_CapsuleHeight / 2; //Mathf.Lerp(m_Capsule.height, m_CapsuleHeight, 0.01f);
-                // m_Capsule.center = m_CapsuleCenter * 2;
+               // m_Capsule.center = m_CapsuleCenter * 2;
             }
             if (state == "heavyLanding")
             {
                 //print("Call");
-                m_Capsule.height = m_CapsuleHeight / 3f;
-                m_Capsule.center = m_CapsuleCenter / 3f;
+               m_Capsule.height = m_CapsuleHeight / 3f;
+               m_Capsule.center = m_CapsuleCenter / 3f;
             }
             if (state == "stepUp")
             {
@@ -1052,7 +1031,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("StepOverRight", WalkStepOverRight);
             m_Animator.SetBool("idleJump", idleJump);
             m_Animator.SetBool("FacingWall", facingWall);
-            m_Animator.SetBool("ledgeHang", ledgeHang);
 
 
             if (!m_IsGrounded && isJumping)
@@ -1171,7 +1149,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 jump = false;
 
                 // if(!facingWall){
-                m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                 //} else{}
 
                 m_Animator.applyRootMotion = false;
@@ -1219,28 +1197,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 // we preserve the existing y part of the current velocity.
                 v.y = m_Rigidbody.velocity.y;
                 m_Rigidbody.velocity = v;
-            }
-
-            //to hang and climb the ledge
-            if (ledgeDetected)
-            {
-                if (isJumping)
-                {
-                        startLedgeHang = true;
-                }
-            }
-
-            //Starts function of ledge hang
-            if(startLedgeHang){
-                StartCoroutine(LedgeHang());
-            }
-            //Stops when button C is pressed
-            else
-            {
-                StopCoroutine(LedgeHang());
-                ledgeHang = false;
-                m_Rigidbody.useGravity = true;
-                m_Rigidbody.isKinematic = false;
             }
         }
 
@@ -1331,7 +1287,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         landed = true;
                     }
 
-                    if (fallStart + 0.2 < timer && !ledgeHang)
+                    if (fallStart + 0.3 < timer)
                     {
                         healthChange = -(timer - fallStart) * 3;
                         //print("healthChange " + healthChange);
@@ -1340,7 +1296,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         emotions.Surprised();
 
                     }
-                    if (fallStart + 0.5 < timer && !ledgeHang)
+                    if (fallStart + 0.5 < timer)
                     {
                         landLight = false;
                         isFalling = true;
@@ -1710,23 +1666,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
-        IEnumerator LedgeHang()
-        {
-            print("In");
-            armHangPoint = ledgeObject.transform.Find("Point").transform.position;
-
-            transform.position = new Vector3(transform.position.x, Mathf.Lerp(transform.position.y, armHangPoint.y - hipToFootDist - palmToHipDist, 0.01f), transform.position.z);
-
-            ScaleCapsule("ground");
-            ledgeHang = true;
-            isJumping = false;
-            isFalling = false;
-            m_Rigidbody.useGravity = false;
-            m_Rigidbody.isKinematic = true;
-
-            yield return new WaitForSeconds(1);
-        }
-
         void setGuiStats()
         {
 
@@ -1738,15 +1677,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 GameManager.Get().maxHealth = health;
                 setPlayerStats = true;
 
-            }
-        }
-
-        void OnTriggerEnter(Collider collider)
-        {
-            if (collider.tag == "Ledge")
-            {
-                ledgeObject = collider.gameObject;
-                ledgeDetected = true;
             }
         }
 
