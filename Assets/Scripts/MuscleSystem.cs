@@ -10,7 +10,7 @@ public class MuscleSystem : MonoBehaviour
     //Arm muscles
     private int rightBicepsFlex, rightTricepsFlex, rightDeltoidFlex, leftBicepsFlex, leftTricepsFlex, leftDeltoidFlex, leftBrachioradialis, rightBrachioradialis, leftExtensors, rightExtensors;
     //Leg muscles
-    private int leftGastrocnemius, rightGastrocnemius, leftSemitendinosus, rightSemitendinosus;
+    private int leftGastrocnemius, rightGastrocnemius, leftSemitendinosus, rightSemitendinosus, leftRectusFemoris, rightRectusFemoris;
     //Head muscles
     private int leftSternal, rightSternal;
     //Back muscles
@@ -39,6 +39,8 @@ public class MuscleSystem : MonoBehaviour
     public int trapeziusEffect;
     float _trapeziusEffect;
 
+    float muscleTimer;
+
     void Start()
     {
         enableMuscles = true;
@@ -60,74 +62,16 @@ public class MuscleSystem : MonoBehaviour
     // Update is called once per frame
     void LateUpdate()
     {
-        _allMuscleEffect = allMuscleEffect / 10f;
-        _buttocksEffect = buttocksEffect / 10f;
-        _backArmsEffect = backArmsEffect / 10f;
-        _frontArmsEffect = frontArmsEffect / 10f;
-        _deltoidEffect = deltoidEffect / 10f;
-        _trapeziusEffect = trapeziusEffect / 10f;
-        _teresMajorEffect = teresMajorEffect / 10f;
-
-        if (enableMuscles)
+        //enable muscles if m is pressed
+        if (!enableMuscles && Input.GetKeyDown(KeyCode.M))
         {
-
-            try
-            {
-                //Neck muscles
-                rightSternal = Mathf.Max(0, 90 - (int)transform.Find("Aqua/Hips/Spine/Chest/Neck").transform.localEulerAngles.y) * 2;
-                leftSternal = Mathf.Max(0, (int)transform.Find("Aqua/Hips/Spine/Chest/Neck").transform.localEulerAngles.y - 80) * 2;
-
-                //Left Arm muscles
-                leftBicepsFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.localEulerAngles.x - 285) * 1.5f);
-                leftTricepsFlex = (int)(385 - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.localEulerAngles.x);
-                leftDeltoidFlex = (int)Mathf.Max(0, transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.localEulerAngles.y);
-
-                if (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.localEulerAngles.y > 0)
-                {
-                    leftBrachioradialis = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.localEulerAngles.y));
-                    leftExtensors = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.localEulerAngles.y) * -1);
-                }
-
-                //Right Arm muscles
-                rightBicepsFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.localEulerAngles.x - 285) * 1.5f);
-                rightTricepsFlex = (int)(385 - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.localEulerAngles.x);
-                rightDeltoidFlex = (int)Mathf.Max(0, transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.localEulerAngles.y);
-                if (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y > 0)
-                {
-                    rightBrachioradialis = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y));
-                    rightExtensors = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y) * -1);
-                }
-
-                //Left Leg muscles
-                if (transform.Find("Aqua/Hips").transform.localPosition.x < 0)
-                {
-                    // print(GameObject.Find("Hips").transform.localPosition.x);
-                    //Or if character not idle check z
-                    leftGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * -3000);
-                    leftSemitendinosus = leftGastrocnemius;
-                }
-                else
-                {
-                    rightGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * 3000);
-                    rightSemitendinosus = rightGastrocnemius;
-                }
-
-                //Back Muscles
-                leftTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.localRotation.x) * 400);
-                leftTrapezius = leftTeres;
-                rightTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.localRotation.x) * 400);
-                rightTrapezius = rightTeres;
-            }
-
-            catch (NullReferenceException ex)
-            {
-                print("Can't find one of the bones for muscle system");
-            }
-
+            enableMuscles = true;
 
         }
-        else
+        // dissable muscles if m is pressed, set all blend shapes to 0
+        else if (Input.GetKeyDown(KeyCode.M))
         {
+            enableMuscles = false;
 
             leftBicepsFlex = 0;
             leftTricepsFlex = 0;
@@ -154,16 +98,84 @@ public class MuscleSystem : MonoBehaviour
             leftTeres = 0;
             leftTrapezius = 0;
             rightTrapezius = 0;
-
         }
+
+        _allMuscleEffect = allMuscleEffect / 10f;
+        _buttocksEffect = buttocksEffect / 10f;
+        _backArmsEffect = backArmsEffect / 10f;
+        _frontArmsEffect = frontArmsEffect / 10f;
+        _deltoidEffect = deltoidEffect / 10f;
+        _trapeziusEffect = trapeziusEffect / 10f;
+        _teresMajorEffect = teresMajorEffect / 10f;
+
         if (enableMuscles)
         {
-            Flex();
-        }
+            muscleTimer = Time.time;
+            try
+            {
+                //Neck muscles
+                rightSternal = Mathf.Max(0, 90 - (int)transform.Find("Aqua/Hips/Spine/Chest/Neck").transform.localEulerAngles.y) * 2;
+                leftSternal = Mathf.Max(0, (int)transform.Find("Aqua/Hips/Spine/Chest/Neck").transform.localEulerAngles.y - 80) * 2;
 
+                //Left Arm muscles
+                leftBicepsFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.localEulerAngles.x - 285) * 1.5f);
+                leftTricepsFlex = (int)(385 - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.localEulerAngles.x);
+                leftDeltoidFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.position.y - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.position.y) * -500);
+
+                if (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.localEulerAngles.y > 0)
+                {
+                    leftBrachioradialis = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.localEulerAngles.y));
+                    leftExtensors = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform.localEulerAngles.y) * -1);
+                }
+
+                //Right Arm muscles
+                rightBicepsFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.localEulerAngles.x - 285) * 1.5f);
+                rightTricepsFlex = (int)(385 - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.localEulerAngles.x);
+                rightDeltoidFlex = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.position.y - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.position.y) * -500);
+                if (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y > 0)
+                {
+                    rightBrachioradialis = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y));
+                    rightExtensors = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y) * -1);
+                }
+
+                //Left Leg muscles
+                if (transform.Find("Aqua/Hips").transform.localPosition.x < 0)
+                {
+                    // print(GameObject.Find("Hips").transform.localPosition.x);
+                    //Or if character not idle check z
+                    leftGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * -3000);
+                    leftSemitendinosus = leftGastrocnemius;
+                    leftRectusFemoris = leftGastrocnemius;
+                }
+                else
+                {
+                    rightGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * 3000);
+                    rightSemitendinosus = rightGastrocnemius;
+                    rightRectusFemoris = rightGastrocnemius;
+                }
+
+                //Back Muscles
+                leftTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.localRotation.x) * 400);
+                leftTrapezius = leftTeres;
+                rightTeres = (int)Mathf.Abs((transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.localRotation.x) * 400);
+                rightTrapezius = rightTeres;
+            }
+            catch (NullReferenceException ex)
+            {
+                print("Can't find one of the bones for muscle system");
+            }
+            StartCoroutine(Flex());
+        }
+        else
+        {
+            if (muscleTimer + 3 > Time.time)
+            {
+                StartCoroutine(Flex());
+            }
+        }
     }
 
-    private void Flex()
+    private IEnumerator Flex()
     {
         try
         {
@@ -188,6 +200,10 @@ public class MuscleSystem : MonoBehaviour
             bodyRenderer.SetBlendShapeWeight(21, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(21), rightGastrocnemius * _allMuscleEffect, 1));
             bodyRenderer.SetBlendShapeWeight(22, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(22), leftSemitendinosus * _allMuscleEffect, 1));
 
+            //Front leg muscles
+            bodyRenderer.SetBlendShapeWeight(36, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(36), leftRectusFemoris * _allMuscleEffect, 1));
+            bodyRenderer.SetBlendShapeWeight(37, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(37), rightRectusFemoris * _allMuscleEffect, 1));
+
             //Buttocks & panties
             bodyRenderer.SetBlendShapeWeight(24, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(24), (int)(leftGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
             bodyRenderer.SetBlendShapeWeight(25, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(25), (int)(rightGastrocnemius * _allMuscleEffect * _buttocksEffect), 1));
@@ -210,5 +226,7 @@ public class MuscleSystem : MonoBehaviour
         {
             print("There is no muscle with such index.");
         }
+
+        yield return new WaitForSeconds(1);
     }
 }
