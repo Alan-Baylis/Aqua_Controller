@@ -126,7 +126,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 if (crouch && Input.GetKeyDown(KeyCode.C))
                 {
-                    print("in");
                     crouch = false;
                 }
                 else if (!crouch && Input.GetKeyDown(KeyCode.C))
@@ -134,11 +133,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     crouch = true;
                 }
             }
-            if (m_Character.startLedgeHang) { 
+            if (m_Character.ledgeHanging) {
 
-                m_Character.startLedgeHang = !Input.GetKeyDown(KeyCode.C);
+                if (Input.GetKeyDown(KeyCode.C)){
+                    m_Character.endLedgeHang = true;
+                }
             }
-            
+            if (m_Character.ledgeHanging && m_Jump)
+            {
+                m_Character.ledgeClimbUp = true;
+                m_Character.endLedgeHang = true;
+            }
+
+
+
 
 
             // calculate move direction to pass to character

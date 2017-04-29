@@ -136,32 +136,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float aimSmoother;
 
 
-        //Climbing
-        public bool ledgeDetected;
-        public bool ledgeHang;
+        //Ledge climbing
+        public bool ledgeDetected, ledgeHang, ledgeHanging, startLedgeHang, endLedgeHang, ledgeClimbUp;
         GameObject ledgeObject;
-        Vector3 armHangPoint;
-        public bool startLedgeHang;
-
-        Vector3 rotationDirection;
+        Vector3 armHangPoint, rotationDirection, climbPointer;
         Quaternion rotationToObject;
-        Vector3 rotatToPointer;
+        bool endLedgeHangAnim, ledgeHangStoped;
 
 
 
-
-        //public bool isTurning;
-        public float breathingTempo = 1;
+        public float breathingTempo = 1, myForward, wallDetectDist = 1f, timer;
         int ways;
-        float jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart;
-        public float timer;
-        float buttonTime = -1;
-        float interval = 0.1f;
-        public float myForward;
-        public float wallDetectDist = 1f;
-        public bool facingWall;
-        public bool ragdolEnabled, inRagdol;
-        float runSlideForward, runSlideSide;
+        float jumpPrepare, fallStart, runStop, runStart, runBegin, runTime, exhaustTime, exhaustStart, climbStart, runSlideForward, runSlideSide, buttonTime = -1, interval = 0.1f;
+        public bool facingWall, ragdolEnabled, inRagdol;
+
 
         GameObject head;
         Transform spine;
@@ -231,13 +219,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             health = maxHealth;
 
             //Get hand to hip position for climbing
-            try {
-                toeToKnucklesDist = transform.Find("Aqua/Hips/Spine/Chest").transform.position.y - transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot/Right_toe/Right_toe_end").transform.position.y  
+            try
+            {
+                toeToKnucklesDist = transform.Find("Aqua/Hips/Spine/Chest").transform.position.y - transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot/Right_toe/Right_toe_end").transform.position.y
                    + Vector3.Distance(transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.position, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle").transform.position));
 
                 //print("toeToKnucklesDist " + toeToKnucklesDist);
             }
-            catch (NullReferenceException ex){
+            catch (NullReferenceException ex)
+            {
                 print("No bones found to calculate distance from hip to palm");
             }
         }
@@ -351,7 +341,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (flipReady)
             {
-                doFlip();
+                DoFlip();
             }
 
             if (isExhausted)
@@ -361,65 +351,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (runSlide)
             {
-                if (!slideSound)
-                {
-                    PlaySounds("gravslip");
-                    slideSound = true;
-                    slideStart = Time.time; //Could have indicidual if
-                    standUp = false;
-                }
-
-                ScaleCapsule("slide");
-
-                //Add force after few seconds of sliding, approx when character is on ground
-                if (GetAnimationClips(29).length / 2 < slideStart && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideStart"))
-                {
-                    _slideForce = slideForce * m_ForwardAmount;
-                }
-                else if (!slideForceEnabled && (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideRight")))
-                {
-                    slideForceEnabled = true;
-                    _slideForce = slideForce * m_ForwardAmount;
-                }
-                //remove force linearnly
-                if (_slideForce > 10)
-                {
-                    _slideForce = _slideForce - 10; //* Mathf.Pow(0.99f, Time.time);
-                }
-                else _slideForce = 0;
-
-                //Slide movements
-                if (Input.GetKeyDown(KeyCode.A))
-                {
-                    runSlideSide = 0;
-                }
-                if (Input.GetKeyDown(KeyCode.D))
-                {
-                    runSlideSide = 1;
-                }
-                if (Input.GetKeyDown(KeyCode.W) && !standUp)
-                {
-                    standUp = true;
-                    standUpStart = timer;
-                }
-
-                if (standUp)
-                {
-                    slideStart = 0;
-
-                    if (GetAnimationClips(41).length / 18 < timer - standUpStart)
-                    {
-                        slideForceEnabled = false;
-                        standUp = false;
-                        runSlide = false;
-                        slideSound = false;
-                        standUpStart = 0;
-                    }
-                }
+                RunSlide();
             }
             detectWallsAndIdle();//m_ForwardAmount, detectWall);
-
-
 
         }
         void LateUpdate()
@@ -691,7 +625,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
-        void doFlip()
+        void DoFlip()
         {
             //To-Do: Flip animations depending on conditions
 
@@ -728,6 +662,65 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else temporaryGroundCheckDistance = m_GroundCheckDistance;
 
+        }
+
+        void RunSlide()
+        {
+            if (!slideSound)
+            {
+                PlaySounds("gravslip");
+                slideSound = true;
+                slideStart = Time.time; //Could have indicidual if
+                standUp = false;
+            }
+
+            ScaleCapsule("slide");
+
+            //Add force after few seconds of sliding, approx when character is on ground
+            if (GetAnimationClips(29).length / 2 < slideStart && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideStart"))
+            {
+                _slideForce = slideForce * m_ForwardAmount;
+            }
+            else if (!slideForceEnabled && (m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideLeft") || m_Animator.GetCurrentAnimatorStateInfo(0).IsName("RunSlideRight")))
+            {
+                slideForceEnabled = true;
+                _slideForce = slideForce * m_ForwardAmount;
+            }
+            //remove force linearnly
+            if (_slideForce > 10)
+            {
+                _slideForce = _slideForce - 10; //* Mathf.Pow(0.99f, Time.time);
+            }
+            else _slideForce = 0;
+
+            //Slide movements
+            if (Input.GetKeyDown(KeyCode.A))
+            {
+                runSlideSide = 0;
+            }
+            if (Input.GetKeyDown(KeyCode.D))
+            {
+                runSlideSide = 1;
+            }
+            if (Input.GetKeyDown(KeyCode.W) && !standUp)
+            {
+                standUp = true;
+                standUpStart = timer;
+            }
+
+            if (standUp)
+            {
+                slideStart = 0;
+
+                if (GetAnimationClips(41).length / 18 < timer - standUpStart)
+                {
+                    slideForceEnabled = false;
+                    standUp = false;
+                    runSlide = false;
+                    slideSound = false;
+                    standUpStart = 0;
+                }
+            }
         }
 
         void Exhausted()
@@ -1057,7 +1050,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("idleJump", idleJump);
             m_Animator.SetBool("FacingWall", facingWall);
             m_Animator.SetBool("ledgeHang", ledgeHang);
-
+            m_Animator.SetBool("ledgeClimbUp", ledgeClimbUp);
 
             if (!m_IsGrounded && isJumping)
             {
@@ -1102,7 +1095,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
                 else WalkStepOverLeft = false;
             }
-            m_Animator.applyRootMotion = true;
         }
 
 
@@ -1111,7 +1103,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // apply extra gravity from multiplier:
             Vector3 extraGravityForce = (Physics.gravity * m_GravityMultiplier) - Physics.gravity;
             m_Rigidbody.AddForce(extraGravityForce);
-            m_GroundCheckDistance = m_Rigidbody.velocity.y < 0 ? temporaryGroundCheckDistance : 0.01f;
+            //m_GroundCheckDistance = m_Rigidbody.velocity.y < 0 ? temporaryGroundCheckDistance : 0.01f;
 
             if (isFalling && !timeInAirBool)
             {
@@ -1186,7 +1178,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //End of IsJumping
-            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 30 < timer) // WHY THIS NUMBER??
+            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 16 < timer) // WHY THIS NUMBER??
             {
                 isJumping = false;
 
@@ -1226,27 +1218,43 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //to hang and climb the ledge
-            if (ledgeDetected)
+            if (ledgeDetected && !ledgeHanging)
             {
-                if (isJumping)
+                if (isJumping /*|| isFalling*/)
                 {
-                        startLedgeHang = true;
-                        RotateTowards(ledgeObject);
+                    startLedgeHang = true;
+                    RotateTowards(ledgeObject);
+                }
+                //Starts function of ledge hang
+                if (!ledgeClimbUp && startLedgeHang)
+                {
+                    //check when hanging
+                    if (!ledgeHanging)
+                    {
+                        StartCoroutine(LedgeHang());
+                        ledgeHangStoped = false;
+                    }
                 }
             }
 
-            //Starts function of ledge hang
-            if(startLedgeHang){
-                StartCoroutine(LedgeHang());
+            if (ledgeClimbUp) {
+                ledgeHang = false;
+                m_Animator.applyRootMotion = false;
+                isJumping = false;
+                idleJump = false;
+
             }
-            //Stops when button C is pressed
-            else
+
+            // if c was presed while ledge hanging
+            if (endLedgeHang)
             {
+                ledgeHangStoped = true;
                 StopCoroutine(LedgeHang());
                 ledgeHang = false;
-                m_Rigidbody.useGravity = true;
-                m_Rigidbody.isKinematic = false;
+                endLedgeHang = false;
             }
+
+
         }
 
         // Setter getter for m_forwardAmount
@@ -1297,7 +1305,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
 #if UNITY_EDITOR
             // helper to visualise the ground check ray in the scene view
-            Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), m_Capsule.transform.position + new Vector3(0, -m_GroundCheckDistance, 0) /*_Capsule.transform.position - new Vector3(0, m_Capsule.height/2, 0)*/, Color.yellow);
+            Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), m_Capsule.transform.position - new Vector3(0, m_GroundCheckDistance, 0) /*_Capsule.transform.position - new Vector3(0, m_Capsule.height/2, 0)*/, Color.yellow);
 #endif
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
@@ -1336,7 +1344,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         landed = true;
                     }
 
-                    if (fallStart + 0.2 < timer && !ledgeHang)
+                    if (fallStart + 0.2 < timer && !ledgeHanging)
                     {
                         healthChange = -(timer - fallStart) * 3;
                         //print("healthChange " + healthChange);
@@ -1345,7 +1353,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         emotions.Surprised();
 
                     }
-                    if (fallStart + 0.5 < timer && !ledgeHang)
+                    if (fallStart + 0.5 < timer && !ledgeHanging)
                     {
                         landLight = false;
                         isFalling = true;
@@ -1715,24 +1723,45 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
+        //what happens untill character reaches and stops at the ledge
         IEnumerator LedgeHang()
         {
-            print("In");
+
+            idleJump = false;
+            print("LedgeHang");
             armHangPoint = ledgeObject.transform.Find("Point").transform.position;
-
-
             transform.position = Vector3.Slerp(transform.position, armHangPoint - new Vector3(0, toeToKnucklesDist, 0), 0.05f);
-
             RotateTowards(ledgeObject);
-
             ScaleCapsule("ground");
             ledgeHang = true;
             isJumping = false;
             isFalling = false;
             m_Rigidbody.useGravity = false;
             m_Rigidbody.isKinematic = true;
-
             yield return new WaitForSeconds(1);
+        }
+
+        //called only by animation
+        public void LedgeHanging()
+        {
+            startLedgeHang = false;
+            ledgeHanging = true;
+        }
+
+        //called only by animation LedgeHangDrop and ledgeClimbUp
+        public void EndLedgeHang()
+        {
+            //float turnSpeed = Mathf.Lerp(m_StationaryTurnSpeed, m_MovingTurnSpeed, m_ForwardAmount);
+
+            //m_Animator.applyRootMotion = true;
+            //transform.Rotate(0, -160, 0);
+            //transform.rotation = hips.transform.rotation;
+            m_Rigidbody.useGravity = true;
+            m_Rigidbody.isKinematic = false;
+            ledgeHanging = false;
+            ledgeClimbUp = false;
+            ledgeDetected = false;
+
         }
 
         void setGuiStats()
@@ -1749,14 +1778,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
-        void OnTriggerEnter(Collider collider)
+        void OnTriggerStay(Collider collider)
         {
             if (collider.tag == "Ledge")
             {
                 ledgeObject = collider.gameObject;
                 ledgeDetected = true;
             }
+            else
+            {
+                ledgeDetected = false;
+            }
         }
+
+
+
         private void RotateTowards(GameObject gameObject)
         {
 
@@ -1764,8 +1800,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 //Rotate towards ledge
                 //Get direction
-                try {
-                    rotatToPointer = ledgeObject.transform.Find("LookAt").transform.position;
+                try
+                {
+                    climbPointer = ledgeObject.transform.Find("ClimbPointer").transform.position;
                 }
                 catch (NullReferenceException ex)
                 {
@@ -1774,10 +1811,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else
             {
-                rotatToPointer = gameObject.transform.position;
+                climbPointer = gameObject.transform.position;
 
             }
-            rotationDirection = (rotatToPointer - transform.position);
+            rotationDirection = (climbPointer - transform.position);
             rotationDirection.y = 0;
             //Rotation towards object
             rotationToObject = Quaternion.LookRotation(rotationDirection);

@@ -10,6 +10,8 @@ public class GUIStats : MonoBehaviour
     private float staminaWidth, staminaHeight, staminaPosX, staminaPosY, healthPosY, healthWidth;
     private static float stamina, staminaFull, staminaGUI, health, healthFull, healthGUI;
     private bool setStamina;
+    internal static bool enableGUI;
+
     //Texture2D pixelsStaminaTextureFill;
     void Start()
     {
@@ -38,18 +40,17 @@ public class GUIStats : MonoBehaviour
         health = GameManager.Get().health;
         healthGUI = health * healthWidth / healthFull;;
 
-        //Stamina GUI
-        GUI.DrawTexture(new Rect(Screen.width - staminaPosX, staminaPosY, staminaGUI, staminaHeight), StaminaTextureFill);
-        GUI.DrawTexture(new Rect(Screen.width - staminaPosX, staminaPosY, staminaWidth , staminaHeight), StaminaTexture);
-        //Health GUI
-        GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, healthGUI, staminaHeight), HealthTextureFill);
-        GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, staminaWidth, staminaHeight), HealthTexture);
+        if (enableGUI)
+        {
+            //Stamina GUI
+            GUI.DrawTexture(new Rect(Screen.width - staminaPosX, staminaPosY, staminaGUI, staminaHeight), StaminaTextureFill);
+            GUI.DrawTexture(new Rect(Screen.width - staminaPosX, staminaPosY, staminaWidth, staminaHeight), StaminaTexture);
+            //Health GUI
+            GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, healthGUI, staminaHeight), HealthTextureFill);
+            GUI.DrawTexture(new Rect(Screen.width - staminaPosX, healthPosY, staminaWidth, staminaHeight), HealthTexture);
 
-        //Display framerate
-        GUI.Label(new Rect(0, 0, 100, 100), (1.0f / Time.smoothDeltaTime).ToString());
-
-
-
+            //Display framerate
+            GUI.Label(new Rect(0, 0, 100, 100), (1.0f / Time.smoothDeltaTime).ToString());
+        }
     }
-
 }

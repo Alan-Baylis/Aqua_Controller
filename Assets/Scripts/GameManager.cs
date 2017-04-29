@@ -7,6 +7,7 @@ public class GameManager : MonoBehaviour
     public Texture2D HealthTextureBackground, HealthTextureFill;
     public float stamina, maxStamina, health, maxHealth;
 
+    public bool enableGUI;
 
 
     // singleton
@@ -32,6 +33,20 @@ public class GameManager : MonoBehaviour
 
     void Awake()
     {
+
+    }
+    void LateUpdate()
+    {
+
+        if (!enableGUI && Input.GetKeyUp(KeyCode.G))
+        {
+            enableGUI = true;
+        }
+        else if(enableGUI && Input.GetKeyUp(KeyCode.G))
+        {
+            enableGUI = false;
+        }
+        GUIStats.enableGUI = enableGUI;
 
     }
 }

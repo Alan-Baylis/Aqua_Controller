@@ -81,6 +81,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\ForestVision\09 Scripts\FV_BranchRotation.cs" />
+    <Compile Include="Assets\ForestVision\09 Scripts\FV_Wind.cs" />
     <Compile Include="Assets\Scripts\AICharacterControl.cs" />
     <Compile Include="Assets\Scripts\ColorChanger.cs" />
     <Compile Include="Assets\Scripts\Emotions.cs" />
@@ -102,6 +104,7 @@
   <ItemGroup>
     <None Include="Assets\Day-Night Skyboxes\Textures\Readme for Assigning.txt" />
     <None Include="Assets\Day-Night Skyboxes\readme.txt" />
+    <None Include="Assets\ForestVision\09 Scripts\FV_Foliage.shader" />
     <None Include="Assets\Info\Aqua Animations.txt" />
     <None Include="Assets\Info\CapsuleColider_main.txt" />
     <None Include="Assets\Info\Shoulder joint position.txt" />
