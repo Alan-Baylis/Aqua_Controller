@@ -77,6 +77,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool isExhausted;
         public bool isJumping;
         bool idleJump, runJump;
+        bool animationJump;
         float jumpStart;
         public bool isFalling, landLight, landForwardHeavy;
         public bool runSlide;
@@ -139,9 +140,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //Ledge climbing
         public bool ledgeDetected, ledgeHang, ledgeHanging, startLedgeHang, endLedgeHang, ledgeClimbUp;
         GameObject ledgeObject;
+        Transform lastLedgePosition;
         Vector3 armHangPoint, rotationDirection, climbPointer;
         Quaternion rotationToObject;
-        bool endLedgeHangAnim, ledgeHangStoped;
+        private bool endLedgeHangAnim, ledgeHangStoped, endingLedgeHang, climbUpPositionChang;
+        private float ledgeHangRotateAmount;
 
 
 
@@ -163,6 +166,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         int animIndex;
 
         float toeToKnucklesDist;
+
 
         void Start()
         {
@@ -309,7 +313,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (m_ForwardAmount == 0) { isIdle = true; } else isIdle = false;
 
 
-            if (landForwardHeavy || landLight)
+            if (!ledgeHanging && !ledgeClimbUp && landForwardHeavy || landLight)
             {
                 landing = true;
                 //m_Animator.applyRootMotion = false;
@@ -321,7 +325,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 runKick = true;
 
             }
-            if (Input.GetMouseButton(0) && isWalking || Input.GetMouseButton(0) && isIdle)
+            if (Input.GetMouseButton(0) && isWalking || Input.GetMouseButton(0) && isIdle && m_IsGrounded)
             {
                 walkKick = true;
 
@@ -354,6 +358,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 RunSlide();
             }
             detectWallsAndIdle();//m_ForwardAmount, detectWall);
+            print("Root motion " + m_Animator.applyRootMotion);
 
         }
         void LateUpdate()
@@ -484,7 +489,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             else
             {
-                footIkOn = false; //ON
+                footIkOn = true; //ON
             }
 
             // send input and other state parameters to the animator
@@ -596,13 +601,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
 
                 //Stop only if not pushable object (has a rigid body)
-                if (hitInfo.rigidbody == false)
+                if (hitInfo.rigidbody == null)
                 {
                     facingWall = true;
+                    m_Animator.applyRootMotion = false;
                     //print("Next to a wall, stoping!");
                 }
-                m_Animator.applyRootMotion = false;
-                //m_Animator.Play("WallStop");
+
             }
             else facingWall = false;
         }
@@ -1125,16 +1130,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Jump
             if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling && !runSlide)
             {
-                if (m_ForwardAmount > 0.3) //Jump if moving
+                //Jump if movin
+                if (m_ForwardAmount > 0.3 && !idleJump)
                 {
                     runJump = true;
                 }
-                else     //Jump while Idle
+                //Jump while Idle
+                else
                 {
                     jumpStart = timer;
                     idleJump = true;
                 }
-
             }
             else
             {
@@ -1143,13 +1149,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             // Idle Jump
-            if (idleJump && !isJumping && m_Animator.GetCurrentAnimatorStateInfo(0).IsName("IdleJump"))
+            if (idleJump)
             {
                 isJumping = true;
                 jump = false;
-                if (jumpStart + GetAnimationLength("IdleJump") / 8 < timer)
-                {
+                runJump = false;
 
+                if (animationJump)
+                {
                     idleJump = false;
                     m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
                     m_Animator.applyRootMotion = false;
@@ -1178,22 +1185,22 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //End of IsJumping
-            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 16 < timer) // WHY THIS NUMBER??
+            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 8 < timer && !ledgeHang)
             {
                 isJumping = false;
+                animationJump = false;
+
 
             }
 
             //Landing is over when animation is over
-            if (timeInAir + GetAnimationLength("LandForwardHeavy") / 18 < timer)
+            if (timeInAir + GetAnimationLength("LandForwardHeavy") * 0.2f < timer)
             {
                 landForwardHeavy = false;
                 landLight = false;
                 timeInAirBool = true;
                 landing = false;
-
             }
-
         }
 
         void ApplyExtraTurnRotation()
@@ -1229,32 +1236,59 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (!ledgeClimbUp && startLedgeHang)
                 {
                     //check when hanging
-                    if (!ledgeHanging)
+                    if (!ledgeHanging && animationJump)
                     {
-                        StartCoroutine(LedgeHang());
+                        StartCoroutine(StartLedgeHang());
                         ledgeHangStoped = false;
+                        SetAnimationJump();
                     }
                 }
             }
 
-            if (ledgeClimbUp) {
+            //Ledge climbing up
+            if (ledgeClimbUp)
+            {
                 ledgeHang = false;
-                m_Animator.applyRootMotion = false;
                 isJumping = false;
                 idleJump = false;
-
+                climbUpPositionChang = true;
+                m_Animator.applyRootMotion = true;
+            }
+            else if (climbUpPositionChang) //Change position right after Ledge climbing up ends
+            {
+                climbUpPositionChang = false;
+                ledgeClimbUp = false;
+                transform.position = lastLedgePosition.position;
             }
 
-            // if c was presed while ledge hanging
+            // if dropping or climbin up (button c or m_jump while ledgehanging)
             if (endLedgeHang)
             {
                 ledgeHangStoped = true;
-                StopCoroutine(LedgeHang());
+                StopCoroutine(StartLedgeHang());
                 ledgeHang = false;
                 endLedgeHang = false;
+                ledgeHangRotateAmount = -160f;
+                endingLedgeHang = true;
+                ledgeHanging = false;
             }
 
+            //to handle rotations of character when endLedgeHang animation is playing
+            if (endingLedgeHang && !m_IsGrounded)
+            {
+                //Vector3 ledgeHangEndLookAtPos = transform.localPosition - new Vector3(10, 0, -10);
 
+                // transform.rotation = Quaternion.LookRotation(); 
+
+
+                // transform.Find("Aqua").rotation = Quaternion.LookRotation(ledgeHangEndLookAtPos);
+
+                //transform.Find("Aqua").transform.Rotate(0, -160, 0);
+                //transform.Find("Aqua").localEulerAngles = new Vector4(0,0,0);
+                m_Animator.applyRootMotion = false;
+
+                //transform.rotation = hips.transform.rotation;
+            }
         }
 
         // Setter getter for m_forwardAmount
@@ -1333,14 +1367,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 //landed = false;
                 //m_GroundNormal = Vector3.up;
                 ScaleCapsule("falling");
-                if (!stepUpPlaying && !isJumping)
+                if (!stepUpPlaying && !isJumping && !ledgeHang && !ledgeHanging && !ledgeClimbUp)
                 {
                     //Check is trully falling. It waits for character for being 1 sec not grounded to go to falling state.
                     if (!playingFall)
                     {
                         fallStart = Time.time;
                         playingFall = true;
-                        //isFalling = true;
                         landed = true;
                     }
 
@@ -1411,7 +1444,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
 
 
-        void legIK(int _foot)
+        private void legIK(int _foot)
         {
             if (_foot == 1) { legRay = 0.1f; }
             if (_foot == 2) { legRay = -0.1f; }
@@ -1448,11 +1481,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (footSmoothingRight <= 0.99) { footSmoothingRight += 0.01f; }
                     if (footSmoothingRight > 0.95 && getForwardAmount() > 0.2f)
                     {
-                        stepUpReady = true;
-                        holdingStepUpLegPlaying = false;
-                        if (!isIdle)
+                        if (!ledgeHanging && !ledgeClimbUp)
                         {
-                            setForwardAmount(0.1f);
+                            stepUpReady = true;
+
+                            holdingStepUpLegPlaying = false;
+                            if (!isIdle)
+                            {
+                                setForwardAmount(0.1f);
+                            }
                         }
                     }
                     else
@@ -1490,10 +1527,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     if (footSmoothingLeft <= 0.99) { footSmoothingLeft += 0.01f; }
                     if (footSmoothingLeft > 0.95 && getForwardAmount() > 0.2f)
                     {
-                        stepUpReady = true;
-                        if (!isIdle)
+                        if (!ledgeHanging && !ledgeClimbUp)
                         {
-                            setForwardAmount(0.1f);
+                            stepUpReady = true;
+
+                            if (!isIdle)
+                            {
+                                setForwardAmount(0.1f);
+                            }
                         }
                     }
                     else
@@ -1503,6 +1544,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
 
                 //Step Up Start
+
                 if (stepUpReady && !isIdle && getForwardAmount() > 0.2f)
                 {
                     if (!stepUpPlaying && !stepUpDone)
@@ -1515,6 +1557,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     stepUpDone = false;
                     ScaleCapsule("stepUp");
                     m_Rigidbody.AddRelativeForce(0, stepUpForce, 0f);
+
 
                 }
 
@@ -1555,17 +1598,20 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     else footSmoothingLeft = 0;
                     rightLegStepUp = false;
                 }
-                stepUpDone = true;
 
-                //Step up Stop
-                if (stepUpDone)
+                if (!ledgeHanging && !ledgeClimbUp && !ledgeClimbUp)
                 {
-                    ScaleCapsule("stepUpDone");
-                    //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
-                    stepUpSmoothing = 0;
-                    m_Rigidbody.useGravity = true;
-                    stepUpPlaying = false;
-                    stepUpReady = false;
+                    stepUpDone = true;
+                    //Step up Stop
+                    if (stepUpDone)
+                    {
+                        ScaleCapsule("stepUpDone");
+                        //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
+                        stepUpSmoothing = 0;
+                        m_Rigidbody.useGravity = true;
+                        stepUpPlaying = false;
+                        stepUpReady = false;
+                    }
                 }
 
 
@@ -1656,94 +1702,39 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (m_Animator)
             {
-                //if the IK is active, set the position and rotation directly to the goal. 
                 if (footIkOn)
                 {
-                    // Set the look target position, if one has been assigned
-
-
-
-                    // Set the right hand target position and rotation, if one has been assigned
                     if (rightFoot != null && leftFoot != null)
                     {
-                        //m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, 1);
-                        //m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftFoot, 1);
-                        //Check which leg is in front, then raycast from it.
-                        //print(leftFoot.localPosition.z + " leftFoot.localPosition.z");
-                        //print(rightFoot.localPosition.z + " rightFoot.localPosition.z");
-
-                        // Different states as running walking idle, requires diffferent footIk settings
-                        //
-
                         legIK(1);
                         legIK(2);
-
-                        /*
-                        if ((rightFoot.transform.position.z > leftFoot.transform.position.z && !isIdle ) && !leftLegStepUp)
-                        {
-                            legIK(1);
-                        }
-                        if ((rightFoot.transform.position.z < leftFoot.transform.position.z && !isIdle) && !rightLegStepUp)
-                        {
-                            legIK(2);
-                        }
-                        */
-
-
-                        /*
-                        if (isIdle)
-                        {
-                            legIK(1);
-                            legIK(2);
-                        }
-                        /*/
-
-
-                        /*
-                        if (isIdle)
-                        {
-                            legIK(leftFoot, AvatarIKGoal.LeftFoot, leftFootNewPosition);
-                            legIK(rightFoot, AvatarIKGoal.RightFoot, rightFootNewPosition);
-                        }
-                        
-                        if (rightFoot.position.z > leftFoot.position.z && !isIdle)
-                        {
-                            legIK(rightFoot, AvatarIKGoal.RightFoot, rightFootNewPosition);
-                        }
-                        if (rightFoot.position.z < leftFoot.position.z && !isIdle)
-                        {
-                            //legIK(leftFoot, AvatarIKGoal.LeftFoot);
-                        } 
-                        */
                     }
-                    //m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
-                    //stepUpPlaying = false;
-                    //stepUpReady = false;
                 }
             }
         }
 
         //what happens untill character reaches and stops at the ledge
-        IEnumerator LedgeHang()
+        IEnumerator StartLedgeHang()
         {
-
             idleJump = false;
             print("LedgeHang");
             armHangPoint = ledgeObject.transform.Find("Point").transform.position;
-            transform.position = Vector3.Slerp(transform.position, armHangPoint - new Vector3(0, toeToKnucklesDist, 0), 0.05f);
+            transform.position = Vector3.Slerp(transform.position, armHangPoint - new Vector3(0, toeToKnucklesDist, 0), 0.4f);
             RotateTowards(ledgeObject);
             ScaleCapsule("ground");
             ledgeHang = true;
             isJumping = false;
             isFalling = false;
             m_Rigidbody.useGravity = false;
-            m_Rigidbody.isKinematic = true;
+            m_Rigidbody.velocity = Vector3.zero;
             yield return new WaitForSeconds(1);
         }
 
         //called only by animation
         public void LedgeHanging()
         {
+            animationJump = false;
+            //m_Rigidbody.isKinematic = true;
             startLedgeHang = false;
             ledgeHanging = true;
         }
@@ -1751,11 +1742,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //called only by animation LedgeHangDrop and ledgeClimbUp
         public void EndLedgeHang()
         {
-            //float turnSpeed = Mathf.Lerp(m_StationaryTurnSpeed, m_MovingTurnSpeed, m_ForwardAmount);
-
-            //m_Animator.applyRootMotion = true;
-            //transform.Rotate(0, -160, 0);
-            //transform.rotation = hips.transform.rotation;
+            print("ending Ledge hang");
             m_Rigidbody.useGravity = true;
             m_Rigidbody.isKinematic = false;
             ledgeHanging = false;
@@ -1784,12 +1771,21 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 ledgeObject = collider.gameObject;
                 ledgeDetected = true;
+                lastLedgePosition = ledgeObject.gameObject.transform;
             }
             else
+            {
+                //ledgeDetected = false;
+            }
+        }
+        void OnTriggerExit(Collider collider)
+        {
+            if (collider.tag == "Ledge")
             {
                 ledgeDetected = false;
             }
         }
+
 
 
 
@@ -1798,7 +1794,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
             if (gameObject == ledgeObject)
             {
-                //Rotate towards ledge
+                /* if (startLedgeHang)
+                 {*/
+                //Rotate towards ledge when jumping to ledge
                 //Get direction
                 try
                 {
@@ -1808,6 +1806,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 {
                     print("Ledge without LookAt pointer detected.");
                 }
+                /* }
+                 if (ledgeHangStoped)
+                 {
+                     climbPointer = ledgeObject.transform.Find("ClimbPointer").transform.position;
+                 }
+                 */
             }
             else
             {
@@ -1819,6 +1823,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Rotation towards object
             rotationToObject = Quaternion.LookRotation(rotationDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, rotationToObject, 10);
+        }
+        public void SetAnimationJump()
+        {
+            animationJump = true;
         }
 
     }

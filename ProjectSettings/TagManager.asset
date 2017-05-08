@@ -18,6 +18,7 @@ TagManager:
   - Body
   - Ledge
   - LedgePoint
+  - CamFollow
   layers:
   - Default
   - TransparentFX

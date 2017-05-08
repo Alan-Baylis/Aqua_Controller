@@ -139,7 +139,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Character.endLedgeHang = true;
                 }
             }
-            if (m_Character.ledgeHanging && m_Jump)
+            if (m_Character.ledgeDetected && m_Character.ledgeHanging && m_Jump)
             {
                 m_Character.ledgeClimbUp = true;
                 m_Character.endLedgeHang = true;

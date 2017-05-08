@@ -18,6 +18,7 @@ public class FreeCameraLook : Pivot {
     private float smoothY = 0;
     private float smoothXVelocity = 0;
     private float smoothYVelocity = 0;
+    private float tempMouseZ;
 
 
     protected override void Awake()
@@ -55,6 +56,10 @@ public class FreeCameraLook : Pivot {
 
     void HandleRotationMovement()
     {
+            SetMouseZ(pivot.localPosition.z + Input.GetAxis("Mouse ScrollWheel"));
+            pivot.localPosition = new Vector4(pivot.localPosition.x, pivot.localPosition.y, tempMouseZ);
+        
+
         float x = Input.GetAxis("Mouse X");
         float y = Input.GetAxis("Mouse Y");
 
@@ -75,6 +80,21 @@ public class FreeCameraLook : Pivot {
         tiltAngle = Mathf.Clamp(tiltAngle, -tiltMin, tiltMax);
 
         pivot.localRotation = Quaternion.Euler(tiltAngle, 0, 0);
+    }
+    private void SetMouseZ(float _tempMouseZ)
+    {
+        if (tempMouseZ >= -1 && tempMouseZ <= 1)
+        {
+            tempMouseZ = Mathf.Lerp(pivot.localPosition.z, _tempMouseZ, 0.5f);
+        }
+        else
+        {
+            if (tempMouseZ > 0)
+            {
+                tempMouseZ = 1f;
+            }else
+                tempMouseZ = -1;
+        }
     }
 
 }

@@ -20,14 +20,6 @@ public class GameManager : MonoBehaviour
         return m_Instance;
     }
 
-
-
-
-
-
-
-
-
     // class 
     public GUIStats guiStatsObject;
 
@@ -46,7 +38,9 @@ public class GameManager : MonoBehaviour
         {
             enableGUI = false;
         }
-        GUIStats.enableGUI = enableGUI;
+        GUIStats.enableGUIStats = enableGUI;
+
+
 
     }
 }
