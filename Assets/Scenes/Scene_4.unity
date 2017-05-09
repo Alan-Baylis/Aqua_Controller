@@ -164,15 +164,15 @@ Prefab:
     m_Modifications:
     - target: {fileID: 482134, guid: 2180e2276c2a3a54fb893a7f27e9262e, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 2.21
+      value: 3.66
       objectReference: {fileID: 0}
     - target: {fileID: 482134, guid: 2180e2276c2a3a54fb893a7f27e9262e, type: 2}
       propertyPath: m_LocalPosition.y
-      value: 7.28
+      value: 4.32
       objectReference: {fileID: 0}
     - target: {fileID: 482134, guid: 2180e2276c2a3a54fb893a7f27e9262e, type: 2}
       propertyPath: m_LocalPosition.z
-      value: -5.934328
+      value: -7.35
       objectReference: {fileID: 0}
     - target: {fileID: 482134, guid: 2180e2276c2a3a54fb893a7f27e9262e, type: 2}
       propertyPath: m_LocalRotation.x
@@ -241,6 +241,7 @@ GameObject:
   - component: {fileID: 163250522}
   - component: {fileID: 163250523}
   - component: {fileID: 163250524}
+  - component: {fileID: 163250525}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -401,6 +402,17 @@ MonoBehaviour:
   useDepthTexture: 1
   sunShaftsShader: {fileID: 4800000, guid: d3b1c8c1036784176946f5cfbfb7fe4c, type: 3}
   simpleClearShader: {fileID: 4800000, guid: f688f89ed5eb847c5b19c934a0f1e772, type: 3}
+--- !u!114 &163250525
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 163250515}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c83b73785413184b874d1a6555bc7ec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &226740358
 Prefab:
   m_ObjectHideFlags: 0
@@ -1182,6 +1194,10 @@ Prefab:
     - target: {fileID: 100000, guid: bb87302deac389c48b79738828e5b2e5, type: 3}
       propertyPath: m_TagString
       value: CamFollow
+      objectReference: {fileID: 0}
+    - target: {fileID: 13700002, guid: bb87302deac389c48b79738828e5b2e5, type: 3}
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 9500000, guid: bb87302deac389c48b79738828e5b2e5, type: 3}

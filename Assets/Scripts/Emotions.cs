@@ -60,7 +60,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         nextBlink = UnityEngine.Random.Range(1, 2);
                     }
                 }
-                aquaRenderer.SetBlendShapeWeight(7, eyeBlink);
+                try{
+                    aquaRenderer.SetBlendShapeWeight(7, eyeBlink);
+                }
+                catch (NullReferenceException ex)
+                {
+
+                }
             }
         }
 

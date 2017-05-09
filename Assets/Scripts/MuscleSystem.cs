@@ -143,8 +143,8 @@ public class MuscleSystem : MonoBehaviour
                 {
                     abdominusRectus = 100;
                 }
-                //Conditional Muscles
-                if (m_Character.ledgeHanging || m_Character.startLedgeHang)
+                //Condition 2
+                if (m_Character.ledgeHanging || m_Character.ledgeClimbUp)
                 {
                     leftTriceps = (int)Mathf.Lerp(leftTriceps, 100f, 0.1f);
                     rightTriceps = (int)Mathf.Lerp(rightTriceps, 100f, 0.1f); ;
@@ -165,7 +165,7 @@ public class MuscleSystem : MonoBehaviour
                     leftBrachioradialis = (int)Mathf.Lerp(leftBrachioradialis, 100f, 0.1f); ;
                     rightBrachioradialis = (int)Mathf.Lerp(rightBrachioradialis, 100f, 0.1f); ;
                 }
-                else
+                else // Condition 1
                 {
                     leftTriceps = Mathf.Abs(leftBiceps - 80);
                     rightTriceps = Mathf.Abs(rightBiceps - 80);
@@ -181,27 +181,29 @@ public class MuscleSystem : MonoBehaviour
                         rightBrachioradialis = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y));
                         rightExtensors = Mathf.Max(0, (int)(270f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform.localEulerAngles.y) * -1);
                     }
-
-                    leftDeltoid = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.position.y - 0.5f- transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.position.y) * -100);
-                    rightDeltoid = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.position.y - 0.5f - transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.position.y) * -100);
+                    leftDeltoid = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.position.y - 0.5f - 
+                        transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm").transform.position.y) * -100);
+                    rightDeltoid = (int)Mathf.Max(0, (transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm").transform.position.y - 0.5f - 
+                        transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm").transform.position.y) * -100);
 
                     leftLatissimus = leftDeltoid;
                     rightLatissimus = rightDeltoid;
                 }
 
 
-             //Left Leg muscles
-
-                //Condition 1 Shifting of weight from one leg to another
-                leftGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * -3000);
-                leftSemitendinosus = leftGastrocnemius;
-                leftRectusFemoris = leftGastrocnemius;
-
-                //Condition 2 squating 
-                //Possible to raycast from each leg to see if a single leg is grounded
+                //Left Leg muscles
                 if (m_Character.m_IsGrounded)
                 {
-                    leftGastrocnemiusTemp = (int)((transform.Find("Aqua/Hips/Left_leg/Left_knee/Left_foot").transform.position.y - transform.Find("Aqua/Hips").transform.position.y) * 400) + 440;
+                    //Condition 1 Shifting of weight from one leg to another
+                    leftGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * -3000);
+                    leftSemitendinosus = leftGastrocnemius;
+                    leftRectusFemoris = leftGastrocnemius;
+
+                    //Condition 2 squating 
+                    //Possible to raycast from each leg to see if a single leg is grounded
+
+                    leftGastrocnemiusTemp = (int)((transform.Find("Aqua/Hips/Left_leg/Left_knee/Left_foot").transform.position.y 
+                        - transform.Find("Aqua/Hips").transform.position.y) * 400) + 440;
 
                     if (leftGastrocnemius < leftGastrocnemiusTemp) //Check if other condition of 
                     {
@@ -210,7 +212,7 @@ public class MuscleSystem : MonoBehaviour
                 }
 
 
-             //Right Leg muscles
+                //Right Leg muscles
 
                 //Condition 1 Shifting of weight from one leg to another
                 rightGastrocnemius = (int)Mathf.Max(0, transform.Find("Aqua/Hips").transform.localPosition.x * 3000);
@@ -302,7 +304,7 @@ public class MuscleSystem : MonoBehaviour
             bodyRenderer.SetBlendShapeWeight(34, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(34), leftTrapezius * _trapeziusEffect * _allMuscleEffect, 1));
             bodyRenderer.SetBlendShapeWeight(35, Mathf.Lerp(bodyRenderer.GetBlendShapeWeight(35), rightTrapezius * _trapeziusEffect * _allMuscleEffect, 1));
             braRenderer.SetBlendShapeWeight(0, Mathf.Lerp(braRenderer.GetBlendShapeWeight(0), leftTrapezius * 2 * _trapeziusEffect * _allMuscleEffect, 1));
-            braRenderer.SetBlendShapeWeight(1, Mathf.Lerp(braRenderer.GetBlendShapeWeight(1), leftTrapezius * 2 *_trapeziusEffect * _allMuscleEffect, 1));
+            braRenderer.SetBlendShapeWeight(1, Mathf.Lerp(braRenderer.GetBlendShapeWeight(1), leftTrapezius * 2 * _trapeziusEffect * _allMuscleEffect, 1));
             braRenderer.SetBlendShapeWeight(2, Mathf.Lerp(braRenderer.GetBlendShapeWeight(2), leftLatissimus * 2 * _deltoidEffect * _allMuscleEffect, 1));
             braRenderer.SetBlendShapeWeight(3, Mathf.Lerp(braRenderer.GetBlendShapeWeight(3), rightLatissimus * 2 * _deltoidEffect * _allMuscleEffect, 1));
             //Neck
