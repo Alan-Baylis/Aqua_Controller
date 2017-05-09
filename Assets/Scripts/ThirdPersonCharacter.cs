@@ -108,7 +108,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         //Foot positioning
         RaycastHit hitSteps;
-        public bool footIkOn;
+        internal static bool footIkOn;
+        public bool _footIkOn;
         RaycastHit hitLeg, noLegHit;
         Transform pointer;
         Vector3 slopeRight, slopeLeft;
@@ -191,6 +192,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetLayerWeight(0, 1);
             leftFoot = transform.Find("Aqua/Hips/Left_leg/Left_knee/Left_foot");
             rightFoot = transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot").transform;
+            rightFootNewPosition = rightFoot.transform.position;
+            leftFootNewPosition = leftFoot.transform.position;
             hips = transform.Find("Aqua/Hips").transform;
             toeEnd = transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot/Right_toe/Right_toe_end").transform.position.y;
             hipToFootDist = hips.position.y - toeEnd;
@@ -363,6 +366,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         }
         void LateUpdate()
         {
+            leftFoot = transform.Find("Aqua/Hips/Left_leg/Left_knee/Left_foot");
+            rightFoot = transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot").transform;
 
             stopAnimatingBone("rightLeg");
 
@@ -1460,11 +1465,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (Physics.Raycast(hips.TransformPoint(legRay, -hipToFootDist / 4, rayPoss), new Vector3(0, -hipToFootDist / 2, 0), out hitLeg, rayLength) && !(hitLeg.collider.gameObject.tag == "Foot"))
             {
 
-                //slopeRight = Vector3.Cross(hitleg.normal, rightFoot.transform.right);
-                //rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitleg.normal, slopeRight), hitleg.normal);
                 //print("Found an object - distance: " + rightFootNewPos + "Object name: " + hitRightLeg.collider.gameObject.name);
                 if (_foot == 1 && !leftFootIkActive)
                 {
+                    slopeRight = Vector3.Cross(hitLeg.normal, -rightFoot.transform.right);
+                    rightFootRot = Quaternion.LookRotation(Vector3.Exclude(hitLeg.normal, slopeRight), hitLeg.normal);
+
                     rightFootIkActive = true;
                     stepUpLeg = 1;
 
@@ -1502,6 +1508,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                 if (_foot == 2 && !rightFootIkActive && stepUpDone)
                 {
+                    slopeLeft = Vector3.Cross(hitLeg.normal, -leftFoot.transform.right);
+                    leftFootRot = Quaternion.LookRotation(Vector3.Exclude(hitLeg.normal, slopeLeft), hitLeg.normal);
+
                     leftFootIkActive = true;
                     stepUpLeg = 0;
 
@@ -1614,7 +1623,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
 
-
                 if (_foot == 1)
                 {
                     rightFootLow = Mathf.Lerp(rightFootLow, rightFoot.transform.position.y, 0.01f);
@@ -1632,6 +1640,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (_foot == 1)
             {
                 m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+                m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
                 m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUpOrDown, 0.01f));
                 m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUpOrDown, 0.01f));
             }
@@ -1702,7 +1711,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
             if (m_Animator)
             {
-                if (footIkOn)
+                if (footIkOn && _footIkOn)
                 {
                     if (rightFoot != null && leftFoot != null)
                     {

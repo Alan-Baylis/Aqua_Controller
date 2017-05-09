@@ -111,6 +111,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Character.runSlide = true;
             }
 
+            if (m_Character._footIkOn && Input.GetKeyUp(KeyCode.I))
+            {
+                m_Character._footIkOn = false;
+            }
+            else if (!m_Character._footIkOn && Input.GetKeyUp(KeyCode.I))
+            {
+                m_Character._footIkOn = true;
+            }
 
         }
 
@@ -133,9 +141,11 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     crouch = true;
                 }
             }
-            if (m_Character.ledgeHanging) {
+            if (m_Character.ledgeHanging)
+            {
 
-                if (Input.GetKeyDown(KeyCode.C)){
+                if (Input.GetKeyDown(KeyCode.C))
+                {
                     m_Character.endLedgeHang = true;
                 }
             }
@@ -144,7 +154,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 m_Character.ledgeClimbUp = true;
                 m_Character.endLedgeHang = true;
             }
-
 
 
 
