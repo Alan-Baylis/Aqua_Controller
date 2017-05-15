@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEditor;
+//using UnityEditor;
 public class FreeCameraLook : Pivot { 
 
 [SerializeField] private float moveSpeed = 5f;

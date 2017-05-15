@@ -60,13 +60,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float m_CapsuleHeight;
         Vector3 m_CapsuleCenter;
         CapsuleCollider m_Capsule;
-        RaycastHit hitInfo; // Was inside CheckGroundStatus() but why ???
-
-        //FacialEmotions
-
-
-
-
+        RaycastHit armRay;
 
         //My movements
         float mouseWheel = 0.2f;
@@ -125,7 +119,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         float landedStart;
         string footName;
         Vector3 footNewPosition, leftFootNewPosition, rightFootNewPosition;
-        Transform rightFoot, leftFoot, hips, foot;
+        private Transform rightFoot, leftFoot, hips, foot, rightWrist, leftWrist;
         int stepUpOrDown;
         float charScale;
         float animClipSpeed;
@@ -147,6 +141,12 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private bool endLedgeHangAnim, ledgeHangStoped, endingLedgeHang, climbUpPositionChang;
         private float ledgeHangRotateAmount;
 
+        //wall touch
+        private float armToHandDist;
+        float armSmoothing;
+        private Vector3 newLeftWristPosition, newRightwristPosition, leftArmSlope, leftArmRot, rightArmSlope, rightArmRot;
+        private bool leftArmPosSet, rightArmPosSet;
+
 
 
         public float breathingTempo = 1, myForward, wallDetectDist = 1f, timer;
@@ -159,7 +159,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         Transform spine;
         AudioClip footSound, headSound;
         AudioSource soundSource;
-        Vector3 fwd, down;
+        Vector3 vectorForward, vectorDown, vectorLeft, vectorRight;
         float breathInterval = 0.8f;
 
         //Animation lengths and indexes
@@ -167,7 +167,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         int animIndex;
 
         float toeToKnucklesDist;
-
+        private bool detecting;
 
         void Start()
         {
@@ -201,7 +201,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             charScale = 100 / (transform.localScale.x * 100 / 1.635238f);
             m_Rigidbody.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationY | RigidbodyConstraints.FreezeRotationZ;
             temporaryGroundCheckDistance = m_GroundCheckDistance;
-            down = transform.TransformDirection(Vector3.down);
+            vectorDown = transform.TransformDirection(Vector3.down);
             stepUpSmoothing = 0.01f;
 
             //To copy all animations from animation controller to animations array
@@ -231,12 +231,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 toeToKnucklesDist = transform.Find("Aqua/Hips/Spine/Chest").transform.position.y - transform.Find("Aqua/Hips/Right_leg/Right_knee/Right_foot/Right_toe/Right_toe_end").transform.position.y
                    + Vector3.Distance(transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm").transform.position, (transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle").transform.position));
 
+                leftWrist = transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform;
+                rightWrist = transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform;
                 //print("toeToKnucklesDist " + toeToKnucklesDist);
             }
             catch (NullReferenceException ex)
             {
                 print("No bones found to calculate distance from hip to palm");
             }
+            armToHandDist = Vector3.Distance(leftWrist.position, transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/").transform.position);
         }
 
         //To get Animation Lenghts
@@ -265,10 +268,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         void Update()
         {
-            //TODO: Better set these two according size of the player, dynamic
-            fwd = (transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 100))).normalized;
-            // Do not use Find function here - too slow
-            hips = transform.Find("Aqua/Hips").transform;
+
 
             timer = Time.time;
             if (m_ForwardAmount < 0.01f) { m_ForwardAmount = 0; }
@@ -361,7 +361,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 RunSlide();
             }
             detectWallsAndIdle();//m_ForwardAmount, detectWall);
-            print("Root motion " + m_Animator.applyRootMotion);
+                                 // print("Root motion " + m_Animator.applyRootMotion);
 
         }
         void LateUpdate()
@@ -390,6 +390,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         private void FixedUpdate() //Only for Physics
         {
 
+            //TODO: Better set these two according size of the player, dynamic
+            vectorForward = (transform.TransformPoint((Vector3.forward) + new Vector3(0, 0, 100))).normalized;
+            vectorLeft = -(transform.TransformPoint((Vector3.left) + new Vector3(100, 0, 0))).normalized;
+            // Do not use Find function here - too slow
+            hips = transform.Find("Aqua/Hips").transform;
+
+
             //Change gravity for the ponytail
             foreach (Rigidbody joints in ponyTail)
             {
@@ -405,7 +412,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             {
                 m_Rigidbody.AddRelativeForce(Vector3.forward * _slideForce, ForceMode.Impulse);
             }
-
+            try
+            {
+                leftWrist = transform.Find("Aqua/Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand").transform;
+                rightWrist = transform.Find("Aqua/Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand").transform;
+            }
+            catch (NullReferenceException ex)
+            {
+                print("Can not find wrist");
+            }
             Exhausted();
             setGuiStats();
 
@@ -595,14 +610,14 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         void detectWallsAndIdle()//float currentSpeed, float detectWall)
         {
             //Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), m_Capsule.transform.position + new Vector3(0, -m_GroundCheckDistance, 0), Color.yellow);
-
+            RaycastHit hitInfo;
             //if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), Vector3.down, out hitInfo, m_GroundCheckDistance))
 
             // Debug.DrawRay(hips.TransformPoint(0, 0, 0.15f), fwd, Color.yellow);
             //if (Physics.Raycast(hips.TransformPoint(0, 0, 0.15f), fwd, out hitInfo, detectWall) && m_IsGrounded)
             // print(hips.transform.position);
-            Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), fwd, Color.blue);
-            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), fwd, out hitInfo, wallDetectDist) && m_IsGrounded)
+            Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), vectorForward, Color.blue);
+            if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), vectorForward, out hitInfo, wallDetectDist) && m_IsGrounded)
             {
 
                 //Stop only if not pushable object (has a rigid body)
@@ -871,7 +886,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     headSound = head.GetComponent<Sounds>().Clips[6];
                     head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
                 }
-                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
+                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), vectorDown, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
                     if (name == "jumpLand")
                     {
@@ -896,7 +911,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), down, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
+                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), vectorDown, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {
@@ -1346,6 +1361,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             // helper to visualise the ground check ray in the scene view
             Debug.DrawLine(m_Capsule.transform.position + new Vector3(0, m_Capsule.height / 2, 0), m_Capsule.transform.position - new Vector3(0, m_GroundCheckDistance, 0) /*_Capsule.transform.position - new Vector3(0, m_Capsule.height/2, 0)*/, Color.yellow);
 #endif
+            RaycastHit hitInfo;
             // 0.1f is a small offset to start the ray from inside the character
             // it is also good to note that the transform position in the sample assets is at the base of the character
             // Checking how far is ground from half size of main colider to ground side, with vector leangth of m_groundCheckdistance
@@ -1476,9 +1492,23 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
                     if (!stepUpPlaying && !stepUpReady && stepUpDone)
                     {
+                        /* ORG
                         rightFootTempY = hipToFootDist / 10 + hitLeg.point.y;
                         rightFootTempX = hitLeg.point.x;
                         rightFootTempZ = hitLeg.point.z;
+                        */
+
+                        rightFootTempY = hipToFootDist / 10 + hitLeg.point.y;
+                        if (rightFoot.transform.position.y >= rightFootTempY - rightFootTempY / 1.4f)
+                        {
+                            rightFootTempX = hitLeg.point.x;
+                            rightFootTempZ = hitLeg.point.z;
+                        }
+                        else
+                        {
+                            rightFootTempX = rightFoot.position.x;
+                            rightFootTempZ = rightFoot.position.z;
+                        }
                     }
 
                     rightFootHigh = hipToFootDist / 1.45f - hitLeg.distance;
@@ -1608,7 +1638,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     rightLegStepUp = false;
                 }
 
-                if (!ledgeHanging && !ledgeClimbUp && !ledgeClimbUp)
+                if (!startLedgeHang && (startLedgeHang && !ledgeHanging))
                 {
                     stepUpDone = true;
                     //Step up Stop
@@ -1617,6 +1647,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         ScaleCapsule("stepUpDone");
                         //m_CapsuleCenter = new Vector3(0, 0.76f, 0f);
                         stepUpSmoothing = 0;
+                        print("in");
                         m_Rigidbody.useGravity = true;
                         stepUpPlaying = false;
                         stepUpReady = false;
@@ -1669,6 +1700,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
         }
+
+
         void LootAtPointer()
         {
             //print(aimSmoother);
@@ -1720,6 +1753,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
             }
+
+            ArmIk();
+
         }
 
         //what happens untill character reaches and stops at the ledge
@@ -1833,11 +1869,65 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             rotationToObject = Quaternion.LookRotation(rotationDirection);
             transform.rotation = Quaternion.Slerp(transform.rotation, rotationToObject, 10);
         }
+
+        //called by animation
         public void SetAnimationJump()
         {
             animationJump = true;
         }
 
+
+        void ArmIk()
+        {
+            //Debug.DrawRay(leftWrist.TransformPoint(0, 0, 0), vectorLeft, Color.black);
+
+            //Raycast according state, ignore feet
+            if (Physics.Raycast(leftWrist.TransformPoint(0, 0, 0), vectorLeft, out armRay, armToHandDist))
+            {
+                detecting = true;
+                /*
+                m_Animator.SetIKPosition(AvatarIKGoal.RightFoot, rightFootNewPosition);
+                m_Animator.SetIKRotation(AvatarIKGoal.RightFoot, rightFootRot);
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUpOrDown, 0.01f));
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.RightFoot, Mathf.Lerp(footSmoothingRight, stepUpOrDown, 0.01f));
+                */
+                leftArmSlope = Vector3.Cross(armRay.normal, -leftWrist.transform.right);
+                leftFootRot = Quaternion.LookRotation(Vector3.Exclude(armRay.normal, leftArmSlope), armRay.normal);
+
+                if (!leftArmPosSet)
+                {
+                    newLeftWristPosition = armRay.point;
+                    leftArmPosSet = true;
+                }
+                if (armSmoothing <= 1)
+                {
+                    armSmoothing = armSmoothing + 0.01f;
+                }
+                m_Animator.SetIKPosition(AvatarIKGoal.LeftHand, newLeftWristPosition);
+                m_Animator.SetIKRotation(AvatarIKGoal.LeftHand, leftFootRot);
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, armSmoothing);
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, armSmoothing);
+
+                print(newLeftWristPosition);
+            }
+
+            else if (!isIdle)
+            {
+                print("sdf");
+                leftArmPosSet = false;
+                if (armSmoothing >= 0)
+                {
+                    armSmoothing = armSmoothing - 0.01f;
+                }
+                m_Animator.SetIKPosition(AvatarIKGoal.LeftHand, newLeftWristPosition);
+                m_Animator.SetIKRotation(AvatarIKGoal.LeftHand, leftFootRot);
+                m_Animator.SetIKPositionWeight(AvatarIKGoal.LeftHand, armSmoothing);
+                m_Animator.SetIKRotationWeight(AvatarIKGoal.LeftHand, armSmoothing);
+
+            }
+        }
+
     }
+
 }
 

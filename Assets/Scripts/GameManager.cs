@@ -29,6 +29,8 @@ public class GameManager : MonoBehaviour
     }
     void LateUpdate()
     {
+        if (Input.GetKey("escape"))
+            Application.Quit();
 
         if (!enableGUI && Input.GetKeyUp(KeyCode.G))
         {
