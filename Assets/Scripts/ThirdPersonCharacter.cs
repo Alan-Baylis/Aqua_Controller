@@ -103,7 +103,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         //Foot positioning
         RaycastHit hitSteps;
         internal static bool footIkOn;
-        public bool _footIkOn;
+        public bool _footIkOn, _armIkOn;
         RaycastHit hitLeg, noLegHit;
         Transform pointer;
         Vector3 slopeRight, slopeLeft;
@@ -407,7 +407,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 }
             }
             emotions.EyeBlink();
-            emotions.Breath(isRunning, isExhausted);
+            emotions.Breath(isRunning, isExhausted, ledgeHanging);
             if (runSlide)
             {
                 m_Rigidbody.AddRelativeForce(Vector3.forward * _slideForce, ForceMode.Impulse);
@@ -619,7 +619,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             Debug.DrawRay(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), vectorForward, Color.blue);
             if (Physics.Raycast(m_Capsule.transform.position + new Vector3(0, hipToFootDist / 2, 0), vectorForward, out hitInfo, wallDetectDist) && m_IsGrounded)
             {
-
                 //Stop only if not pushable object (has a rigid body)
                 if (hitInfo.rigidbody == null)
                 {
@@ -627,7 +626,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     m_Animator.applyRootMotion = false;
                     //print("Next to a wall, stoping!");
                 }
-
             }
             else facingWall = false;
         }
@@ -1753,8 +1751,10 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
             }
-
-            ArmIk();
+            if (_armIkOn)
+            {
+                ArmIk();
+            }
 
         }
 

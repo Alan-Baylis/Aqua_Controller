@@ -192,7 +192,6 @@
 				//Normal transpose matrix
 				float3x3 local2WorldTranspose = float3x3(input.worldTangent, input.worldbiNormal, input.worldNormal);
 
-
 				float3 normalDirection = normalize(mul(localCoords, local2WorldTranspose)); //Always have this, will covert local normal vectors to world. Without this light would casted only on predefined side
 
 				//Calculate strenght of other lights than directional

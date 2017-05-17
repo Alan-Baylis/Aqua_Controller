@@ -96,7 +96,7 @@ Material:
     - first:
         name: _Texture
       second:
-        m_Texture: {fileID: 2800000, guid: 7fb92dc5b3ea9e14aa7661de82e9af57, type: 3}
+        m_Texture: {fileID: 2800000, guid: 128656e2aeb6d384496bdeaec3a18cf4, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
@@ -135,7 +135,7 @@ Material:
       second: 0.016
     - first:
         name: _Shininess
-      second: 0.6
+      second: 0.4
     - first:
         name: _SmoothnessTextureChannel
       second: 0
@@ -153,28 +153,28 @@ Material:
       second: 1
     - first:
         name: _blendAmount
-      second: 0.527
+      second: 0.736
     - first:
         name: _blendContrast
-      second: 0
+      second: -0.463
     - first:
         name: _bumpContrast
-      second: 0
+      second: 0.6
     - first:
         name: _bumpStrength
-      second: 1
+      second: 0.92
     - first:
         name: _skinShinePower
-      second: 0.022
+      second: 0
     - first:
         name: _specularContrast
-      second: 0.105
+      second: 0.101
     - first:
         name: _specularRollof
-      second: 0.68
+      second: 1.23
     - first:
         name: _specularSize
-      second: -0.788
+      second: -0.643
     m_Colors:
     - first:
         name: _Color

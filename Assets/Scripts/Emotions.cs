@@ -70,7 +70,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
         }
 
-        public void Breath(bool isRunning, bool isExhausted)
+        public void Breath(bool isRunning, bool isExhausted, bool ledgeHang)
         {
             //breathing = true;
             if (!isExhausted) { 
@@ -87,7 +87,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             if (bellyBreath < breathIntensity && !inhale)
             {
                 bellyBreath += breathStrength;
-                if (isRunning || isExhausted)
+                if (isRunning || isExhausted || ledgeHang)
                 {
                     mouthBreath = bellyBreath;
                     //Call sound function
