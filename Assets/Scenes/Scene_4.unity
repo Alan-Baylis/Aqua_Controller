@@ -2979,7 +2979,7 @@ MonoBehaviour:
   teresMajorEffect: 10
   trapeziusEffect: 10
   abdominusEffect: 4
-  legsEffect: 3
+  legsEffect: 4
   rectusFemorisEffect: 8
   _muscleSpeed: 0.05
 --- !u!114 &1805712840
