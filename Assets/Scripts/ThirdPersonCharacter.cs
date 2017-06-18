@@ -89,7 +89,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool runKick, walkKick;
         bool slideForceEnabled;
         float slideStart, _slideForce;
-        bool slideSound;
+        private bool slideSound, soundPropertiesSet;
 
         float timeInAir, timeInAirStart;
         bool timeInAirBool;
@@ -282,7 +282,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     runBegin = Time.time;
                     runPlaying = true;
                 }
-                if (runBegin + 2 < timer)
+                if (runBegin + 0.5 < timer)
                 {
                     isRunning = true;
                     runPlaying = false;
@@ -633,7 +633,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void turnAround(string side)
         {
-            if (m_ForwardAmount > 0.5 && myForward > 0.5 && !isExhausted && m_IsGrounded && isRunning && !runSlide && !isIdle)
+            if (m_ForwardAmount > 0.5 /*&& myForward > 0.5*/ && !isExhausted && m_IsGrounded && isRunning && !runSlide && !isIdle)
             {
                 turnningAround = true;
                 if (side == "Right")
@@ -859,8 +859,13 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         public void PlaySounds(string name)
         {
+            if (!soundPropertiesSet)
             {
-                if (name == "exhausted")
+                SetSoundProperties();
+                soundPropertiesSet = true;
+            }
+
+            if (name == "exhausted")
                 {   /*
                 footSound = GetComponent<Sounds>().Clips[Random.Range(45, 49)];
                 AudioSource.PlayClipAtPoint(footSound, transform.position);
@@ -868,7 +873,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 */
                     //headSound is an audio clip
                     headSound = head.GetComponent<Sounds>().Clips[UnityEngine.Random.Range(0, 6)];
-                    head.GetComponent<Sounds>().audioSources[UnityEngine.Random.Range(0, 6)].PlayOneShot(headSound, 0.1f);
+                    head.GetComponent<Sounds>().audioSources[UnityEngine.Random.Range(0, 6)].PlayOneShot(headSound, 0.5f);
 
                 }
                 //Delete when all specific sounds are implemented
@@ -884,7 +889,9 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     headSound = head.GetComponent<Sounds>().Clips[6];
                     head.GetComponent<Sounds>().audioSources[6].PlayOneShot(headSound, 1);
                 }
-                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), vectorDown, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
+
+            //Check if ground is with Concrete surface
+            if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), vectorDown *10, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Concrete")
                 {
                     if (name == "jumpLand")
                     {
@@ -909,7 +916,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                     }
                 }
                 //Check if ground is with gravel surface
-                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), vectorDown, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
+                if (Physics.Raycast(transform.position + new Vector3(0, m_Capsule.height / 2, 0), vectorDown*10, out hitSteps, 10) && hitSteps.transform.gameObject.tag == "Gravel")
                 {
                     if (name == "jumpLand")
                     {
@@ -933,8 +940,15 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                         AudioSource.PlayClipAtPoint(footSound, transform.position);
                     }
                 }
-            }
+            
 
+        }
+        private void SetSoundProperties()
+        {
+            for (int i = 0; i < GetComponent<Sounds>().audioSources.Length; i++)
+            {
+                GetComponent<Sounds>().audioSources[i].spatialBlend = 1;
+            }
         }
 
         void ScaleCapsuleForCrouching(bool crouch)
@@ -1212,7 +1226,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //Landing is over when animation is over
-            if (timeInAir + GetAnimationLength("LandForwardHeavy") * 0.2f < timer)
+            if (timeInAir + GetAnimationLength("LandForwardHeavy") * 0.07f < timer)
             {
                 landForwardHeavy = false;
                 landLight = false;
@@ -1245,7 +1259,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //to hang and climb the ledge
             if (ledgeDetected && !ledgeHanging)
             {
-                if (isJumping /*|| isFalling*/)
+                if (isJumping || isFalling)
                 {
                     startLedgeHang = true;
                     RotateTowards(ledgeObject);
@@ -1254,7 +1268,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 if (!ledgeClimbUp && startLedgeHang)
                 {
                     //check when hanging
-                    if (!ledgeHanging && animationJump)
+                    if (!ledgeHanging /*&& animationJump*/)
                     {
                         StartCoroutine(StartLedgeHang());
                         ledgeHangStoped = false;
@@ -1449,7 +1463,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 groundedTimer = 0;
             }
 
-            //Landed when touched the ground from fall
+            //Landed when touched the ground from the fall
             if (landed && timer > landedStart + 0.1f)
             {
                 landed = false;

@@ -1,4 +1,6 @@
-﻿Shader "My Shaders/Skin Shader" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "My Shaders/Skin Shader" {
 	Properties{
 		_Texture("Texture", 2D) = "White" {}
 		_BlendTexture("Scattering Texture", 2D) = "White" {}
@@ -8,13 +10,14 @@
 		_skinShineColor("Skin Shine Color", Color) = (1,1,0,1)
 		_skinShinePower("Skin Shine Strength", Range(0, 1)) = 0.1
 		_BumpMap("BumpMap", 2D) = "bump" {}
-		_bumpStrength("Bump Strength", Range(1, 0.04)) = 0.8
+		_bumpStrength("Bump Strength", Range(15, 2)) = 9
 		_bumpContrast("Bump Contrast", Range(-0.6, 0.6)) = 0
 		_SpecularMap("Specular Map", 2D) = "specular" {}
 		_specularColor("Specular Color", Color) = (1,1,1,1)
 		_specularRollof("Specular Rollof", Range(10, 0.1)) = 5
 		_specularSize("Specular Size", Range(-2, 0)) = 0.5
 		_specularContrast("Specular Contrast", Range(-1, 1)) = 0
+		_brightness("Brightness", Range(0, 1)) = 0.8
 
 
 		// Specular V.1 // _Shininess("Shininess", Float) = 10
@@ -84,6 +87,7 @@
 				float _skinShinePower;
 				float _bumpStrength;
 				float _bumpContrast;
+				float _brightness;
 
 
 				// Specular V.1 // float _Shininess;
@@ -140,7 +144,7 @@
 
 			vertexShaderOut vertexShader(vertexShaderIn input) {
 				vertexShaderOut o;
-				o.worldNormal = normalize(mul(input.normal, unity_ObjectToWorld)); //Bump map, normal as a world normal direction
+				o.worldNormal = mul(input.normal, unity_WorldToObject); //Bump map, normal as a world normal direction
 				o.worldTangent = normalize(mul(unity_ObjectToWorld, input.tangent)); //Bump map, local tangent vector to world tangent of normal
 				o.worldbiNormal = normalize(cross(o.worldNormal, o.worldTangent) * input.tangent.w); //Bump map, binormal vector, perpendicular to normal and tangent vectors, multiplying it by tangent, gets it to correct length
 				o.pos = mul(UNITY_MATRIX_MVP, input.vertexPos); //Always have this, This will project correct vertex "filled siluet shape"
@@ -187,13 +191,13 @@
 				float4 bumpContrast = (_bumpContrast + 1) / (1 - _bumpContrast);
 				float4 bumpMap = tex2D(_BumpMap, input.colorOfTexture.xy);
 				//Unpack normal 
-				float3 localCoords = float3(2.0 * bumpMap.ag - float2(1.0, 1.0), 0.0) * bumpContrast;
+				float3 localCoords = normalize(float3(2.0 * bumpMap.ag - float2(1.0, 1.0), 0.0) * bumpContrast);
 				localCoords.z = _bumpStrength;
 				//Normal transpose matrix
 				float3x3 local2WorldTranspose = float3x3(input.worldTangent, input.worldbiNormal, input.worldNormal);
 
 
-				float3 normalDirection = normalize(mul(localCoords, local2WorldTranspose)); //Always have this, will covert local normal vectors to world. Without this light would casted only on predefined side
+				float3 normalDirection = normalize(mul(localCoords , local2WorldTranspose)); //Always have this, will covert local normal vectors to world. Without this light would casted only on predefined side
 
 				//Calculate strenght of other lights than directional
 				if (_WorldSpaceLightPos0.w != 0.0) {
@@ -206,7 +210,7 @@
 				}
 
 				//Difuse shading
-				float4 diffuseShading = lightStrength  * max(0.0, dot(normalDirection, lightPosition)) * light + UNITY_LIGHTMODEL_AMBIENT; // dot() will return higher value if angle is smallest, that is why objects are lit the most, in straighest line to the vertex point (they have closest to 0 angle, which will produce closest to 1 result)
+				float4 diffuseShading = lightStrength  * max(0.0, dot(normalDirection, lightPosition)) * light  + UNITY_LIGHTMODEL_AMBIENT; // dot() will return higher value if angle is smallest, that is why objects are lit the most, in straighest line to the vertex point (they have closest to 0 angle, which will produce closest to 1 result)
 
 				//Specular shading
 				float4 specularMap = tex2D(_SpecularMap, input.colorOfTexture.xy);
@@ -215,7 +219,7 @@
 				float4 specularShading = lightStrength * specularContrast * pow(max(0.0, dot(cameraDirection, reflect(-lightPosition, normalDirection)) + _specularSize)   * _specularColor * specularMap * max(0.0, dot(normalDirection, lightPosition)), _specularRollof);
 
 				//Skin shine against light. First skin layer of "Oil"
-				float4 skinShine = lightStrength * max(0.0, (1 - dot(lightPosition, _WorldSpaceCameraPos))) * max(0.0, dot(normalDirection, lightPosition) * _skinShineColor) * _skinShinePower;
+				float4 skinShine = lightStrength * max(0.0, (1 - dot(lightPosition, cameraDirection))) * max(0.0, dot(normalDirection, lightPosition) * _skinShineColor) * _skinShinePower;
 
 
 				//Real sublayer satering
@@ -237,12 +241,12 @@
 				*/
 
 				//Final light
-				float4 lightFinal = (diffuseShading * colorOfTexture) + specularShading + skinShine;
+				float4 lightFinal = ((diffuseShading * colorOfTexture) + specularShading  + skinShine) * _brightness;
 
 				//Fake sublayer scatering
-				float4 blendTexture = tex2D(_BlendTexture, input.colorOfTexture.xy);
+				float4 blendTexture = tex2D(_BlendTexture, input.colorOfTexture.xy)  *_brightness;
 				float4 blendTextureContrast = (_blendContrast + 1) / (1 - _blendContrast);
-				float4 blendFinal = lightStrength * blendTexture * blendTextureContrast * _blendColor * colorOfTexture * max(0.0, dot(normalDirection, lightPosition));
+				float4 blendFinal = lightStrength * blendTexture * _brightness * blendTextureContrast * _blendColor * colorOfTexture * max(0.0, dot(normalDirection, lightPosition));
 
 				/*	Contrast
 					factor = (259 * (contrast + 255)) / (255 * (259 - contrast))
@@ -311,13 +315,9 @@
 				}
 
 
-
-				/*
-				GrabPass{
-					Tags{ "LightMode" = "Always" }
-				}*/
+				
 				Pass{
-					Tags{ /*"LightMode" = "Always"*/ "LightMode" = "ForwardAdd" }
+					Tags{"LightMode" = "ForwardAdd" }
 					Blend one one
 
 				CGPROGRAM
@@ -342,6 +342,7 @@
 				float _skinShinePower;
 				float _bumpStrength;
 				float _bumpContrast;
+				float _brightness;
 
 			#pragma vertex vertexShader
 			#pragma fragment fragmentShader
@@ -367,7 +368,7 @@
 
 			vertexShaderOut vertexShader(vertexShaderIn input) {
 				vertexShaderOut o;
-				o.worldNormal = normalize(mul(input.normal, unity_ObjectToWorld)); //Bump map, normal as a world normal direction
+				o.worldNormal = mul(input.normal, unity_WorldToObject); //Bump map, normal as a world normal direction
 				o.worldTangent = normalize(mul(unity_ObjectToWorld, input.tangent)); //Bump map, local tangent vector to world tangent of normal
 				o.worldbiNormal = normalize(cross(o.worldNormal, o.worldTangent) * input.tangent.w); //Bump map, binormal vector, perpendicular to normal and tangent vectors, multiplying it by tangent, gets it to correct length
 				o.pos = mul(UNITY_MATRIX_MVP, input.vertexPos); //Always have this, This will project correct vertex "filled siluet shape"
@@ -412,7 +413,7 @@
 				//BumMap
 				float4 bumpMap = tex2D(_BumpMap, input.colorOfTexture.xy);
 				//Unpack normal 
-				float3 localCoords = float3(2.0 * bumpMap.ag - float2(1.0, 1.0), 0.0);
+				float3 localCoords = normalize(float3(2.0 * bumpMap.ag - float2(1.0, 1.0), 0.0));
 				localCoords.z = _bumpStrength;
 				//Normal transpose matrix
 				float3x3 local2WorldTranspose = float3x3(input.worldTangent, input.worldbiNormal, input.worldNormal);
@@ -422,7 +423,7 @@
 				//Calculate strenght of other lights than directional
 				if (_WorldSpaceLightPos0.w != 0.0) {
 					float distance = length(lightPosition - input.worldVertPos);
-					lightStrength = 1 / pow(distance, distance * 2); // pow() of 2 could be changed to user accesable variable
+					lightStrength = 1 / distance /*pow(distance, distance * 2)*/; // pow() of 2 could be changed to user accesable variable
 					lightPosition = normalize(lightPosition - input.worldVertPos);
 				}
 				else {
@@ -439,7 +440,7 @@
 				float4 specularShading = lightStrength * specularContrast * pow(max(0.0, dot(cameraDirection, reflect(-lightPosition, normalDirection)) + _specularSize)   * _specularColor * specularMap * max(0.0, dot(normalDirection, lightPosition)), _specularRollof);
 
 				//Skin shine against light. First skin layer of "Oil"
-				float4 skinShine = lightStrength * max(0.0, (1 - dot(lightPosition, _WorldSpaceCameraPos))) * max(0.0, dot(normalDirection, lightPosition) * _skinShineColor) * _skinShinePower;
+				//float4 skinShine = lightStrength * max(0.0, (1 - dot(lightPosition, _WorldSpaceCameraPos))) * max(0.0, dot(normalDirection, lightPosition) * _skinShineColor) * _skinShinePower;
 				
 				//Real sublayer satering
 				/*
@@ -460,11 +461,11 @@
 				*/
 
 				//Final light
-				float4 lightFinal = (diffuseShading * colorOfTexture) + specularShading;
+				float4 lightFinal = ((diffuseShading * colorOfTexture) + specularShading) * _brightness;
 
 				//Fake sublayer scatering
-				float4 blendTexture = tex2D(_BlendTexture, input.colorOfTexture.xy);
-				float4 blendFinal = lightStrength * blendTexture * _blendColor * colorOfTexture * max(0.0, dot(normalDirection, lightPosition));
+				float4 blendTexture = tex2D(_BlendTexture, input.colorOfTexture.xy) * _brightness;
+				float4 blendFinal = lightStrength * blendTexture * _brightness* _blendColor * colorOfTexture * max(0.0, dot(normalDirection, lightPosition));
 
 				//Gaussian blur
 				//float4 colorNew = tex2Dproj(_GrabTexture, UNITY_PROJ_COORD(colorOfTexture));

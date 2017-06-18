@@ -1,4 +1,6 @@
-﻿Shader "My Shaders/Skin Shader" {
+﻿// Upgrade NOTE: replaced 'mul(UNITY_MATRIX_MVP,*)' with 'UnityObjectToClipPos(*)'
+
+Shader "My Shaders/Skin Shader" {
 	Properties{
 		_Texture("Texture", 2D) = "White" {}
 		_BlendTexture("Scattering Texture", 2D) = "White" {}

@@ -20,7 +20,7 @@ public class Sounds : MonoBehaviour {
 
         {
 
-            GameObject child = new GameObject("Player");
+            GameObject child = new GameObject("SoundSource");
 
             child.transform.parent = gameObject.transform;
 
