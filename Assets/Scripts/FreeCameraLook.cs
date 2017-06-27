@@ -38,11 +38,6 @@ public class FreeCameraLook : Pivot {
 
         HandleRotationMovement();
 
-        if(lockCursor && Input.GetMouseButtonUp(0))
-            {
-
-            //Screen.lockCursor = lockCursor;
-        }
 	}
     void OnDisable() {
 
@@ -56,8 +51,11 @@ public class FreeCameraLook : Pivot {
 
     void HandleRotationMovement()
     {
+        if (Input.GetKey(KeyCode.LeftControl))
+        {
             SetMouseZ(pivot.localPosition.z + Input.GetAxis("Mouse ScrollWheel"));
             pivot.localPosition = new Vector4(pivot.localPosition.x, pivot.localPosition.y, tempMouseZ);
+        }
         
 
         float x = Input.GetAxis("Mouse X");

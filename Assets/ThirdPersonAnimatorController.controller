@@ -1327,7 +1327,7 @@ AnimatorStateTransition:
     m_EventTreshold: 0
   - m_ConditionMode: 3
     m_ConditionEvent: Forward
-    m_EventTreshold: 0.3
+    m_EventTreshold: 0.5
   m_DstStateMachine: {fileID: 0}
   m_DstState: {fileID: 110206664}
   m_Solo: 0
@@ -4276,14 +4276,14 @@ AnimatorStateMachine:
       first: {fileID: 110700000}
       second: []
     data:
+      first: {fileID: 110719990}
+      second:
+      - {fileID: 110902988}
+    data:
       first: {fileID: 1107127253366087576}
       second:
       - {fileID: 1109449402289445056}
       - {fileID: 1109881724103596564}
-    data:
-      first: {fileID: 110719990}
-      second:
-      - {fileID: 110902988}
   m_StateMachineBehaviours: []
   m_AnyStatePosition: {x: -48, y: -240, z: 0}
   m_EntryPosition: {x: -60, y: -36, z: 0}

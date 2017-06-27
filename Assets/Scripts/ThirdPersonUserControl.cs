@@ -45,11 +45,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
 
         private void Update()
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                Cursor.visible = true;
-                Screen.lockCursor = false;
-            }
+
             if (!m_Jump)
             {
                 m_Jump = CrossPlatformInputManager.GetButtonDown("Jump");

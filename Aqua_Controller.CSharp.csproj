@@ -103,6 +103,7 @@
     <Compile Include="Assets\Scripts\StairDismount.cs" />
     <Compile Include="Assets\Scripts\ThirdPersonCharacter.cs" />
     <Compile Include="Assets\Scripts\ThirdPersonUserControl.cs" />
+    <Compile Include="Assets\Scripts\WindSystem.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Day-Night Skyboxes\Textures\Readme for Assigning.txt" />

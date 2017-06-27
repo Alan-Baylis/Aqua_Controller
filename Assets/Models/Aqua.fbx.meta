@@ -4044,12 +4044,21 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
+      - time: 0.627404
+        functionName: stopJump
+        data: jumpLand
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask:
       - path: 
         weight: 1
       - path: Body
         weight: 1
       - path: Bra
+        weight: 1
+      - path: DownTeeth
         weight: 1
       - path: Hair
         weight: 1
@@ -4083,51 +4092,49 @@ ModelImporter:
         weight: 1
       - path: Hips/Spine/Chest
         weight: 1
-      - path: Hips/Spine/Chest/Left_arm
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_index
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_index/Left_m_index
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_index/Left_m_index/Left_e_index
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_middle
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_middle/Left_m_middle
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_middle/Left_m_middle/Left_e_middle
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_pinky
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_pinky/Left_m_pinky
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_pinky/Left_m_pinky/Left_e_pinky
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_ring
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_ring/Left_m_ring
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_ring/Left_m_ring/Left_e_ring
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_thumb
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb
-        weight: 1
-      - path: Hips/Spine/Chest/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb/Left_e_thumb
-        weight: 1
       - path: Hips/Spine/Chest/Left_Brest
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_index
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_index/Left_m_index
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_index/Left_m_index/Left_e_index
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle/Left_m_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle/Left_m_middle/Left_e_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_pinky/Left_m_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_pinky/Left_m_pinky/Left_e_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_ring/Left_m_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_ring/Left_m_ring/Left_e_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb/Left_e_thumb
         weight: 1
       - path: Hips/Spine/Chest/Neck
         weight: 1
       - path: Hips/Spine/Chest/Neck/Head
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/follicle1
-        weight: 1
-      - path: Hips/Spine/Chest/Neck/Head/follicle1/curve2
         weight: 1
       - path: Hips/Spine/Chest/Neck/Head/Jaw
         weight: 1
@@ -4135,43 +4142,45 @@ ModelImporter:
         weight: 1
       - path: Hips/Spine/Chest/Neck/Head/Right_eye 1
         weight: 1
-      - path: Hips/Spine/Chest/Right_arm
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_index
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_index/Right_m_index
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_index/Right_m_index/Right_e_index
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_middle
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_middle/Right_m_middle
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_middle/Right_m_middle/Right_e_middle
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_pinky
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_pinky/Right_m_pinky
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_pinky/Right_m_pinky/Right_e_pinky
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_ring
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_ring/Right_m_ring
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_ring/Right_m_ring/Right_e_ring
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_thumb
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb
-        weight: 1
-      - path: Hips/Spine/Chest/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb/Right_e_thumb
-        weight: 1
       - path: Hips/Spine/Chest/Right_Brest
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_index
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_index/Right_m_index
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_index/Right_m_index/Right_e_index
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_middle/Right_m_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_middle/Right_m_middle/Right_e_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_pinky/Right_m_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_pinky/Right_m_pinky/Right_e_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_ring/Right_m_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_ring/Right_m_ring/Right_e_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb/Right_e_thumb
         weight: 1
       - path: Left_cornea
         weight: 1
@@ -4198,6 +4207,14 @@ ModelImporter:
       - path: Right_eye
         weight: 1
       - path: Shirt
+        weight: 1
+      - path: Shoe_Left
+        weight: 1
+      - path: Shoe_Right
+        weight: 1
+      - path: Tongue
+        weight: 1
+      - path: UpTeet
         weight: 1
       maskType: 1
       maskSource: {fileID: 101100000, guid: ad7e0c371b6842747a2ebfa3a639ec57, type: 2}
@@ -10430,6 +10447,13 @@ ModelImporter:
       events:
       - time: 0.37735552
         functionName: SetAnimationJump
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.7163425
+        functionName: stopJump
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

@@ -19,6 +19,9 @@ TagManager:
   - Ledge
   - LedgePoint
   - CamFollow
+  - Water
+  - Fire
+  - WindEffect
   layers:
   - Default
   - TransparentFX

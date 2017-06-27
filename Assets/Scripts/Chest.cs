@@ -9,6 +9,7 @@ public class Chest : MonoBehaviour
     private AudioClip openSound;
     HingeJoint hinge;
     JointLimits hingeLimits;
+    JointMotor hingeMotor;
 
 
     // Use this for initialization
@@ -28,10 +29,14 @@ public class Chest : MonoBehaviour
             SetSoundProperties();
         }
 
-        if (canOpen && hinge.GetComponent<HingeJoint>())
+        if (canOpen && hinge != null)
         {
+            //Open Chest
             if (Input.GetKeyDown(KeyCode.E) && !chestOpened)
             {
+                hingeMotor.targetVelocity = 100;
+                hingeMotor.force = 10;
+                hinge.motor = hingeMotor;
                 openChest = true;
                 chestOpened = true;
                 hinge.useMotor = true;
@@ -43,15 +48,15 @@ public class Chest : MonoBehaviour
                 GetComponent<Sounds>().audioSources[randomSound].transform.position = transform.position;
                 GetComponent<Sounds>().audioSources[randomSound].PlayOneShot(openSound, 1f);
             }
+            //Close Chest
             else if (Input.GetKeyDown(KeyCode.E) && chestOpened)
             {
-
                 chestOpened = false;
                 openChest = false;
-                hinge.useMotor = false;
+
                 hingeLimits.bounciness = 0.3f;
                 hinge.limits = hingeLimits;
-                //Play closing sound
+                //Play clwosing sound
                 currentSound = randomSound;
                 if (randomSound + 1 < soundAmount)
                 {
@@ -66,6 +71,15 @@ public class Chest : MonoBehaviour
                 GetComponent<Sounds>().audioSources[randomSound].transform.position = transform.position;
                 chestClosed = false;
             }
+            //Initiate motor to close the chest
+            if (!chestOpened && !chestClosed && hinge.GetComponent<HingeJoint>().angle > 80)
+            {
+                hingeMotor.targetVelocity = -100;
+                hingeMotor.force = 10;
+                hinge.motor = hingeMotor;
+                
+            }
+
             // Sound when lid hits the box
             if (!chestOpened && !chestClosed && hinge.GetComponent<HingeJoint>().angle < 10)
             {
@@ -73,7 +87,10 @@ public class Chest : MonoBehaviour
                 openSound = GetComponent<Sounds>().Clips[4];
                 GetComponent<Sounds>().audioSources[4].transform.position = transform.position;
                 GetComponent<Sounds>().audioSources[4].PlayOneShot(openSound, 0.6f);
+                hinge.useMotor = false;
             }
+
+
         }
     }
 

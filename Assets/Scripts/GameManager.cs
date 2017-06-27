@@ -26,9 +26,20 @@ public class GameManager : MonoBehaviour
     void Awake()
     {
         Application.targetFrameRate = 300;
+
+        //Dissable Mouse                
+        Cursor.visible = false;
+        Screen.lockCursor = true;
     }
     void LateUpdate()
     {
+        if (Input.GetKey(KeyCode.Escape))
+        {
+            Cursor.visible = true;
+            Screen.lockCursor = false;
+            Application.Quit();
+            UnityEditor.EditorApplication.isPlaying = false;
+        }
         if (Input.GetKey("escape"))
             Application.Quit();
 

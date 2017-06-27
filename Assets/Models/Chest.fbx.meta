@@ -1,37 +1,27 @@
 fileFormatVersion: 2
 guid: 40fe930c0a2b69a4b8d0b2ecfd0b78c7
-timeCreated: 1497641832
+timeCreated: 1498414358
 licenseType: Free
 ModelImporter:
   serializedVersion: 19
   fileIDToRecycleName:
-    100000: Box
-    100002: //RootNode
-    100004: Lid
-    100006: Chest 1
-    100008: Chest_box_colider
-    100010: Chest_box
-    400000: Box
-    400002: //RootNode
-    400004: Lid
-    400006: Chest 1
-    400008: Chest_box_colider
-    400010: Chest_box
-    2300000: Box
-    2300002: Lid
-    2300004: Chest 1
-    2300006: Chest_box_colider
-    2300008: Chest_box
-    3300000: Box
-    3300002: Lid
-    3300004: Chest 1
-    3300006: Chest_box_colider
-    3300008: Chest_box
-    4300000: Lid
-    4300002: Box
-    4300004: Chest
-    4300006: Chest_box_colider
-    4300008: Chest_box
+    100000: //RootNode
+    100002: Chest_box
+    100004: Chest_box_colider
+    100006: Lid
+    400000: //RootNode
+    400002: Chest_box
+    400004: Chest_box_colider
+    400006: Lid
+    2300000: Chest_box
+    2300002: Chest_box_colider
+    2300004: Lid
+    3300000: Chest_box
+    3300002: Chest_box_colider
+    3300004: Lid
+    4300000: Chest_box
+    4300002: Lid
+    4300004: Chest_box_colider
     9500000: //RootNode
   materials:
     importMaterials: 1
