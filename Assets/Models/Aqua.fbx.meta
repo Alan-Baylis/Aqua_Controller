@@ -1269,6 +1269,7 @@ ModelImporter:
     7400104: LedgeHang
     7400106: LedgeHangDrop
     7400108: LedgeHangClimbUp
+    7400110: WalkJump
     9500000: //RootNode
     13700000: Body
     13700002: Bra
@@ -1322,11 +1323,11 @@ ModelImporter:
       be discarded.\n"
     animationRetargetingWarnings: "\nRetargeting quality report for clip 'Take 001':\n\tLeftLowerArm
       average position error 0.1 mm and maximum position error 1.0 mm at time 814:
-      0 (96.3%) Frame 19536\n\tRightLowerArm average position error 0.1 mm and maximum
-      position error 1.1 mm at time 814: 0 (96.3%) Frame 19536\n\tLeftFoot average
-      orientation error 0.1 deg and maximum orientation error 3.9 deg at time 632:
-      0 (74.8%) Frame 15168\n\tRightFoot average orientation error 0.0 deg and maximum
-      orientation error 3.6 deg at time 777: 7 (92.0%) Frame 18655\n"
+      0 (94.8%) Frame 19536\n\tRightLowerArm average position error 0.1 mm and maximum
+      position error 1.1 mm at time 814: 0 (94.8%) Frame 19536\n\tLeftFoot average
+      orientation error 0.1 deg and maximum orientation error 129.9 deg at time 845:11
+      (98.5%) Frame 20291\n\tRightFoot average orientation error 0.0 deg and maximum
+      orientation error 3.6 deg at time 777: 7 (90.6%) Frame 18655\n"
     animationDoRetargetingWarnings: 1
     animationCompression: 0
     animationRotationError: 0.5
@@ -4046,6 +4047,13 @@ ModelImporter:
         messageOptions: 0
       - time: 0.627404
         functionName: stopJump
+        data: jumpLand
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.18419962
+        functionName: SetAnimationJump
         data: jumpLand
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0
@@ -10452,7 +10460,7 @@ ModelImporter:
         floatParameter: 0
         intParameter: 0
         messageOptions: 0
-      - time: 0.7163425
+      - time: 0.6955092
         functionName: stopJump
         data: 
         objectReferenceParameter: {instanceID: 0}
@@ -11243,6 +11251,212 @@ ModelImporter:
       events:
       - time: 0.91540545
         functionName: EndLedgeHang
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      transformMask:
+      - path: 
+        weight: 1
+      - path: Body
+        weight: 1
+      - path: Bra
+        weight: 1
+      - path: DownTeeth
+        weight: 1
+      - path: Hair
+        weight: 1
+      - path: Head_colider
+        weight: 1
+      - path: Hip_control
+        weight: 1
+      - path: Hips
+        weight: 1
+      - path: Hips/Left_leg
+        weight: 1
+      - path: Hips/Left_leg/Left_knee
+        weight: 1
+      - path: Hips/Left_leg/Left_knee/Left_foot
+        weight: 1
+      - path: Hips/Left_leg/Left_knee/Left_foot/Left_toe
+        weight: 1
+      - path: Hips/Left_leg/Left_knee/Left_foot/Left_toe/Left_toe_end
+        weight: 1
+      - path: Hips/Right_leg
+        weight: 1
+      - path: Hips/Right_leg/Right_knee
+        weight: 1
+      - path: Hips/Right_leg/Right_knee/Right_foot
+        weight: 1
+      - path: Hips/Right_leg/Right_knee/Right_foot/Right_toe
+        weight: 1
+      - path: Hips/Right_leg/Right_knee/Right_foot/Right_toe/Right_toe_end
+        weight: 1
+      - path: Hips/Spine
+        weight: 1
+      - path: Hips/Spine/Chest
+        weight: 1
+      - path: Hips/Spine/Chest/Left_Brest
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_index
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_index/Left_m_index
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_index/Left_m_index/Left_e_index
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle/Left_m_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_middle/Left_m_middle/Left_e_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_pinky/Left_m_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_pinky/Left_m_pinky/Left_e_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_ring/Left_m_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_ring/Left_m_ring/Left_e_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Left_shoulder/Left_arm/Left_forearm/Left_hand/Left_thumb/Left_m_thumb/Left_e_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Neck
+        weight: 1
+      - path: Hips/Spine/Chest/Neck/Head
+        weight: 1
+      - path: Hips/Spine/Chest/Neck/Head/Jaw
+        weight: 1
+      - path: Hips/Spine/Chest/Neck/Head/Left_eye 1
+        weight: 1
+      - path: Hips/Spine/Chest/Neck/Head/Right_eye 1
+        weight: 1
+      - path: Hips/Spine/Chest/Right_Brest
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_index
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_index/Right_m_index
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_index/Right_m_index/Right_e_index
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_middle/Right_m_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_middle/Right_m_middle/Right_e_middle
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_pinky/Right_m_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_pinky/Right_m_pinky/Right_e_pinky
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_ring/Right_m_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_ring/Right_m_ring/Right_e_ring
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb
+        weight: 1
+      - path: Hips/Spine/Chest/Right_shoulder/Right_arm/Right_forearm/Right_hand/Right_thumb/Right_m_thumb/Right_e_thumb
+        weight: 1
+      - path: Left_cornea
+        weight: 1
+      - path: Left_eye
+        weight: 1
+      - path: Panties
+        weight: 1
+      - path: Pants
+        weight: 1
+      - path: Pony_tail_mesh
+        weight: 1
+      - path: Pony_tail_skeleton_1
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2/Pony_tail_skeleton_3
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2/Pony_tail_skeleton_3/Pony_tail_skeleton_4
+        weight: 1
+      - path: Pony_tail_skeleton_1/Pony_tail_skeleton_2/Pony_tail_skeleton_3/Pony_tail_skeleton_4/Pony_tail_skeleton_5
+        weight: 1
+      - path: Right_cornea
+        weight: 1
+      - path: Right_eye
+        weight: 1
+      - path: Shirt
+        weight: 1
+      - path: Shoe_Left
+        weight: 1
+      - path: Shoe_Right
+        weight: 1
+      - path: Tongue
+        weight: 1
+      - path: UpTeet
+        weight: 1
+      maskType: 1
+      maskSource: {fileID: 101100000, guid: ad7e0c371b6842747a2ebfa3a639ec57, type: 2}
+      additiveReferencePoseFrame: 0
+    - serializedVersion: 16
+      name: WalkJump
+      takeName: Take 001
+      firstFrame: 20300
+      lastFrame: 20550
+      wrapMode: 0
+      orientationOffsetY: 0
+      level: 0
+      cycleOffset: 0
+      loop: 0
+      hasAdditiveReferencePose: 0
+      loopTime: 1
+      loopBlend: 1
+      loopBlendOrientation: 0
+      loopBlendPositionY: 1
+      loopBlendPositionXZ: 0
+      keepOriginalOrientation: 1
+      keepOriginalPositionY: 1
+      keepOriginalPositionXZ: 0
+      heightFromFeet: 0
+      mirror: 0
+      bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
+      curves: []
+      events:
+      - time: 0.2871685
+        functionName: SetAnimationJump
+        data: 
+        objectReferenceParameter: {instanceID: 0}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
+      - time: 0.6564555
+        functionName: stopJump
         data: 
         objectReferenceParameter: {instanceID: 0}
         floatParameter: 0

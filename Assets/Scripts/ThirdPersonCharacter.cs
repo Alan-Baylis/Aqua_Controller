@@ -70,7 +70,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         public bool m_IsGrounded;
         public bool isExhausted;
         public bool isJumping;
-        bool idleJump, runJump;
+        bool idleJump, runJump, walkJump;
         bool animationJump;
         float jumpStart;
         public bool isFalling, landLight, landForwardHeavy;
@@ -1107,6 +1107,8 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             m_Animator.SetBool("FacingWall", facingWall);
             m_Animator.SetBool("ledgeHang", ledgeHang);
             m_Animator.SetBool("ledgeClimbUp", ledgeClimbUp);
+            m_Animator.SetBool("walkJump", walkJump);
+            
 
             if (!m_IsGrounded && isJumping)
             {
@@ -1181,12 +1183,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             //Jump
             if (!isJumping && jump && !crouch && m_IsGrounded && !isExhausted && !isFalling && !runSlide)
             {
-                //Jump if movin
-                if (m_ForwardAmount > 0.3 && !idleJump)
+                //Jump if Running
+                if (m_ForwardAmount > 0.5 && !idleJump)
                 {
                     runJump = true;
                 }
-                //Jump while Idle
+                //Jump if Walking
+                else if (m_ForwardAmount >= 0.2 && m_ForwardAmount <= 0.5)
+                {
+                    walkJump = true;
+                }
+                //Jump if Idle
                 else
                 {
                     jumpStart = timer;
@@ -1198,7 +1205,7 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 temporaryGroundCheckDistance = m_GroundCheckDistance;
                 ScaleCapsule("ground");
             }
-
+            
             // Idle Jump
             if (idleJump)
             {
@@ -1217,31 +1224,40 @@ namespace UnityStandardAssets.Characters.ThirdPerson
             }
 
             //Run Jump
-            if (runJump && !isJumping)
+            if (runJump && !isJumping) 
             {
-
                 jumpStart = timer;
                 isJumping = true;
                 jump = false;
-
-                // if(!facingWall){
-                m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
-                //} else{}
-
-                m_Animator.applyRootMotion = false;
-                temporaryGroundCheckDistance = m_GroundCheckDistance / 4;
-                emotions.Surprised();
-                runJump = false;
-
+                if (animationJump)
+                {
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower, m_Rigidbody.velocity.z);
+                    m_Animator.applyRootMotion = false;
+                    temporaryGroundCheckDistance = m_GroundCheckDistance / 4;
+                    emotions.Surprised();
+                }
             }
+            
+            //Walk Jump
+            if (walkJump && animationJump && !isJumping)
+            {
 
-            //End of IsJumping
-            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 8 < timer && !ledgeHang)
+
+
+                    jumpStart = timer;
+                    isJumping = true;
+                    temporaryGroundCheckDistance = m_GroundCheckDistance / 4;
+                    m_Rigidbody.velocity = new Vector3(m_Rigidbody.velocity.x, m_JumpPower * 0.8f, m_Rigidbody.velocity.z);
+                    walkJump = false;
+                
+            }
+            
+
+            //Security, End of IsJumping
+            if (isJumping && !jump && jumpStart + GetAnimationLength("RunJump") / 10 < timer && !ledgeHang)
             {
                 isJumping = false;
                 animationJump = false;
-
-
             }
 
             //Landing is over when animation is over
@@ -1253,12 +1269,17 @@ namespace UnityStandardAssets.Characters.ThirdPerson
                 landing = false;
             }
         }
+
         //caled by animation to dissable isJumping
         public void stopJump()
         {
             runJump = false;
             isJumping = false;
             idleJump = false;
+            walkJump = false;
+
+            isJumping = false;
+            animationJump = false;
         }
 
         void ApplyExtraTurnRotation()
@@ -1915,7 +1936,6 @@ namespace UnityStandardAssets.Characters.ThirdPerson
         {
             animationJump = true;
         }
-
 
         void ArmIk()
         {
