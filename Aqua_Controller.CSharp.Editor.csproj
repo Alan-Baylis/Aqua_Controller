@@ -109,9 +109,6 @@
     <Reference Include="UnityEditor.WindowsStandalone.Extensions">
       <HintPath>Library\UnityAssemblies\UnityEditor.WindowsStandalone.Extensions.dll</HintPath>
     </Reference>
-    <Reference Include="UnityEditor.OSXStandalone.Extensions">
-      <HintPath>Library\UnityAssemblies\UnityEditor.OSXStandalone.Extensions.dll</HintPath>
-    </Reference>
     <Reference Include="SyntaxTree.VisualStudio.Unity.Bridge">
       <HintPath>Library\UnityAssemblies\SyntaxTree.VisualStudio.Unity.Bridge.dll</HintPath>
     </Reference>
@@ -228,6 +225,9 @@
     <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAdd.shader" />
     <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAddSoft.shader" />
     <None Include="Assets\Standard Assets\ParticleSystems\Shaders\PriorityParticleAlpha.shader" />
+    <None Include="Assets\Volumetric Lights\Shaders\BilateralBlur.shader" />
+    <None Include="Assets\Volumetric Lights\Shaders\BlitAdd.shader" />
+    <None Include="Assets\Volumetric Lights\Shaders\VolumetricLight.shader" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\SyntaxTree\UnityVS\2015\UnityVS.CSharp.targets" />
 </Project>

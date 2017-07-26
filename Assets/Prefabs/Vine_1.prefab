@@ -89,7 +89,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4295561024807396}
-  - component: {fileID: 95614827411542010}
   m_Layer: 0
   m_Name: Vine_1
   m_TagString: Untagged
@@ -170,7 +169,7 @@ Transform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1620761578635518}
   m_LocalRotation: {x: -0, y: 0.16811283, z: -0, w: 0.9857678}
-  m_LocalPosition: {x: -16.12, y: 21.01, z: -34.17}
+  m_LocalPosition: {x: -6.1384125, y: 16.5, z: -7.1799984}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 4847120943450038}
@@ -360,7 +359,7 @@ HingeJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: -0.000000461936, y: -5.89251, z: 0.0000017601997}
+  m_ConnectedAnchor: {x: 0.00000017136335, y: -5.89251, z: -0.000000027939677}
   m_UseSpring: 0
   m_Spring:
     spring: 0
@@ -392,7 +391,7 @@ HingeJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: -0.00000006600749, y: -4.6997733, z: 0.0000015497208}
+  m_ConnectedAnchor: {x: 0.00000056729186, y: -4.6997733, z: -0.00000023841858}
   m_UseSpring: 0
   m_Spring:
     spring: 0
@@ -424,7 +423,7 @@ HingeJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: -0.13652056, y: -4.9690123, z: -0.00000053457916}
+  m_ConnectedAnchor: {x: -0.13652119, y: -4.9690123, z: 0.0000012535602}
   m_UseSpring: 0
   m_Spring:
     spring: 0
@@ -456,7 +455,7 @@ HingeJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 0.0000007748604, y: -5.4590793, z: 0.10010204}
+  m_ConnectedAnchor: {x: 0.00000011920929, y: -5.4590793, z: 0.100103825}
   m_UseSpring: 0
   m_Spring:
     spring: 0
@@ -488,7 +487,7 @@ HingeJoint:
   m_Anchor: {x: 0, y: 0, z: 0}
   m_Axis: {x: 1, y: 0, z: 0}
   m_AutoConfigureConnectedAnchor: 1
-  m_ConnectedAnchor: {x: 0.032594845, y: -4.7600403, z: -0.018682182}
+  m_ConnectedAnchor: {x: 0.032595478, y: -4.7600403, z: -0.01868397}
   m_UseSpring: 0
   m_Spring:
     spring: 0
@@ -570,23 +569,6 @@ BoxCollider:
   serializedVersion: 2
   m_Size: {x: 0.4, y: 4, z: 0.4}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!95 &95614827411542010
-Animator:
-  serializedVersion: 3
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1620761578635518}
-  m_Enabled: 1
-  m_Avatar: {fileID: 9000000, guid: bfba1d65a86e8e142ab016a536454a45, type: 3}
-  m_Controller: {fileID: 0}
-  m_CullingMode: 1
-  m_UpdateMode: 0
-  m_ApplyRootMotion: 0
-  m_LinearVelocityBlending: 0
-  m_WarningMessage: 
-  m_HasTransformHierarchy: 1
-  m_AllowConstantClipSamplingOptimization: 1
 --- !u!137 &137188871503766650
 SkinnedMeshRenderer:
   m_ObjectHideFlags: 1

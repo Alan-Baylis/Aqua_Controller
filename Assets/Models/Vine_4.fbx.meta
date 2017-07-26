@@ -18,6 +18,7 @@ ModelImporter:
     100020: Vine_4_Model
     100022: Vine_4_Skeleton
     100024: Vine_4_twisted
+    100026: Vine_4
     400000: joint1
     400002: joint2
     400004: joint3
@@ -31,6 +32,7 @@ ModelImporter:
     400020: Vine_4_Model
     400022: Vine_4_Skeleton
     400024: Vine_4_twisted
+    400026: Vine_4
     2300000: //RootNode
     3300000: //RootNode
     4300000: Vine_3_Model

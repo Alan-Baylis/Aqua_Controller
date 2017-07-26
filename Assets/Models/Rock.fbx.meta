@@ -25,6 +25,7 @@ ModelImporter:
     4300002: Rock
     4300004: Rock1
     4300006: polySurface16
+    4300008: Cliff
     9500000: //RootNode
   materials:
     importMaterials: 1
